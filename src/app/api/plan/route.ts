@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { fail, readBody } from "@/lib/api/respond";
+import { address, fail, readBody } from "@/lib/api/respond";
+import { secondOpinion } from "@/lib/desk/second-opinion";
 import { listMarkets } from "@/lib/gemini/client";
 import { exposureSchema } from "@/lib/hedge/exposure";
 import { planCover } from "@/lib/hedge/plan";
@@ -8,6 +9,8 @@ import { recordContracts } from "@/lib/odds";
 const bodySchema = z.object({
   exposure: exposureSchema,
   coverRatio: z.number().min(0.1).max(1).default(1),
+  /** When given, the agent may spend this owner's data allowance on a forecast to check the price against. */
+  owner: address.optional(),
 });
 
 export async function POST(request: Request) {
@@ -15,7 +18,19 @@ export async function POST(request: Request) {
   if (body instanceof Response) return body;
 
   try {
-    const planned = await planCover(body.exposure, listMarkets, { coverRatio: body.coverRatio });
+    const { owner } = body;
+    const origin = new URL(request.url).origin;
+    const planned = await planCover(body.exposure, listMarkets, {
+      coverRatio: body.coverRatio,
+      fairValue: owner && (async (market) => {
+        const opinion = await secondOpinion(owner, market, origin).catch((error) => {
+          // A quote is still worth giving when the forecast can't be bought.
+          console.error("forecast purchase failed", error);
+          return null;
+        });
+        return opinion && { ...opinion.forecast, paid: opinion.paid };
+      }),
+    });
     // Every quote adds a point to the price history of the market it looked at.
     if (planned) await recordContracts(planned.market.contracts);
     return Response.json({ plan: planned?.plan ?? null });

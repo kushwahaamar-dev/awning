@@ -2,6 +2,7 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import { keccak256, toHex, type Address, type Hex } from "viem";
 import { closeHedge, openHedge, readAllowance, venueAddress } from "../chain/server";
 import { covers, getDb, type Order } from "../db";
+import { secondOpinion } from "../desk/second-opinion";
 import { getMarket, listMarkets } from "../gemini/client";
 import type { Exposure } from "../hedge/exposure";
 import { planCover, type CoverPlan } from "../hedge/plan";
@@ -29,8 +30,22 @@ export type CoverTerms = {
   needsApproval: boolean;
 };
 
-export async function quoteCover(input: { owner: Address; exposure: Exposure; coverRatio: number; mode: "now" | "resting" }): Promise<CoverTerms> {
-  const planned = await planCover(input.exposure, listMarkets, { coverRatio: input.coverRatio });
+export async function quoteCover(input: {
+  owner: Address;
+  exposure: Exposure;
+  coverRatio: number;
+  mode: "now" | "resting";
+  /** Where this server is reachable, for buying from its own data desk. */
+  origin: string;
+}): Promise<CoverTerms> {
+  const planned = await planCover(input.exposure, listMarkets, {
+    coverRatio: input.coverRatio,
+    // Reuses the forecast bought for the quote the owner just saw, so the order goes in at the price shown.
+    fairValue: async (market) => {
+      const opinion = await secondOpinion(input.owner, market, input.origin).catch(() => null);
+      return opinion && { ...opinion.forecast, paid: opinion.paid };
+    },
+  });
   if (!planned) throw new CoverError("Gemini no longer lists a market for this.");
   const { plan } = planned;
 

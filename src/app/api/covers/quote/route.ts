@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const body = await readBody(request, bodySchema);
   if (body instanceof Response) return body;
   try {
-    return Response.json(await quoteCover(body));
+    return Response.json(await quoteCover({ ...body, origin: new URL(request.url).origin }));
   } catch (error) {
     return fail(error);
   }

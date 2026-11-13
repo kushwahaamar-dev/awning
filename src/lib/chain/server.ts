@@ -40,7 +40,8 @@ function signer(envName: "AGENT_PRIVATE_KEY" | "VENUE_PRIVATE_KEY") {
 const globals = globalThis as { awningSigners?: { agent: ReturnType<typeof signer>; venue: ReturnType<typeof signer> } };
 const signers = () => (globals.awningSigners ??= { agent: signer("AGENT_PRIVATE_KEY"), venue: signer("VENUE_PRIVATE_KEY") });
 
-export const agentAddress = () => signers().agent.account.address;
+export const agentAccount = () => signers().agent.account;
+export const agentAddress = () => agentAccount().address;
 export const venueAddress = () => signers().venue.account.address;
 
 const mandate = { address: mandateAddress, abi: awningMandateAbi } as const;

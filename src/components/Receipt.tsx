@@ -22,7 +22,7 @@ function Line({ label, value, strong }: { label: string; value: string; strong?:
 }
 
 export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
-  const { quote, coverage, market, exposure } = plan;
+  const { quote, coverage, market, exposure, forecast } = plan;
   const cheapest = quote.resting ?? quote.now;
 
   return (
@@ -34,6 +34,7 @@ export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
 
       <div className="mt-6 space-y-2 border-t-2 border-dashed border-rule pt-5 text-lg">
         {quote.marketOdds !== null && <Line label="The market's odds it happens" value={percent(quote.marketOdds)} />}
+        {forecast && <Line label="A weather model's odds" value={percent(forecast.odds)} />}
         {quote.resting && <Line label="Cost if you leave an order" value={cents(quote.resting.total)} strong />}
         {quote.now && <Line label="Cost if you buy right now" value={cents(quote.now.total)} strong={!quote.resting} />}
         {cheapest && (
@@ -44,7 +45,10 @@ export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
         )}
       </div>
       {cheapest ? (
-        <p className="mt-2 text-sm text-mute">Costs include an estimated {cents(cheapest.fees)} in Gemini fees.</p>
+        <p className="mt-2 text-sm text-mute">
+          Costs include an estimated {cents(cheapest.fees)} in Gemini fees.
+          {forecast && ` Your agent paid ${cents(forecast.paid)} for a ${forecast.members}-run forecast to check the price against.`}
+        </p>
       ) : (
         <p className="mt-4 text-brick">
           Nobody is quoting this market right now, so there is no price to show. Check back closer to the date.

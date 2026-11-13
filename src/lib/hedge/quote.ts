@@ -29,7 +29,9 @@ const toTick = (price: number, tick: number) => Math.floor(price / tick + 1e-9) 
 
 function restingPrice(leg: Leg, fair: number | null): number | null {
   const mid = leg.bid !== null && leg.ask !== null ? (leg.bid + leg.ask) / 2 : null;
-  const target = fair ?? mid ?? leg.bid ?? (leg.ask !== null ? leg.ask - leg.tick : null);
+  // A forecast can talk the bid down but never up: paying above the middle of the book on a model's say-so isn't prudent.
+  const anchor = mid !== null && fair !== null ? Math.min(mid, fair) : (fair ?? mid);
+  const target = anchor ?? leg.bid ?? (leg.ask !== null ? leg.ask - leg.tick : null);
   if (target === null) return null;
 
   // Stay one tick inside the offer so the order rests; at the minimum tick there is no room, so meet it.

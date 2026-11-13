@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Foundry sources and vendored libs, and the Streams filter that runs in QuickNode's sandbox.
+    "contracts/**",
+    "quicknode/**",
   ]),
 ]);
 

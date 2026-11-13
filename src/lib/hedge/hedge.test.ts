@@ -87,9 +87,14 @@ describe("quoteCover", () => {
     expect(resting!.total).toBeLessThan(quoteCover(coverage, 300).now!.total);
   });
 
-  it("moves the resting order to the fair price when one is supplied, without crossing", () => {
+  it("lets a forecast lower the resting price but not raise it above the middle of the book", () => {
     const { resting } = quoteCover(coverage, 300, 1, [null, 0.02, 0.5]);
-    expect(resting!.prices).toEqual([0.01, 0.02, 0.11]);
+    expect(resting!.prices).toEqual([0.01, 0.02, 0.09]);
+  });
+
+  it("joins the best bid rather than resting below it when the forecast is lower still", () => {
+    const { resting } = quoteCover(coverage, 300, 1, [null, null, 0.02]);
+    expect(resting!.prices[2]).toBe(0.06);
   });
 
   it("scales with the share of the loss covered", () => {

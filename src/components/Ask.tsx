@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Turn } from "@/lib/hedge/interpret";
+import type { useVoice } from "./voice";
 
 const EXAMPLES = [
   "Any day Austin's high stays under 76, my ice cream truck is out about $300.",
@@ -15,9 +16,12 @@ type Props = {
   error: string | null;
   unlisted: { wanted: string | null } | null;
   onSay: (text: string) => void;
+  voice: ReturnType<typeof useVoice>;
 };
 
-export function Ask({ turns, busy, error, unlisted, onSay }: Props) {
+const MIC_LABEL = { idle: "Say it out loud", recording: "Stop, I'm done", transcribing: "Listening back…" } as const;
+
+export function Ask({ turns, busy, error, unlisted, onSay, voice }: Props) {
   const [draft, setDraft] = useState("");
   const question = turns.at(-1)?.role === "assistant" ? turns.at(-1)!.text : null;
   const said = turns.filter((t) => t.role === "user").map((t) => t.text);
@@ -81,6 +85,19 @@ export function Ask({ turns, busy, error, unlisted, onSay }: Props) {
           >
             {busy ? "Looking for cover…" : "Find cover"}
           </button>
+          {voice.enabled && (
+            <button
+              type="button"
+              onClick={voice.state === "recording" ? voice.stop : voice.start}
+              disabled={busy || voice.state === "transcribing"}
+              aria-pressed={voice.state === "recording"}
+              className={`rounded-sm border-2 px-6 py-3 text-lg font-bold disabled:opacity-50 ${
+                voice.state === "recording" ? "border-brick bg-brick text-paper" : "border-awning text-awning"
+              }`}
+            >
+              {MIC_LABEL[voice.state]}
+            </button>
+          )}
           {error && <p className="text-brick">{error}</p>}
         </div>
       </form>

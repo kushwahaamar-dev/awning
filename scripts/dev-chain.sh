@@ -13,6 +13,7 @@ DEPLOYMENT="contracts/deployments/31337.json"
 DEPLOYER_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 AGENT_KEY=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
 VENUE_KEY=0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a
+DESK_KEY=0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6
 
 mkdir -p .data
 anvil --port "$PORT" --state "$STATE" --silent &
@@ -39,6 +40,7 @@ NEXT_PUBLIC_MANDATE_ADDRESS=$(node -p "require('./$DEPLOYMENT').mandate")
 NEXT_PUBLIC_USDC_ADDRESS=$(node -p "require('./$DEPLOYMENT').usdc")
 AGENT_PRIVATE_KEY=$AGENT_KEY
 VENUE_PRIVATE_KEY=$VENUE_KEY
+DESK_PRIVATE_KEY=$DESK_KEY
 ENV
 
 echo "Local chain ready on $RPC (mandate $(node -p "require('./$DEPLOYMENT').mandate")). Ctrl-C to stop."
