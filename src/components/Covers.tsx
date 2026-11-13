@@ -25,29 +25,29 @@ function state(cover: Cover): { label: string; tone: "live" | "good" | "quiet" |
   }
 }
 
-const TONES = { live: "bg-awning text-paper", good: "bg-marigold text-ink", quiet: "bg-rule text-ink", bad: "bg-brick text-paper" };
+const TONES = { live: "bg-awning text-paper", good: "bg-marigold text-ink", quiet: "bg-tint text-ink", bad: "bg-brick text-paper" };
 
 export function Covers() {
   const { account } = useAccount();
   if (!account || account.covers.length === 0) return null;
 
   return (
-    <section className="mt-16">
-      <h2 className="font-display text-3xl font-bold tracking-tight [font-stretch:85%]">Your cover</h2>
-      <ul className="mt-4 divide-y divide-rule border-y border-rule">
+    <section className="mt-28">
+      <h2 className="display display-lg">Your cover</h2>
+      <ul className="mt-8 grid gap-4 lg:grid-cols-2">
         {account.covers.map((cover) => {
           const { label, tone } = state(cover);
           return (
-            <li key={cover.id} className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4">
-              <div className="min-w-0">
-                <p className="text-lg font-bold">
+            <li key={cover.id} className="flex flex-col items-start gap-4 rounded-2xl bg-paper p-6 shadow-[0_0_0_1px_rgb(16_32_26/0.12)]">
+              <span className={`rounded-full px-3 py-1 text-sm font-bold ${TONES[tone]}`}>{label}</span>
+              <div>
+                <p className="text-xl leading-snug font-bold">
                   {usd(cover.maxPayout)} if {cover.plan.coverage.pays}
                 </p>
-                <p className="text-mute">
-                  {day(cover.plan.market.startsAt ?? cover.expiresAt)}, cost {cents(cover.premium)}
+                <p className="mt-1 text-mute">
+                  {day(cover.plan.market.startsAt ?? cover.expiresAt)}, cost <span className="till">{cents(cover.premium)}</span>
                 </p>
               </div>
-              <span className={`rounded-sm px-2.5 py-1 text-sm font-bold ${TONES[tone]}`}>{label}</span>
             </li>
           );
         })}

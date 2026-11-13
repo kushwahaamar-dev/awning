@@ -40,9 +40,9 @@ export function CostChart({ legs }: { legs: Leg[] }) {
   }
 
   return (
-    <figure className="mt-8 max-w-xl">
-      <figcaption className="text-lg font-bold">What $1 of this cover has cost to buy</figcaption>
-      <p className="figures text-sm text-mute" aria-live="polite">
+    <figure className="mt-10">
+      <figcaption className="text-xl font-bold">What $1 of this cover has cost to buy</figcaption>
+      <p className="till text-sm text-mute" aria-live="polite">
         {shown ? `${centsPerDollar(shown.cost)} at ${clock(shown.at)}, ${day(shown.at)}` : `Since ${clock(points[0].at)}, ${day(points[0].at)}`}
       </p>
       <svg
@@ -56,12 +56,13 @@ export function CostChart({ legs }: { legs: Leg[] }) {
         {[0, top / 2, top].map((tick) => (
           <g key={tick}>
             <line x1={PAD.left} x2={W - PAD.right} y1={y(tick)} y2={y(tick)} className="stroke-rule" strokeWidth={1} />
-            <text x={W - PAD.right + 6} y={y(tick) + 4} className="figures fill-mute text-[11px]">
+            <text x={W - PAD.right + 6} y={y(tick) + 4} className="till fill-mute text-[10px]">
               {centsPerDollar(tick)}
             </text>
           </g>
         ))}
-        <path d={path} fill="none" className="stroke-awning" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        <path d={`${path} L${x(t1).toFixed(1)},${y(0)} L${x(t0).toFixed(1)},${y(0)} Z`} className="fill-awning/10" />
+        <path d={path} fill="none" className="stroke-awning" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
         {shown ? (
           <>
             <line x1={x(times[hover!])} x2={x(times[hover!])} y1={PAD.top} y2={H - PAD.bottom} className="stroke-mute" strokeWidth={1} />
@@ -70,10 +71,10 @@ export function CostChart({ legs }: { legs: Leg[] }) {
         ) : (
           <circle cx={x(t1)} cy={y(last.cost)} r={4.5} className="fill-awning stroke-sailcloth" strokeWidth={2} />
         )}
-        <text x={PAD.left} y={H - 4} className="figures fill-mute text-[11px]">
+        <text x={PAD.left} y={H - 4} className="till fill-mute text-[10px]">
           {clock(points[0].at)}
         </text>
-        <text x={W - PAD.right} y={H - 4} textAnchor="end" className="figures fill-mute text-[11px]">
+        <text x={W - PAD.right} y={H - 4} textAnchor="end" className="till fill-mute text-[10px]">
           now
         </text>
       </svg>

@@ -1,18 +1,22 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-sailcloth: #f2f5f1;
+  --color-sailcloth: #edf1ec;
+  --color-tint: #dde6df;
   --color-paper: #ffffff;
+  --color-thermal: #fffdf6;
   --color-awning: #0e4a39;
-  --color-awning-deep: #0a3327;
-  --color-ink: #13231c;
-  --color-mute: #5a6b62;
-  --color-rule: #d3dcd5;
-  --color-marigold: #f0b323;
+  --color-awning-deep: #072a20;
+  --color-ink: #10201a;
+  --color-mute: #56675e;
+  --color-rule: #cfd9d2;
+  --color-marigold: #f2b530;
   --color-brick: #b4281e;
+  --color-ember: #ff9c8c;
 
-  --font-sans: var(--font-text), system-ui, sans-serif;
-  --font-display: var(--font-display), var(--font-text), sans-serif;
+  --font-sans: var(--font-hanken), system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-hanken), sans-serif;
+  --font-receipt: var(--font-martian), ui-monospace, monospace;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -25,18 +29,44 @@
   --text-5xl: 3.75rem;
 }
 
+/* How far the awning is rolled out: the share of the loss under cover, 0–1. Registered so it can animate. */
+@property --cover {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.3;
+}
+
 :root {
-  /* How far the awning is rolled out: the share of the loss under cover, 0–1. */
   --cover: 0.3;
-  --stripe: 3.5rem;
+  --stripe: 4.5rem;
+  transition: --cover 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: unroll 1200ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+@keyframes unroll {
+  from {
+    --cover: 0;
+  }
 }
 
 body {
   background: var(--color-sailcloth);
   color: var(--color-ink);
-  font-family: var(--font-sans);
+  font-family: var(--font-hanken), system-ui, sans-serif;
   font-size: 1.0625rem;
   line-height: 1.55;
+}
+
+/* Paper grain over everything, so flat colour reads as painted board and cloth rather than pixels. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
 :focus-visible {
@@ -44,59 +74,387 @@ body {
   outline-offset: 2px;
 }
 
-/* The awning: canvas that rolls out as cover increases, with a scalloped valance. */
-.awning-canvas,
-.awning-valance {
-  background: repeating-linear-gradient(
-    90deg,
-    var(--color-awning) 0 calc(var(--stripe) / 2),
-    var(--color-paper) calc(var(--stripe) / 2) var(--stripe)
-  );
+::selection {
+  background: var(--color-marigold);
+  color: var(--color-ink);
 }
 
-.awning-canvas {
-  height: calc(0.75rem + var(--cover) * 5.5rem);
-  transition: height 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  /* Light falls off toward the wall, so the canvas reads as sloping away from it. */
-  box-shadow: inset 0 1.25rem 1.5rem -1rem rgb(10 51 39 / 0.55);
+@layer components {
+  /* Sign lettering: the display face at its narrowest and heaviest. */
+  .display {
+    font-family: var(--font-bricolage), var(--font-hanken), sans-serif;
+    font-stretch: 75%;
+    font-weight: 800;
+    letter-spacing: -0.012em;
+    line-height: 0.92;
+    text-wrap: balance;
+  }
+  .display-xl {
+    font-size: clamp(3.25rem, 9.2vw, 8.25rem);
+    line-height: 0.86;
+    letter-spacing: -0.012em;
+  }
+  .display-lg {
+    font-size: clamp(2.25rem, 4.6vw, 4rem);
+  }
+  .display-md {
+    font-size: clamp(1.625rem, 2.4vw, 2.125rem);
+    letter-spacing: -0.005em;
+    line-height: 1.04;
+  }
+
+  .figures {
+    font-variant-numeric: tabular-nums;
+  }
+  .till {
+    font-family: var(--font-martian), ui-monospace, monospace;
+    font-stretch: 85%;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    padding: 0.8rem 1.6rem;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1.2;
+    transition:
+      background-color 150ms,
+      color 150ms,
+      box-shadow 150ms,
+      scale 120ms;
+  }
+  .btn:active:not(:disabled) {
+    scale: 0.97;
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--color-awning);
+    color: var(--color-paper);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-awning-deep);
+  }
+  .btn-outline {
+    color: var(--color-awning);
+    box-shadow: inset 0 0 0 2px currentColor;
+  }
+  .btn-outline:hover:not(:disabled) {
+    background: var(--color-awning);
+    color: var(--color-paper);
+  }
+  .btn-danger {
+    background: var(--color-brick);
+    color: var(--color-paper);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: #8f1d15;
+  }
+  .btn-recording {
+    background: var(--color-brick);
+    color: var(--color-paper);
+    animation: pulse 1400ms ease-in-out infinite;
+  }
+  .link {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25em;
+  }
+  .link:hover {
+    text-decoration-color: var(--color-marigold);
+  }
+
+  /* The painted board above the shop. */
+  .fascia {
+    background: var(--color-awning-deep);
+    box-shadow: inset 0 -3px 0 var(--color-marigold);
+  }
+
+  /* The awning: canvas that rolls out as cover increases, with a scalloped valance. */
+  .awning {
+    height: 9.25rem;
+  }
+  .awning-cloth {
+    filter: drop-shadow(0 0.5rem 0.55rem rgb(7 42 32 / 0.3));
+  }
+  .awning-canvas,
+  .awning-valance {
+    --stripes: repeating-linear-gradient(
+      90deg,
+      var(--color-awning) 0 calc(var(--stripe) / 2),
+      var(--color-paper) calc(var(--stripe) / 2) var(--stripe)
+    );
+  }
+  .awning-canvas {
+    height: calc(1rem + var(--cover) * 5.5rem);
+    /* Light falls off toward the wall, so the canvas reads as sloping away from it. */
+    background:
+      linear-gradient(180deg, rgb(7 42 32 / 0.24), rgb(7 42 32 / 0) 2.25rem),
+      var(--stripes);
+  }
+  .awning-valance {
+    height: calc(var(--stripe) / 4 + 0.5rem);
+    background:
+      linear-gradient(var(--color-awning-deep), var(--color-awning-deep)) 0 0 / 100% 3px no-repeat,
+      linear-gradient(rgb(7 42 32 / 0.1), rgb(7 42 32 / 0.1)),
+      var(--stripes);
+    mask:
+      radial-gradient(circle at 50% 0, #000 calc(var(--stripe) / 4), #0000 calc(var(--stripe) / 4 + 0.5px)) 0 0.5rem /
+        calc(var(--stripe) / 2) 100% repeat-x,
+      linear-gradient(#000, #000) 0 0 / 100% 0.5rem no-repeat;
+    transform-origin: top;
+    animation: settle 1100ms cubic-bezier(0.3, 0.7, 0.3, 1) 900ms backwards;
+  }
+  .awning-shade {
+    height: calc(var(--cover) * 10rem);
+    background: linear-gradient(rgb(14 74 57 / 0.16), rgb(14 74 57 / 0));
+  }
+
+  /* A panel whose lower edge hangs in scallops, like the valance. */
+  .scallop-bottom {
+    --r: 1.125rem;
+    padding-bottom: calc(var(--r) + 3.5rem);
+    mask:
+      radial-gradient(circle at 50% 0, #000 var(--r), #0000 calc(var(--r) + 0.5px)) 50% 100% / calc(var(--r) * 2) var(--r) repeat-x,
+      linear-gradient(#000, #000) top / 100% calc(100% - var(--r)) no-repeat;
+  }
+
+  /* Where the risk gets typed or spoken. */
+  .composer {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-paper);
+    border-radius: 1.75rem;
+    box-shadow:
+      0 0 0 1.5px var(--color-ink),
+      0 1.5rem 2.5rem -1.25rem rgb(7 42 32 / 0.35);
+    transition: box-shadow 150ms;
+  }
+  .composer:focus-within {
+    box-shadow:
+      0 0 0 1.5px var(--color-ink),
+      0 0 0 5px var(--color-marigold),
+      0 1.5rem 2.5rem -1.25rem rgb(7 42 32 / 0.35);
+  }
+  .composer[data-busy="true"]::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 0.4rem;
+    background: repeating-linear-gradient(90deg, var(--color-awning) 0 1rem, var(--color-marigold) 1rem 2rem);
+    background-size: 2rem 100%;
+    animation: slide 500ms linear infinite;
+  }
+
+  /* An example risk, written on a card in the window. */
+  .ticket {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--color-paper);
+    border-radius: 1rem;
+    padding: 1rem 1.25rem 1.125rem;
+    box-shadow:
+      0 0 0 1px rgb(16 32 26 / 0.14),
+      0 0.6rem 1rem -0.6rem rgb(7 42 32 / 0.25);
+    rotate: var(--tilt, 0deg);
+    transition:
+      rotate 200ms,
+      translate 200ms,
+      box-shadow 200ms;
+  }
+  .ticket:hover:not(:disabled),
+  .ticket:focus-visible {
+    rotate: 0deg;
+    translate: 0 -3px;
+    box-shadow:
+      0 0 0 2px var(--color-awning),
+      0 1.1rem 1.5rem -0.8rem rgb(7 42 32 / 0.4);
+  }
+  .ticket:disabled {
+    opacity: 0.5;
+  }
+
+  /* A till receipt, fed out of the slot above it in steps. */
+  .printer-slot {
+    position: relative;
+    z-index: 1;
+    height: 0.875rem;
+    margin: 0 -0.75rem;
+    border-radius: 999px;
+    background: var(--color-ink);
+    box-shadow:
+      inset 0 3px 4px rgb(0 0 0 / 0.7),
+      0 1px 0 rgb(255 255 255 / 0.8);
+  }
+  .receipt-feed {
+    margin-top: -0.4375rem;
+    animation: feed 1000ms steps(20, end) both;
+  }
+  .receipt {
+    background: var(--color-thermal);
+    filter: drop-shadow(0 1px 0 var(--color-rule)) drop-shadow(0 1.25rem 1.5rem rgb(7 42 32 / 0.14));
+    mask:
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 0.875rem 0.4375rem repeat-x,
+      linear-gradient(#000, #000) top / 100% calc(100% - 0.4375rem) no-repeat;
+    padding-bottom: 1.75rem;
+  }
+  .tear {
+    border-top: 2px dashed var(--color-rule);
+  }
+  .leader {
+    flex: 1;
+    margin: 0 0.5rem;
+    border-bottom: 2px dotted var(--color-rule);
+    transform: translateY(-0.3em);
+  }
+  /* The line a shopkeeper would run a highlighter over. */
+  .highlighted {
+    background: linear-gradient(transparent 50%, rgb(242 181 48 / 0.55) 50%);
+  }
+
+  .range {
+    appearance: none;
+    width: 100%;
+    height: 1.75rem;
+    background: transparent;
+    cursor: pointer;
+  }
+  .range::-webkit-slider-runnable-track {
+    height: 0.5rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--color-awning) var(--fill), var(--color-rule) var(--fill));
+  }
+  .range::-moz-range-track {
+    height: 0.5rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--color-awning) var(--fill), var(--color-rule) var(--fill));
+  }
+  .range::-webkit-slider-thumb {
+    appearance: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: -0.5rem;
+    border-radius: 50%;
+    background: var(--color-paper);
+    border: 3px solid var(--color-awning);
+    box-shadow: 0 2px 6px rgb(16 32 26 / 0.3);
+  }
+  .range::-moz-range-thumb {
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    background: var(--color-paper);
+    border: 3px solid var(--color-awning);
+    box-shadow: 0 2px 6px rgb(16 32 26 / 0.3);
+  }
+
+  /* The allowance, framed like a permit on the shop wall. */
+  .permit {
+    background: var(--color-thermal);
+    border: 2px solid var(--color-ink);
+    border-radius: 0.5rem;
+    box-shadow:
+      inset 0 0 0 5px var(--color-thermal),
+      inset 0 0 0 6px rgb(16 32 26 / 0.35),
+      0 1.25rem 1.5rem -1rem rgb(7 42 32 / 0.3);
+  }
+
+  .stamp {
+    display: inline-block;
+    border: 2px solid currentColor;
+    border-radius: 0.375rem;
+    padding: 0.05rem 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    rotate: -4deg;
+    animation: stamp 320ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+    animation-delay: calc(var(--i, 0) * 220ms);
+  }
+
+  /* Page-load sequence: content rises into place after the awning starts to unroll. */
+  .rise {
+    animation: rise 800ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 90ms + 200ms);
+  }
 }
 
-.awning-valance {
-  height: calc(var(--stripe) / 4 + 0.375rem);
-  mask: radial-gradient(circle at 50% 0, #000 calc(var(--stripe) / 4), #0000 calc(var(--stripe) / 4 + 0.5px)) 0 0.375rem /
-      calc(var(--stripe) / 2) 100% repeat-x,
-    linear-gradient(#000, #000) 0 0 / 100% 0.375rem no-repeat;
+@keyframes settle {
+  0% {
+    transform: scaleY(0.6);
+  }
+  45% {
+    transform: scaleY(1.22);
+  }
+  75% {
+    transform: scaleY(0.94);
+  }
+  100% {
+    transform: scaleY(1);
+  }
 }
 
-.awning-shade {
-  height: calc(var(--cover) * 9rem);
-  background: linear-gradient(rgb(14 74 57 / 0.13), rgb(14 74 57 / 0));
-  transition: height 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
 }
 
-/* A till receipt: paper with a torn lower edge. */
-.receipt {
-  background: var(--color-paper);
-  filter: drop-shadow(0 1px 0 var(--color-rule)) drop-shadow(0 0.75rem 1.25rem rgb(19 35 28 / 0.08));
-  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 0.875rem 0.4375rem repeat-x,
-    linear-gradient(#000, #000) top / 100% calc(100% - 0.4375rem) no-repeat;
-  padding-bottom: 1.5rem;
+@keyframes feed {
+  from {
+    clip-path: inset(0 -2rem 100% -2rem);
+    transform: translateY(-1.5rem);
+  }
+  to {
+    clip-path: inset(0 -2rem -3rem -2rem);
+    transform: none;
+  }
 }
 
-.leader {
-  flex: 1;
-  margin: 0 0.5rem;
-  border-bottom: 2px dotted var(--color-rule);
-  transform: translateY(-0.3em);
+@keyframes stamp {
+  from {
+    opacity: 0;
+    scale: 1.9;
+    rotate: -14deg;
+  }
 }
 
-.figures {
-  font-variant-numeric: tabular-nums;
+@keyframes slide {
+  to {
+    background-position: 2rem 0;
+  }
+}
+
+@keyframes pulse {
+  50% {
+    box-shadow: 0 0 0 0.5rem rgb(180 40 30 / 0.2);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .awning-canvas,
-  .awning-shade {
+  :root {
+    transition: none;
+    animation: none;
+  }
+  .awning-valance,
+  .rise,
+  .receipt-feed,
+  .stamp,
+  .btn-recording,
+  .composer[data-busy="true"]::after {
+    animation: none;
+  }
+  .ticket,
+  .btn {
     transition: none;
   }
 }

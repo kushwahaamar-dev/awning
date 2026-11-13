@@ -26,6 +26,7 @@ function spokenQuote({ quote, coverage, basis }: CoverPlan) {
 export function Desk() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
+  const [pricing, setPricing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [plan, setPlan] = useState<CoverPlan | null>(null);
   const [unlisted, setUnlisted] = useState<Unlisted | null>(null);
@@ -54,6 +55,7 @@ export function Desk() {
         voice.say(reading.question);
         return;
       }
+      setPricing(true);
       const plan =
         reading.status === "ready" && reading.exposure
           ? (await post<{ plan: CoverPlan | null }>("/api/plan", { exposure: reading.exposure, coverRatio, owner: payer })).plan
@@ -69,6 +71,7 @@ export function Desk() {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
+      setPricing(false);
     }
   }
 
@@ -94,13 +97,13 @@ export function Desk() {
 
   if (plan) {
     return (
-      <div className="grid gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+      <div className="grid items-start gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,27rem)_minmax(0,1fr)]">
         <Receipt plan={plan} coverRatio={coverRatio} onCoverChange={changeCover} onBought={startOver} />
-        <div>
+        <div className="rise">
           <p className="text-lg text-mute">You said</p>
-          <p className="mt-1 font-display text-2xl leading-snug font-semibold">{plan.exposure.summary}</p>
+          <h1 className="display mt-2 text-[clamp(1.75rem,3.1vw,2.75rem)] leading-none">{plan.exposure.summary}</h1>
           <Fit plan={plan} />
-          <button type="button" onClick={startOver} className="mt-8 underline underline-offset-4">
+          <button type="button" onClick={startOver} className="link mt-10">
             Describe a different risk
           </button>
         </div>
@@ -108,5 +111,5 @@ export function Desk() {
     );
   }
 
-  return <Ask turns={turns} busy={busy} error={error ?? voice.error} unlisted={unlisted} onSay={say} voice={voice} />;
+  return <Ask turns={turns} busy={busy} pricing={pricing} error={error ?? voice.error} unlisted={unlisted} onSay={say} voice={voice} />;
 }

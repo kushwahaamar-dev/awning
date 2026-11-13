@@ -29,7 +29,7 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
 
   if (!hasAllowance(account)) {
     return (
-      <div className="mt-6 border-t-2 border-dashed border-rule pt-5">
+      <div className="tear mt-6 pt-5">
         <p className="text-lg font-bold">Before Awning can buy this, give your agent an allowance.</p>
         <p className="mt-1 mb-5 text-mute">You set the limits. They are enforced by a contract, not by the agent.</p>
         <AllowanceForm />
@@ -76,15 +76,15 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
 
   if (pending) {
     return (
-      <div className="mt-6 border-t-2 border-dashed border-rule pt-5">
+      <div className="tear mt-6 pt-5">
         <p className="text-lg font-bold">
           {cents(pending.premium)} is above your {usd(account.allowance.approvalThreshold)} line, so the agent needs your go-ahead.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-4">
-          <button type="button" onClick={approve} disabled={busy !== null} className="rounded-sm bg-awning px-6 py-3 text-lg font-bold text-paper disabled:opacity-50">
+          <button type="button" onClick={approve} disabled={busy !== null} className="btn btn-primary">
             {busy ? "Placing cover…" : `Approve ${cents(pending.premium)}`}
           </button>
-          <button type="button" onClick={() => setPending(null)} disabled={busy !== null} className="underline underline-offset-4">
+          <button type="button" onClick={() => setPending(null)} disabled={busy !== null} className="link">
             Not now
           </button>
         </div>
@@ -97,27 +97,27 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
   const overLimit = cheapest > account.allowance.perCoverCap;
 
   return (
-    <div className="mt-6 border-t-2 border-dashed border-rule pt-5">
+    <div className="tear mt-6 pt-5">
       {overLimit && (
         <p className="mb-4 border-l-4 border-marigold pl-4">
           This costs more than the {usd(account.allowance.perCoverCap)} you allow for one cover, so your allowance will refuse it. Cover less of
           the loss, or raise the limit under Your agent.
         </p>
       )}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col gap-3">
         {resting && (
-          <button type="button" onClick={() => start("resting")} disabled={busy !== null} className="rounded-sm bg-awning px-5 py-3 text-lg font-bold text-paper disabled:opacity-50">
+          <button type="button" onClick={() => start("resting")} disabled={busy !== null} className="btn btn-primary">
             {busy === "resting" ? "Placing order…" : `Leave an order at ${cents(resting.total)}`}
           </button>
         )}
         {now && (
-          <button type="button" onClick={() => start("now")} disabled={busy !== null} className="rounded-sm border-2 border-awning px-5 py-3 text-lg font-bold text-awning disabled:opacity-50">
+          <button type="button" onClick={() => start("now")} disabled={busy !== null} className="btn btn-outline">
             {busy === "now" ? "Buying…" : `Buy now for ${cents(now.total)}`}
           </button>
         )}
       </div>
       {resting && (
-        <p className="mt-2 text-sm text-mute">An order waits for a seller at your price. If nobody takes it, your money comes back.</p>
+        <p className="mt-3 text-sm text-mute">An order waits for a seller at your price. If nobody takes it, your money comes back.</p>
       )}
       {refused && (
         <p className="mt-4 border-l-4 border-brick pl-4">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { setPaused } from "@/lib/chain/device";
 import type { HijackStep } from "@/lib/covers/hijack";
 import { cents, clock, day, usd } from "@/lib/format";
@@ -8,7 +8,7 @@ import { REFUSAL, describeEvent } from "@/lib/words";
 import { AllowanceForm } from "./AllowanceForm";
 import { hasAllowance, post, useAccount, type Account } from "./account";
 
-const heading = "font-display text-3xl font-bold tracking-tight [font-stretch:85%]";
+const sentence = (clause: string) => `${clause[0].toUpperCase()}${clause.slice(1)}.`;
 
 function Limits({ account }: { account: Account }) {
   const { refresh } = useAccount();
@@ -32,53 +32,60 @@ function Limits({ account }: { account: Account }) {
 
   if (editing) {
     return (
-      <>
+      <div className="permit max-w-2xl p-7 sm:p-10">
         <AllowanceForm onDone={() => setEditing(false)} />
-        <button type="button" onClick={() => setEditing(false)} className="mt-4 underline underline-offset-4">
+        <button type="button" onClick={() => setEditing(false)} className="link mt-6">
           Keep the current limits
         </button>
-      </>
+      </div>
     );
   }
 
   const rows = [
-    ["In your vault", cents(a.balance)],
-    ["One cover, at most", usd(a.perCoverCap)],
-    ["Cover this month, at most", `${usd(a.monthlyCap)} (${cents(a.premiumLeftThisMonth)} left)`],
-    ["Asks you first above", usd(a.approvalThreshold)],
-    ["Data, per day", `${usd(a.dailyDataCap)} (${cents(a.dataLeftToday)} left today)`],
+    { label: "In your vault", value: cents(a.balance) },
+    { label: "One cover, at most", value: usd(a.perCoverCap) },
+    { label: "Cover this month, at most", value: usd(a.monthlyCap), left: `${cents(a.premiumLeftThisMonth)} left` },
+    { label: "Asks you first above", value: usd(a.approvalThreshold) },
+    { label: "Data, per day", value: usd(a.dailyDataCap), left: `${cents(a.dataLeftToday)} left today` },
   ];
 
   return (
-    <>
-      <dl className="figures max-w-xl divide-y divide-rule border-y border-rule text-lg">
-        {rows.map(([label, value]) => (
-          <div key={label} className="flex justify-between gap-6 py-2.5">
-            <dt>{label}</dt>
-            <dd className="text-right font-bold">{value}</dd>
-          </div>
-        ))}
-      </dl>
-      <p className="mt-4 max-w-xl text-mute">
-        If someone took over the agent this minute, the most they could move to themselves is{" "}
-        <span className="font-bold text-ink">{cents(a.dataLeftToday)}</span>. Everything else can only go to the venue you approved.
-      </p>
-      <div className="mt-6 flex flex-wrap items-center gap-4">
-        <button
-          type="button"
-          onClick={togglePause}
-          disabled={busy}
-          className={`rounded-sm px-6 py-3 text-lg font-bold disabled:opacity-50 ${a.paused ? "bg-awning text-paper" : "bg-brick text-paper"}`}
-        >
-          {busy ? "One moment…" : a.paused ? "Let the agent resume" : "Pause the agent"}
-        </button>
-        <button type="button" onClick={() => setEditing(true)} className="underline underline-offset-4">
+    <div className="grid items-start gap-x-12 gap-y-10 lg:grid-cols-12">
+      <div className="permit p-7 sm:p-10 lg:col-span-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+          <h2 className="display display-md">Allowance</h2>
+          <p className="flex items-center gap-2 text-sm font-bold">
+            <span aria-hidden className={`size-2.5 rounded-full ${a.paused ? "bg-brick" : "bg-awning"}`} />
+            {a.paused ? "Paused" : `In force on ${account.setup.chainName}`}
+          </p>
+        </div>
+        <dl className="mt-6 divide-y divide-rule border-y border-rule text-lg">
+          {rows.map(({ label, value, left }) => (
+            <div key={label} className="flex items-baseline justify-between gap-6 py-3">
+              <dt>{label}</dt>
+              <dd className="text-right">
+                <span className="till font-bold">{value}</span>
+                {left && <span className="till block text-sm text-mute">{left}</span>}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <button type="button" onClick={() => setEditing(true)} className="link mt-6">
           Change limits
         </button>
-        {error && <p className="text-brick">{error}</p>}
       </div>
-      {a.paused && <p className="mt-3 font-bold text-brick">The agent is paused. It can&rsquo;t spend anything until you let it resume.</p>}
-    </>
+
+      <div className="rounded-[2rem] bg-awning p-8 text-paper sm:p-10 lg:col-span-5">
+        <p className="text-lg text-paper/80">If someone took over the agent this minute, the most they could move to themselves is</p>
+        <p className="display mt-3 text-[clamp(4rem,8vw,6.5rem)] leading-none text-marigold">{cents(a.dataLeftToday)}</p>
+        <p className="mt-4 text-lg text-paper/80">Everything else can only go to the venue you approved.</p>
+        <button type="button" onClick={togglePause} disabled={busy} className={`btn mt-8 ${a.paused ? "bg-paper text-awning-deep" : "btn-danger"}`}>
+          {busy ? "One moment…" : a.paused ? "Let the agent resume" : "Pause the agent"}
+        </button>
+        {error && <p className="mt-3 text-ember">{error}</p>}
+        {a.paused && <p className="mt-4 font-bold text-ember">The agent is paused. It can&rsquo;t spend anything until you let it resume.</p>}
+      </div>
+    </div>
   );
 }
 
@@ -102,62 +109,73 @@ function HijackTest() {
   }
 
   return (
-    <section className="mt-16">
-      <h2 className={heading}>Test the limits</h2>
-      <p className="mt-2 max-w-xl text-mute">
-        Agents read things strangers wrote, and sooner or later one gets talked into something. This hands the agent&rsquo;s own key to an
-        attacker and lets them try to empty your vault, with real transactions.
-      </p>
-      <button type="button" onClick={run} disabled={busy} className="mt-5 rounded-sm border-2 border-brick px-6 py-3 text-lg font-bold text-brick disabled:opacity-50">
-        {busy ? "Attacking…" : "Hijack my agent"}
-      </button>
-      {error && <p className="mt-3 text-brick">{error}</p>}
-
-      {result && (
-        <div className="mt-6 max-w-2xl">
-          <ol className="divide-y divide-rule border-y border-rule">
-            {result.steps.map((step) => (
-              <li key={step.txHash} className="flex flex-wrap items-baseline justify-between gap-x-6 py-3">
-                <span className="text-lg">
-                  {step.tried} <span className="figures text-mute">({cents(step.amount)})</span>
-                </span>
-                <span className={`font-bold ${step.ok ? "text-ink" : "text-brick"}`}>{step.ok ? "Went through" : `Refused: ${REFUSAL[step.reason]}`}</span>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-4 font-display text-2xl font-bold">
-            The attacker got away with {cents(result.taken)}.
+    <section className="mt-24 rounded-[2rem] bg-awning-deep px-6 py-12 text-paper sm:px-12 sm:py-16">
+      <div className="grid gap-x-12 gap-y-10 lg:grid-cols-12">
+        <div className="lg:col-span-5">
+          <h2 className="display display-lg">Test the limits</h2>
+          <p className="mt-4 text-lg text-paper/75">
+            Agents read things strangers wrote, and sooner or later one gets talked into something. This hands the agent&rsquo;s own key to an
+            attacker and lets them try to empty your vault, with real transactions.
           </p>
+          <button type="button" onClick={run} disabled={busy} className="btn btn-danger mt-7">
+            {busy ? "Attacking…" : "Hijack my agent"}
+          </button>
+          {error && <p className="mt-3 text-ember">{error}</p>}
         </div>
-      )}
+
+        <div className="lg:col-span-7">
+          {result ? (
+            <>
+              <ol className="divide-y divide-paper/15 border-y border-paper/15">
+                {result.steps.map((step, i) => (
+                  <li key={step.txHash} className="flex items-start justify-between gap-6 py-4">
+                    <div>
+                      <p className="text-lg">
+                        {step.tried} <span className="till text-paper/60">{cents(step.amount)}</span>
+                      </p>
+                      {!step.ok && <p className="text-paper/60">{sentence(REFUSAL[step.reason])}</p>}
+                    </div>
+                    <span className={`stamp shrink-0 ${step.ok ? "text-marigold" : "text-ember"}`} style={{ "--i": i } as CSSProperties}>
+                      {step.ok ? "Went through" : "Refused"}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <p className="display display-md mt-8">The attacker got away with {cents(result.taken)}.</p>
+            </>
+          ) : (
+            <p className="rounded-2xl border-2 border-dashed border-paper/25 p-8 text-lg text-paper/60">
+              Each attempt is a real transaction. What the contract says to each one shows up here.
+            </p>
+          )}
+        </div>
+      </div>
     </section>
   );
 }
 
 function ActivityFeed({ account }: { account: Account }) {
   return (
-    <section className="mt-16">
-      <h2 className={heading}>Everything the agent has done</h2>
-      <p className="mt-2 max-w-xl text-mute">Read from the contract&rsquo;s own record on {account.setup.chainName}, including what it was refused.</p>
+    <section className="mt-24">
+      <h2 className="display display-lg">Everything the agent has done</h2>
+      <p className="mt-4 max-w-xl text-lg text-mute">Read from the contract&rsquo;s own record on {account.setup.chainName}, including what it was refused.</p>
       {account.activity.length === 0 ? (
-        <p className="mt-6">Nothing yet. It starts when you set an allowance.</p>
+        <p className="mt-8 text-lg">Nothing yet. It starts when you set an allowance.</p>
       ) : (
-        <ol className="mt-6 max-w-3xl divide-y divide-rule border-y border-rule">
+        <ol className="mt-8 max-w-4xl divide-y divide-rule border-y border-rule">
           {account.activity.map((event) => {
             const { text, refused } = describeEvent(event.kind, event.args);
             return (
-              <li key={event.id} className={`grid grid-cols-[7.5rem_1fr] gap-4 py-3 ${refused ? "text-brick" : ""}`}>
-                <time dateTime={event.at} className="figures text-sm text-mute">
+              <li key={event.id} className="grid gap-x-6 gap-y-1 py-4 sm:grid-cols-[9rem_1fr_auto]">
+                <time dateTime={event.at} className="till pt-1 text-sm text-mute">
                   {day(event.at).split(", ")[1]}, {clock(event.at)}
                 </time>
-                <span>
-                  {text}{" "}
-                  {event.explorer && (
-                    <a href={event.explorer} target="_blank" rel="noreferrer" className="text-sm text-mute underline underline-offset-2">
-                      receipt
-                    </a>
-                  )}
-                </span>
+                <span className={`text-lg ${refused ? "text-brick" : ""}`}>{text}</span>
+                {event.explorer && (
+                  <a href={event.explorer} target="_blank" rel="noreferrer" className="link pt-1 text-sm text-mute">
+                    receipt
+                  </a>
+                )}
               </li>
             );
           })}
@@ -170,20 +188,26 @@ function ActivityFeed({ account }: { account: Account }) {
 export function AgentPage() {
   const { account, error } = useAccount();
   if (error && !account) return <p className="text-brick">{error}</p>;
-  if (!account) return <p className="text-mute">Loading your account…</p>;
+  if (!account) return <p className="text-lg text-mute">Loading your account…</p>;
 
   const ready = hasAllowance(account);
   return (
     <>
       <section>
-        <h1 className="font-display text-4xl leading-[1.05] font-bold tracking-tight [font-stretch:85%] sm:text-5xl">
+        <h1 className="display rise text-[clamp(2.75rem,6.8vw,6.25rem)] leading-[0.88]">
           {ready ? "What your agent is allowed to do" : "Give your agent an allowance"}
         </h1>
-        <p className="mt-4 mb-8 max-w-xl text-lg text-mute">
+        <p className="rise mt-6 mb-10 max-w-2xl text-xl text-mute" style={{ "--i": 1 } as CSSProperties}>
           The agent buys cover and data on your behalf. These limits are written into a contract on {account.setup.chainName}, so they hold
           even if the agent is fooled or taken over.
         </p>
-        {ready ? <Limits account={account} /> : <AllowanceForm />}
+        {ready ? (
+          <Limits account={account} />
+        ) : (
+          <div className="permit max-w-2xl p-7 sm:p-10">
+            <AllowanceForm />
+          </div>
+        )}
       </section>
       {ready && <HijackTest />}
       <ActivityFeed account={account} />

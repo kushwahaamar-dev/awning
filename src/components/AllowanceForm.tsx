@@ -71,7 +71,7 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
             <label htmlFor={key} className="flex items-baseline justify-between gap-4 text-lg">
               <span>{label}</span>
               <span className="flex items-baseline gap-1">
-                <span className="text-mute">$</span>
+                <span className="till text-mute">$</span>
                 <input
                   id={key}
                   type="number"
@@ -80,7 +80,7 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
                   required
                   value={values[key]}
                   onChange={(e) => setValues({ ...values, [key]: Number(e.target.value) })}
-                  className="figures w-28 border-b-2 border-ink bg-transparent py-1 text-right text-xl font-bold"
+                  className="till w-28 border-b-2 border-ink bg-transparent py-1 text-right text-xl font-bold focus:border-awning focus:outline-none"
                 />
               </span>
             </label>
@@ -93,7 +93,7 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
         <p className="mt-6 border-l-4 border-marigold pl-4">
           This device&rsquo;s wallet holds {usd(wallet)}.{" "}
           {isLocalChain ? (
-            <button type="button" onClick={getTestDollars} disabled={step !== null} className="font-bold underline underline-offset-4">
+            <button type="button" onClick={getTestDollars} disabled={step !== null} className="link font-bold">
               Get test dollars
             </button>
           ) : (
@@ -104,8 +104,8 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
         </p>
       )}
 
-      <div className="mt-6 flex items-center gap-4">
-        <button type="submit" disabled={step !== null || short} className="rounded-sm bg-awning px-6 py-3 text-lg font-bold text-paper disabled:opacity-50">
+      <div className="mt-7 flex flex-wrap items-center gap-4">
+        <button type="submit" disabled={step !== null || short} className="btn btn-primary">
           {step ?? "Set allowance"}
         </button>
         {error && <p className="text-brick">{error}</p>}

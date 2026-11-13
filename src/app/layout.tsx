@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Hanken_Grotesk } from "next/font/google";
+import { Bricolage_Grotesque, Hanken_Grotesk, Martian_Mono } from "next/font/google";
 import { AccountProvider } from "@/components/account";
+import { Footer } from "@/components/Footer";
 import { Storefront } from "@/components/Storefront";
 import "./globals.css";
 
-const text = Hanken_Grotesk({ variable: "--font-text", subsets: ["latin"] });
-const display = Bricolage_Grotesque({ variable: "--font-display", subsets: ["latin"], axes: ["opsz", "wdth"] });
+const text = Hanken_Grotesk({ variable: "--font-hanken", subsets: ["latin"] });
+const display = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"], axes: ["opsz", "wdth"] });
+const till = Martian_Mono({ variable: "--font-martian", subsets: ["latin"], axes: ["wdth"] });
 
 export const metadata: Metadata = {
   title: "Awning",
@@ -14,12 +16,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${text.variable} ${display.variable} h-full antialiased`}>
-      <body className="min-h-full">
+    <html lang="en" className={`${text.variable} ${display.variable} ${till.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col">
         <Storefront />
-        <main className="mx-auto w-full max-w-5xl px-5 pt-8 pb-24 sm:px-8">
+        <main className="mx-auto w-full max-w-7xl grow px-5 pb-28 sm:px-10">
           <AccountProvider>{children}</AccountProvider>
         </main>
+        <Footer />
       </body>
     </html>
   );
