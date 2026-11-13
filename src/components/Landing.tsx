@@ -92,9 +92,8 @@ export function Landing() {
           <Ascii scene="street" label="" className="hero-scene" />
         </div>
         <h1 className="display rise">
-          Say what could go wrong.
-          <br />
-          Get paid when it does.
+          <span className="block">Say what could go wrong.</span>
+          <span className="block">Get paid when it does.</span>
         </h1>
         <p className="rise mt-7 max-w-xl text-lg text-muted" style={{ "--i": 1 } as React.CSSProperties}>
           Cover for the bad days insurers won&rsquo;t touch. Priced by Gemini prediction markets, paid out on Arc.

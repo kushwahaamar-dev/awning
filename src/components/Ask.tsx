@@ -39,6 +39,12 @@ const MIC_LABEL = {
 
 const order = (i: number) => ({ "--i": i }) as CSSProperties;
 
+/** One step of the wait for a quote: done, happening now, or still to come. */
+function Phase({ state, children }: { state: "done" | "now" | "next"; children: string }) {
+  const look = { done: "status-good text-muted", now: "status-accent status-live text-fg", next: "text-faint" }[state];
+  return <li className={`status text-base ${look}`}>{children}</li>;
+}
+
 export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Props) {
   const [draft, setDraft] = useState("");
   const field = useRef<HTMLTextAreaElement>(null);
@@ -63,7 +69,7 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
         </p>
 
         {said.length > 0 && (
-          <ol className="mt-8 space-y-2 border-l border-edge pl-4 text-soft">
+          <ol className="mt-8 space-y-2 border-l border-edge pl-4 text-lg text-soft">
             {said.map((text, i) => (
               <li key={i}>{text}</li>
             ))}
@@ -71,54 +77,64 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
         )}
         {question && <p className="title mt-6">{question}</p>}
 
-        <form
-          className="composer rise mt-8"
-          style={order(2)}
-          data-busy={busy}
-          onSubmit={(e) => {
-            e.preventDefault();
-            submit(draft);
-          }}
-        >
-          <label htmlFor="risk" className="sr-only">
-            {question ?? "Describe the risk"}
-          </label>
-          <textarea
-            id="risk"
-            ref={field}
-            rows={3}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                submit(draft);
-              }
+        {!busy && (
+          <form
+            className="composer rise mt-8"
+            style={order(2)}
+            onSubmit={(e) => {
+              e.preventDefault();
+              submit(draft);
             }}
-            placeholder={question ? "Your answer" : "If it's too cold to sit outside, my patio…"}
-            className="block w-full resize-none bg-transparent px-5 pt-4 pb-1 text-lg leading-relaxed placeholder:text-faint focus:outline-none"
-          />
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3 pl-5">
-            <span className="text-xs text-faint">{busy ? (pricing ? "Pricing it on Gemini" : "Reading your risk") : "Press Enter to send"}</span>
-            <span className="flex gap-2">
-              {voice.enabled && (
-                <button
-                  type="button"
-                  onClick={voice.state === "recording" ? voice.stop : voice.start}
-                  disabled={busy || voice.state === "transcribing"}
-                  aria-pressed={voice.state === "recording"}
-                  className={`btn ${voice.state === "recording" ? "btn-recording" : "btn-secondary"}`}
-                >
-                  <Mic />
-                  {MIC_LABEL[voice.state]}
+          >
+            <label htmlFor="risk" className="sr-only">
+              {question ?? "Describe the risk"}
+            </label>
+            <textarea
+              id="risk"
+              ref={field}
+              rows={3}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  submit(draft);
+                }
+              }}
+              placeholder={question ? "Your answer" : "If it's too cold to sit outside, my patio…"}
+              className="block w-full resize-none bg-transparent px-5 pt-4 pb-1 text-lg leading-relaxed placeholder:text-faint focus:outline-none"
+            />
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 pl-5">
+              <span className="text-xs text-faint">Press Enter to send</span>
+              <span className="flex gap-2">
+                {voice.enabled && (
+                  <button
+                    type="button"
+                    onClick={voice.state === "recording" ? voice.stop : voice.start}
+                    disabled={voice.state === "transcribing"}
+                    aria-pressed={voice.state === "recording"}
+                    className={`btn ${voice.state === "recording" ? "btn-recording" : "btn-secondary"}`}
+                  >
+                    <Mic />
+                    {MIC_LABEL[voice.state]}
+                  </button>
+                )}
+                <button type="submit" className="btn btn-primary">
+                  Find cover
                 </button>
-              )}
-              <button type="submit" disabled={busy} className="btn btn-primary">
-                {busy ? (pricing ? "Pricing it on Gemini…" : "Reading your risk…") : "Find cover"}
-              </button>
-            </span>
+              </span>
+            </div>
+          </form>
+        )}
+        {busy && (
+          <div className="mt-8" aria-live="polite">
+            <ol className="grid gap-2.5">
+              <Phase state={pricing ? "done" : "now"}>Reading your sentence</Phase>
+              <Phase state={pricing ? "now" : "next"}>Finding the market on Gemini and pricing it</Phase>
+            </ol>
+            <p className="mt-5 text-sm text-faint">This can take up to a minute.</p>
           </div>
-        </form>
+        )}
         {error && <p className="note note-bad mt-5">{error}</p>}
 
         {unlisted && (
@@ -153,11 +169,9 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
           </div>
         )}
       </section>
-      {fresh && (
-        <div className="rise max-lg:hidden" style={order(4)}>
-          <Ascii scene="storm" label="Storm clouds over dark hills, lightning coming down" className="fade-soft" />
-        </div>
-      )}
+      <div className="rise max-lg:hidden" style={order(4)}>
+        <Ascii scene="storm" label="Storm clouds over dark hills, lightning coming down" className="fade-soft" />
+      </div>
     </div>
   );
 }
