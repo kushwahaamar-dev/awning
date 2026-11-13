@@ -90,8 +90,17 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
     );
   }
 
+  const cheapest = Math.min(quote.resting?.total ?? Infinity, quote.now?.total ?? Infinity);
+  const overLimit = cheapest > account.allowance.perCoverCap;
+
   return (
     <div className="mt-6 border-t-2 border-dashed border-rule pt-5">
+      {overLimit && (
+        <p className="mb-4 border-l-4 border-marigold pl-4">
+          This costs more than the {usd(account.allowance.perCoverCap)} you allow for one cover, so your allowance will refuse it. Cover less of
+          the loss, or raise the limit under Your agent.
+        </p>
+      )}
       <div className="flex flex-wrap gap-3">
         {quote.resting && (
           <button type="button" onClick={() => start("resting")} disabled={busy !== null} className="rounded-sm bg-awning px-5 py-3 text-lg font-bold text-paper disabled:opacity-50">
