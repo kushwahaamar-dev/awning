@@ -211,15 +211,17 @@ markets, prices and resolution are real and only the fill is assumed.
 
 ### Arc testnet
 
+Put three fresh keys in `.env.arc` (the chain block of `.env.example`, with
+`AWNING_DATA_DIR=.data/pg-arc` so Arc covers stay apart from local ones), send the venue's address
+testnet USDC from https://faucet.circle.com, then:
+
 ```bash
-cd contracts
-USDC_ADDRESS=0x3600000000000000000000000000000000000000 forge script script/Deploy.s.sol \
-  --rpc-url arc_testnet --private-key $DEPLOYER_KEY --broadcast \
-  --with-gas-price 25gwei --priority-gas-price 1gwei
+scripts/deploy-arc.sh   # deploys with the venue key, passes gas money to the agent and desk, fills in .env.arc
+npm run dev:arc         # http://localhost:3001
 ```
 
-Arc enforces a 20 gwei minimum base fee; without the gas flags Foundry's defaults can leave the
-transaction pending. Put the addresses from `contracts/deployments/5042002.json` in `.env.local`.
+Arc enforces a 20 gwei minimum base fee; the script sets the gas price because Foundry's defaults
+can leave a transaction pending.
 
 ## Tests
 
