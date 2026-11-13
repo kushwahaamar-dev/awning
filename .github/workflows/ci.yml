@@ -28,8 +28,6 @@ jobs:
   contracts:
     name: Contracts
     runs-on: ubuntu-latest
-    env:
-      FOUNDRY_PROFILE: ci
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

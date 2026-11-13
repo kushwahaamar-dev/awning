@@ -7,7 +7,7 @@ agent buys it for you, or keeps buying it every day on its own judgement. Two co
 the money: a mandate that limits what the agent can spend, and a pool that locks your whole payout
 before you pay a cent.
 
-![The Awning landing page: a headline, an input for the risk, and a rainy street of small shops drawn in dots](docs/screenshots/landing.jpg)
+![The Awning landing page: a headline, an input for the risk, a real quote, and a rainy street of small shops drawn in dots](docs/screenshots/landing.jpg)
 
 > "If Chicago's high stays under 46 tomorrow, my coffee cart is out about $300."
 >
@@ -365,6 +365,7 @@ can leave a transaction pending.
 npm test                       # engine, settlement and forecast logic
 npm run typecheck && npm run lint
 cd contracts && forge test     # 126 tests including fuzz and invariants on both contracts
+FOUNDRY_PROFILE=ci forge test  # the same tests at four times the fuzz depth; takes several minutes
 LIVE=1 npx vitest run src/lib/hedge/live.test.ts   # sentence → priced cover against live Gemini and Claude
 ```
 
