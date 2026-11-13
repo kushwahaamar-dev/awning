@@ -238,8 +238,8 @@ the pool and the gas, so an owner needs one token and sees one balance. The x402
 
 | Contract | Arc testnet (5042002) |
 | --- | --- |
-| AwningMandate | [`0x26945E04a995B26211782bDE5227F679DAbF0f85`](https://testnet.arcscan.app/address/0x26945E04a995B26211782bDE5227F679DAbF0f85) |
-| AwningPool | [`0x24878b8872Beacd813A71c9A710240422bc37F64`](https://testnet.arcscan.app/address/0x24878b8872Beacd813A71c9A710240422bc37F64) |
+| AwningMandate | [`0x708ae0910eFAf32B97D0bA9429C4F2BD44988413`](https://testnet.arcscan.app/address/0x708ae0910eFAf32B97D0bA9429C4F2BD44988413) |
+| AwningPool | [`0x0dE9149998eE6CAA3577007f31A1803Bc49C3F6F`](https://testnet.arcscan.app/address/0x0dE9149998eE6CAA3577007f31A1803Bc49C3F6F) |
 | USDC | `0x3600000000000000000000000000000000000000` |
 
 **Circle CCTP.** A payout shouldn't be stuck on the chain it was paid on. "Send money out" on the
