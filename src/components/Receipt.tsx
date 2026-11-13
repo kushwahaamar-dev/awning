@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import type { CoverPlan } from "@/lib/hedge/plan";
 import { cents, day, percent, usd } from "@/lib/format";
 import { Buy } from "./Buy";
+import { Logo } from "./Logo";
 
 type Props = {
   plan: CoverPlan;
@@ -36,8 +37,8 @@ export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
       <div aria-hidden className="printer-slot" />
       <div className="receipt-feed">
         <section aria-label="Cover" className="receipt px-7 pt-8">
-          <p className="till flex justify-between text-sm text-mute">
-            <span>Awning</span>
+          <p className="till flex items-center justify-between text-sm text-mute">
+            <Logo className="h-6 w-auto text-ink" dot="fill-persimmon" />
             <span>{day(market.startsAt ?? market.expiresAt)}</span>
           </p>
           <h2 className="display display-md mt-5">
@@ -92,7 +93,7 @@ export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
             <Buy plan={plan} coverRatio={coverRatio} onBought={onBought} />
           ) : (
             cheapest && (
-              <p className="mt-6 border-l-4 border-marigold pl-4">
+              <p className="note mt-6">
                 The market treats this as all but certain, so cover would cost as much as it pays. Try a threshold that is less likely to be hit.
               </p>
             )

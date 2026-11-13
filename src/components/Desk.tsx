@@ -97,11 +97,13 @@ export function Desk() {
 
   if (plan) {
     return (
-      <div className="grid items-start gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,27rem)_minmax(0,1fr)]">
-        <Receipt plan={plan} coverRatio={coverRatio} onCoverChange={changeCover} onBought={startOver} />
+      <div className="grid items-start gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,27rem)]">
+        <div className="lg:order-last">
+          <Receipt plan={plan} coverRatio={coverRatio} onCoverChange={changeCover} onBought={startOver} />
+        </div>
         <div className="rise">
-          <p className="text-lg text-mute">You said</p>
-          <h1 className="display mt-2 text-[clamp(1.75rem,3.1vw,2.75rem)] leading-none">{plan.exposure.summary}</h1>
+          <p className="text-lg text-haze">You said</p>
+          <h1 className="display mt-2 max-w-2xl text-[clamp(2rem,3.6vw,3.25rem)] leading-[0.98]">{plan.exposure.summary}</h1>
           <Fit plan={plan} />
           <button type="button" onClick={startOver} className="link mt-10">
             Describe a different risk
@@ -111,5 +113,16 @@ export function Desk() {
     );
   }
 
-  return <Ask turns={turns} busy={busy} pricing={pricing} error={error ?? voice.error} unlisted={unlisted} onSay={say} voice={voice} />;
+  return (
+    <Ask
+      turns={turns}
+      busy={busy}
+      pricing={pricing}
+      newcomer={!account?.covers.length}
+      error={error ?? voice.error}
+      unlisted={unlisted}
+      onSay={say}
+      voice={voice}
+    />
+  );
 }

@@ -99,7 +99,7 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
   return (
     <div className="tear mt-6 pt-5">
       {overLimit && (
-        <p className="mb-4 border-l-4 border-marigold pl-4">
+        <p className="note mb-4">
           This costs more than the {usd(account.allowance.perCoverCap)} you allow for one cover, so your allowance will refuse it. Cover less of
           the loss, or raise the limit under Your agent.
         </p>
@@ -120,7 +120,7 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
         <p className="mt-3 text-sm text-mute">An order waits for a seller at your price. If nobody takes it, your money comes back.</p>
       )}
       {refused && (
-        <p className="mt-4 border-l-4 border-brick pl-4">
+        <p className="note note-refused mt-4">
           <span className="font-bold">Your allowance refused this.</span> The agent asked for the premium, but {REFUSAL[refused]}. Nothing was spent.
         </p>
       )}

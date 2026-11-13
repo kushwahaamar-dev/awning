@@ -80,7 +80,7 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
                   required
                   value={values[key]}
                   onChange={(e) => setValues({ ...values, [key]: Number(e.target.value) })}
-                  className="till w-28 border-b-2 border-ink bg-transparent py-1 text-right text-xl font-bold focus:border-awning focus:outline-none"
+                  className="till w-28 border-b-2 border-ink bg-transparent py-1 text-right text-xl font-bold focus:border-cobalt focus:outline-none"
                 />
               </span>
             </label>
@@ -90,7 +90,7 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
       </div>
 
       {short && (
-        <p className="mt-6 border-l-4 border-marigold pl-4">
+        <p className="note mt-6">
           This device&rsquo;s wallet holds {usd(wallet)}.{" "}
           {isLocalChain ? (
             <button type="button" onClick={getTestDollars} disabled={step !== null} className="link font-bold">

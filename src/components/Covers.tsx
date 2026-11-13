@@ -25,7 +25,7 @@ function state(cover: Cover): { label: string; tone: "live" | "good" | "quiet" |
   }
 }
 
-const TONES = { live: "bg-awning text-paper", good: "bg-marigold text-ink", quiet: "bg-tint text-ink", bad: "bg-brick text-paper" };
+const TONES = { live: "bg-cobalt text-cream", good: "bg-sun text-ink", quiet: "bg-tint text-ink", bad: "bg-persimmon text-ink" };
 
 export function Covers() {
   const { account } = useAccount();
@@ -38,7 +38,7 @@ export function Covers() {
         {account.covers.map((cover) => {
           const { label, tone } = state(cover);
           return (
-            <li key={cover.id} className="flex flex-col items-start gap-4 rounded-2xl bg-paper p-6 shadow-[0_0_0_1px_rgb(16_32_26/0.12)]">
+            <li key={cover.id} className="surface flex flex-col items-start gap-4 rounded-3xl p-6 shadow-[0_1.25rem_2rem_-1.25rem_rgb(8_11_46/0.6)]">
               <span className={`rounded-full px-3 py-1 text-sm font-bold ${TONES[tone]}`}>{label}</span>
               <div>
                 <p className="text-xl leading-snug font-bold">

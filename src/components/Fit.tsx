@@ -19,15 +19,15 @@ export function Fit({ plan }: { plan: CoverPlan }) {
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={basis.fit}
-        className="mt-3 h-3 overflow-hidden rounded-full bg-rule"
+        className="mt-3 h-3.5 overflow-hidden rounded-full bg-cream/20"
       >
-        <div className={`h-full rounded-full ${basis.level === "loose" ? "bg-brick" : "bg-awning"}`} style={{ width: `${basis.fit}%` }} />
+        <div className={`h-full rounded-full ${basis.level === "loose" ? "bg-persimmon" : "bg-sun"}`} style={{ width: `${basis.fit}%` }} />
       </div>
-      <div aria-hidden className="mt-1.5 flex justify-between text-sm text-mute">
+      <div aria-hidden className="mt-1.5 flex justify-between text-sm text-haze">
         <span>Loosely</span>
         <span>Closely</span>
       </div>
-      <ul className="mt-6 divide-y divide-rule border-y border-rule">
+      <ul className="mt-6 divide-y divide-cream/20 border-y border-cream/20">
         {basis.notes.map((note) => (
           <li key={note} className="py-3">
             {note}
