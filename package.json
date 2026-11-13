@@ -1,7 +1,12 @@
 {
   "name": "awning",
   "version": "0.1.0",
+  "description": "Say what could go wrong. Get paid when it does. Cover priced by Gemini prediction markets, bought by an agent with onchain limits on Arc.",
+  "license": "MIT",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

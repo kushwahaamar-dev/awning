@@ -1,15 +1,77 @@
 # Awning
 
-Say what could go wrong for your business. Awning finds a Gemini prediction market that pays out
-when it happens and tells you what the cover costs. An agent buys it for you, or keeps buying it
-every day on its own judgement. Two contracts hold the money: a mandate that limits what the agent
-can spend, and a pool that locks your whole payout before you pay a cent.
+**Say what could go wrong. Get paid when it does.**
 
-> "Any day Austin's high stays under 76, my ice cream truck is out about $300."
+Awning turns a sentence about a business risk into cover priced by Gemini prediction markets. An AI
+agent buys it for you, or keeps buying it every day on its own judgement. Two contracts on Arc hold
+the money: a mandate that limits what the agent can spend, and a pool that locks your whole payout
+before you pay a cent.
+
+![The Awning landing page: a headline, an input for the risk, and a rainy street of small shops drawn in dots](docs/screenshots/landing.jpg)
+
+> "If Chicago's high stays under 46 tomorrow, my coffee cart is out about $300."
 >
-> **Pays $300 if Austin's high is 76°F or below. Costs $6.42.**
+> **Pays $300 if Chicago's high is 45°F or below. Costs $25.60.**
+>
+> A real quote on Arc testnet, 13 November 2026.
 
 Built for the University Blockchain Conference 2026 hackathon.
+
+| | |
+| --- | --- |
+| Agent's limits | [`AwningMandate`](https://testnet.arcscan.app/address/0x708ae0910eFAf32B97D0bA9429C4F2BD44988413) on Arc testnet |
+| Cover pool | [`AwningPool`](https://testnet.arcscan.app/address/0x0dE9149998eE6CAA3577007f31A1803Bc49C3F6F) on Arc testnet |
+| Tests | 126 contract tests with fuzzing and invariants, 35 engine tests |
+| Stack | Next.js 16, React 19, Solidity 0.8.28 (Foundry), viem, Postgres, Claude |
+
+## Contents
+
+- [Quick start](#quick-start)
+- [What it looks like](#what-it-looks-like)
+- [The problem](#the-problem)
+- [What Awning does](#what-awning-does)
+- [The mandate](#the-mandate)
+- [The pool](#the-pool)
+- [Architecture](#architecture)
+- [The agent's decision loop](#the-agents-decision-loop)
+- [Economic design and risk assumptions](#economic-design-and-risk-assumptions)
+- [Sponsor technology](#sponsor-technology)
+- [Running on Arc testnet](#running-on-arc-testnet)
+- [Tests](#tests)
+- [What is real and what is not](#what-is-real-and-what-is-not)
+- [Repository layout](#repository-layout)
+- [License](#license)
+- [What comes next](#what-comes-next)
+
+## Quick start
+
+Requires Node 22 or newer and [Foundry](https://getfoundry.sh).
+
+```bash
+npm install
+cp .env.example .env.local     # then set ANTHROPIC_API_KEY
+npm run chain                  # local chain with both contracts and a funded pool
+npm run dev                    # in a second terminal
+```
+
+Open http://localhost:3000 and type a risk into the box, or press **Open the app**. To buy cover,
+go to **Your agent**, press **Get test dollars**, then **Set allowance**.
+
+`ANTHROPIC_API_KEY` is the only key you need. Everything else in `.env.example` is optional: with no
+Gemini trading keys the pool's own hedge fills on paper against Gemini's live prices. The cover
+itself is real either way, locked onchain and paid on Gemini's resolution.
+
+## What it looks like
+
+**A quote.** What the cover pays, the market's odds, what it costs, and where a payout could differ
+from your actual loss.
+
+![A quote: pays $300 if Chicago's high is 45°F or below, costs $25.60, with notes on how closely it tracks the risk](docs/screenshots/quote.jpg)
+
+**The hijack test.** One button hands the agent's real key to an attacker and sends real
+transactions. The contracts refuse everything except the day's data budget.
+
+![The hijack test: four attempts refused or sent back, and the attacker leaves with $2.00](docs/screenshots/hijack.jpg)
 
 ## The problem
 
@@ -141,8 +203,8 @@ free assets. All three are fixed and have tests.
 - `src/lib/covers` has the pool offer, opens through the mandate, and settles on Gemini's resolution.
 - `src/lib/agent` runs standing orders: the daily decision and the record of why.
 - `src/lib/desk` is the forecast desk (seller) and the agent's x402 buyer.
-- `src/lib/ledger` stores contract events, fed by QuickNode Streams in production and by reading
-  logs directly on a local chain.
+- `src/lib/ledger` stores contract events, delivered by a QuickNode Stream when one is registered and
+  read from the chain's logs otherwise.
 - `src/lib/chain/cctp.ts` and `/api/cashout` send vault money to other chains through Circle's CCTP.
 - `src/components/Ascii.tsx` plays the animated scenes on the landing page and inside the app. They
   come from [ascii-magic-art](https://www.ascii-magic.com/ascii) (MIT), bundled from the npm package
@@ -255,11 +317,14 @@ $0.95 at the same address on Base Sepolia a few seconds later.
 **Gemini Prediction Markets.** Market data: `GET /v1/prediction-markets/events` filtered by
 `category`, `search` and `status`, and `GET /v1/prediction-markets/events/{ticker}` for prices and
 resolution. Trading: `POST /v1/prediction-markets/order`, `/orders/active`, `/orders/history` and
-`/terms/status`, signed with HMAC-SHA384. Gemini's API has no price history, so Awning records its
+`/terms/status`, signed with HMAC-SHA384. The trading calls have not been run against Gemini's
+sandbox yet; without keys the pool's hedge fills on paper. Gemini's API has no price history, so Awning records its
 own and charts what a dollar of each cover has cost over time. Risks people ask about that no market
 tracks are stored as gaps.
 
-**QuickNode Streams.** The activity ledger is fed by one Stream.
+**QuickNode Streams.** The activity ledger is built to be fed by one Stream. The filter, the
+webhook handler and a replay test are in this repository. The Stream itself is not registered yet,
+because it needs a public URL to deliver to, so today's deployment reads the contracts' logs directly.
 
 - Network: Arc testnet.
 - Dataset: `block_with_receipts`, chosen over `logs` because each block carries its timestamp, so
@@ -275,30 +340,12 @@ tracks are stored as gaps.
 
 **ElevenLabs.** Scribe (`scribe_v2`) transcribes push-to-talk recordings; Flash (`eleven_flash_v2_5`)
 streams spoken replies: the clarifying question, the quote, and refusals. Replies are only spoken
-after the person has used the microphone.
+after the person has used the microphone. This path has not been exercised with a live key yet.
 
 **x402.** The forecast desk and the agent's buyer use the official `@x402/core` and `@x402/evm`
 packages (v2 protocol, `exact` scheme). The desk settles its own sales.
 
-## Run it
-
-Requires Node 22 or newer and [Foundry](https://getfoundry.sh).
-
-```bash
-npm install
-npm run chain          # local chain with the mandate and a funded pool; writes .env.development.local
-npm run dev            # in a second terminal
-```
-
-Open http://localhost:3000 for the landing page, which tells the story: the problem, how it works,
-how it is built and what was checked. **Open the app** takes you to the product. There, go to
-**Your agent**, press **Get test dollars**, then **Set allowance**.
-
-Set `ANTHROPIC_API_KEY` to describe risks in your own words. Everything else is optional; see
-`.env.example`. With no Gemini trading keys the pool's own hedge fills on paper against Gemini's live
-prices. The cover itself is real either way: the payout is locked onchain and paid on Gemini's resolution.
-
-### Arc testnet
+## Running on Arc testnet
 
 Put three fresh keys in `.env.arc` (the chain block of `.env.example`, with
 `AWNING_DATA_DIR=.data/pg-arc` so Arc covers stay apart from local ones), send the venue's address
@@ -331,6 +378,34 @@ LIVE=1 npx vitest run src/lib/hedge/live.test.ts   # sentence → priced cover a
 | The agent's daily decisions on standing orders, made by the model | The agent, underwriter and resolver keys sit on one server |
 | x402 payments, settled onchain per request | The forecast desk is run by the same operator as the agent |
 | The forecast data and the odds history | The pool on testnet is seeded by its operator |
+| Circle CCTP cash-out, verified on testnet | The QuickNode Stream is not registered yet; the app reads logs itself |
+| | Voice has not been tested with a live ElevenLabs key |
+
+## Repository layout
+
+```
+contracts/        AwningMandate and AwningPool, their tests, and the deploy script (Foundry)
+src/app/          pages and API routes (Next.js App Router)
+src/components/   the interface
+src/lib/hedge/    the engine: exposure schema, market matching, pricing, basis notes
+src/lib/covers/   quoting, buying, settling, and the hijack test
+src/lib/agent/    standing orders and the daily buy-or-skip decision
+src/lib/chain/    contract calls, the device wallet, CCTP
+src/lib/gemini/   prediction market data and trading
+src/lib/desk/     the x402 forecast seller and the agent's buyer
+src/lib/ledger/   contract events, from QuickNode Streams or from logs
+quicknode/        the Stream filter
+scripts/          local chain, Arc deploy, Stream replay
+drizzle/          database migrations
+```
+
+The interface is set in the [Geist](https://vercel.com/font) family: Sans for the interface, Serif
+for the two display lines, Mono for values, and Pixel for figures read live from the chain. The
+animated scenes come from [ascii-magic-art](https://www.ascii-magic.com/ascii), drawn in one ink.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
 
 ## What comes next
 
