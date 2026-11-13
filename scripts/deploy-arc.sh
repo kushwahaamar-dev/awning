@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploys the mandate to Arc testnet and fills in .env.arc.
+# Deploys the mandate and the pool to Arc testnet, seeds the pool, and fills in .env.arc.
 # Fund the venue address at faucet.circle.com first: it deploys, then passes gas money to the agent and desk.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -21,9 +21,29 @@ if [ "$(node -p "$balance < 3")" = "true" ]; then
   exit 1
 fi
 
+field() { node -p "require('./$DEPLOYMENT').$1 ?? ''" 2>/dev/null; }
+deploy() {
+  (cd contracts && USDC_ADDRESS=$USDC UNDERWRITER_ADDRESS=$VENUE "$@" forge script script/Deploy.s.sol --rpc-url "$RPC" \
+    --private-key "$VENUE_KEY" --broadcast --with-gas-price 25gwei --priority-gas-price 1gwei)
+}
+
 if [ ! -f "$DEPLOYMENT" ]; then
-  (cd contracts && USDC_ADDRESS=$USDC forge script script/Deploy.s.sol --rpc-url "$RPC" --private-key "$VENUE_KEY" --broadcast \
-    --with-gas-price 25gwei --priority-gas-price 1gwei)
+  deploy env
+elif [ -z "$(field pool)" ]; then
+  # The mandate is already out there with vaults in it: keep it, and the block it was deployed at, and add the pool.
+  since=$(field deployedAtBlock)
+  deploy env MANDATE_ADDRESS="$(field mandate)"
+  node -e "const f='./$DEPLOYMENT',d=require(f);d.deployedAtBlock=$since;require('fs').writeFileSync(f,JSON.stringify(d,null,2)+'\n')"
+fi
+
+# The pool can only write cover it can pay. Seed it from the venue's own USDC, keeping some back for gas.
+POOL=$(field pool)
+SEED_USDC="${SEED_USDC:-6}"
+if [ "$(cast call "$POOL" 'totalAssets()(uint256)' --rpc-url "$RPC" | cut -d' ' -f1)" = "0" ]; then
+  units=$(node -p "$SEED_USDC * 1e6")
+  cast send "$USDC" 'approve(address,uint256)' "$POOL" "$units" --rpc-url "$RPC" --private-key "$VENUE_KEY" "${FEES[@]}" >/dev/null
+  cast send "$POOL" 'deposit(uint256,address)' "$units" "$VENUE" --rpc-url "$RPC" --private-key "$VENUE_KEY" "${FEES[@]}" >/dev/null
+  echo "Seeded the pool with $SEED_USDC USDC"
 fi
 
 for role in AGENT DESK; do
@@ -34,9 +54,11 @@ for role in AGENT DESK; do
   fi
 done
 
-mandate=$(node -p "require('./$DEPLOYMENT').mandate")
-block=$(node -p "require('./$DEPLOYMENT').deployedAtBlock")
+mandate=$(field mandate)
+block=$(field deployedAtBlock)
+grep -q '^NEXT_PUBLIC_POOL_ADDRESS=' .env.arc || echo 'NEXT_PUBLIC_POOL_ADDRESS=' >> .env.arc
 sed -i '' -e "s|^NEXT_PUBLIC_MANDATE_ADDRESS=.*|NEXT_PUBLIC_MANDATE_ADDRESS=$mandate|" \
+  -e "s|^NEXT_PUBLIC_POOL_ADDRESS=.*|NEXT_PUBLIC_POOL_ADDRESS=$POOL|" \
   -e "s|^NEXT_PUBLIC_DEPLOY_BLOCK=.*|NEXT_PUBLIC_DEPLOY_BLOCK=$block|" .env.arc
 
-echo "Mandate $mandate at block $block. Run the app against Arc with: npm run start:arc"
+echo "Mandate $mandate, pool $POOL, from block $block. Run the app against Arc with: npm run start:arc"

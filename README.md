@@ -1,12 +1,13 @@
 # Awning
 
 Say what could go wrong for your business. Awning finds a Gemini prediction market that pays out
-when it happens, tells you what the cover costs, and buys it for you, with an agent that can only
-spend what an onchain mandate allows.
+when it happens and tells you what the cover costs. An agent buys it for you, or keeps buying it
+every day on its own judgement. Two contracts hold the money: a mandate that limits what the agent
+can spend, and a pool that locks your whole payout before you pay a cent.
 
 > "Any day Austin's high stays under 76, my ice cream truck is out about $300."
 >
-> **Pays $300 if Austin's high is 76°F or below. Costs $12.20 if you leave an order.**
+> **Pays $300 if Austin's high is 76°F or below. Costs $6.42.**
 
 Built for the University Blockchain Conference 2026 hackathon.
 
@@ -30,16 +31,22 @@ prompt is a suggestion.
    risk, it says so and records the gap.
 3. **The engine matches it to live Gemini contracts** and builds the position that pays when your
    trigger happens: a basket of temperature buckets, a Yes or No on a price strike, or a No on a team.
-4. **You get a receipt, not a trading screen**: what it pays, the market's odds, the cost to buy now,
-   the cheaper cost of leaving an order, and a plain account of where a payout could differ from
-   your loss (the settlement station, a snapped threshold, a proxy asset, a thin book).
+4. **You get a receipt, not a trading screen**: what it pays, the market's odds, what it costs, and
+   a plain account of where a payout could differ from your loss (the settlement station, a snapped
+   threshold, a proxy asset, a thin book).
 5. **For temperature markets the agent buys a second opinion.** It pays two cents over x402 for an
-   ensemble weather forecast, checks the market's price against it, and never bids above the middle
-   of the book on a model's say-so.
-6. **The agent asks the mandate for the premium.** Inside your limits it just acts. Above your
+   ensemble weather forecast and checks the market's price against it.
+6. **The pool offers the cover and locks the payout.** Asking to buy has the pool post an offer
+   onchain, which sets the whole payout aside in the pool contract before any premium moves.
+7. **The agent asks the mandate for the premium.** Inside your limits it just acts. Above your
    approval line it has to come back for a signature from your device. Outside your limits the
    contract refuses and records the refusal.
-7. **When Gemini resolves the market**, the payout lands in your vault in USDC.
+8. **The pool covers itself on Gemini** by buying the same position there. That is the pool's
+   business: your cover is in force whether or not its order fills.
+9. **When Gemini resolves the market**, the pool pays your vault in USDC, or keeps the premium.
+
+You can also leave a daily risk with the agent. Each day it looks at that day's price and forecast
+and decides for itself whether the cover is worth buying, inside a cap you set, and writes down why.
 
 ## The mandate
 
@@ -60,67 +67,109 @@ A refusal is not a revert. The transaction succeeds, moves nothing, and emits
 denied is part of the permanent record and shows up in the owner's activity feed.
 
 **What a hijacked agent can take.** The app has a "Hijack my agent" button that hands the agent's
-real key to an attacker script and sends real transactions: pay a premium to the attacker's address
-(refused, not an approved payee), spend the whole balance on one premium (refused, over the per-cover
-limit), draw the whole balance as data spending (refused, over the daily allowance), and finally
-take whatever is left of today's data allowance, which succeeds. With the default limits the
-attacker gets $2.00 out of a $2,000 vault. The contract exposes that number as
-`limits(owner).floatRemainingToday`, and the app shows it.
+real key to an attacker script and sends real transactions:
 
-What the mandate does not do: it cannot stop a hijacked agent from buying cover the owner didn't
-want from an approved venue, up to the unapproved cap. That money goes to the venue, not the
-attacker, and is bounded by the per-cover and monthly limits. See `contracts/README.md` for the full
-trust statement.
+1. Pay a premium to the attacker's address. Refused: not an approved payee.
+2. Pay the pool a dollar for cover it never offered. The mandate allows it, since the pool is
+   approved and a dollar is inside every limit. The pool sends it straight back.
+3. Spend the whole balance on one premium. Refused: over the per-cover limit.
+4. Draw the whole balance as data spending. Refused: over the daily allowance.
+5. Take whatever is left of today's data allowance. This one succeeds.
+
+With the default limits the attacker gets $2.00 out of a $2,000 vault. The contract exposes that
+number as `limits(owner).floatRemainingToday`, and the app shows it before the button is pressed.
+
+This test assumes the worst about the agent: that its key is fully in someone else's hands. It
+does not test whether the model can be talked into something, because the limits hold either way.
+It does not cover a break-in to the server, which also holds the pool's underwriter key; see the
+trust notes under "Economic design".
 
 The owner's key never reaches the server. In this build it is generated in the browser and kept in
 local storage; the contract verifies owners through `SignatureChecker`, so a passkey smart account
 (ERC-1271) works without changing it.
 
+## The pool
+
+`contracts/src/AwningPool.sol` is the other side of every cover. It is a USDC vault (ERC-4626) whose
+depositors earn premiums and bear payouts.
+
+| Step | What happens onchain |
+| --- | --- |
+| Offer | The underwriter posts `offer(hedgeId, owner, premium, payout, marketRef, takeBy, resolveBy)`. The pool must hold `payout` free, and locks it. No more than half the pool may ride on one market |
+| Take | The owner's agent pays the premium through the mandate with the pool as venue. The pool never hears about it; `taken(hedgeId)` reads the mandate and checks the terms match the offer exactly |
+| Settle | The resolver reports whether the event happened. The pool pays the owner's vault the full payout, or keeps the premium |
+| Lapse | An offer nobody took by `takeBy` can be unlocked by anyone |
+| Reject | A premium that reached the pool without a matching live offer can be sent back by anyone |
+| Claim | If no result is reported by `resolveBy` (three days after the market closes), anyone can trigger the payout to the owner |
+
+Depositors can withdraw only what isn't locked. The invariant suite checks, over random sequences
+of every action, that the pool always holds what it has locked and that `locked` equals the sum of
+live offers.
+
 ## Architecture
 
 ```
- browser                         server (Next.js)                       outside
- ───────                         ────────────────                       ───────
- device key (owner) ──signs──▶   /api/interpret ───────────────────▶   Claude
-   allowance, approvals          /api/plan ──▶ hedge engine ───────▶   Gemini public market data
+ browser                         server (Next.js)                         outside
+ ───────                         ────────────────                         ───────
+ device key (owner) ──signs──▶   /api/interpret ─────────────────────▶   Claude
+   allowance, approvals          /api/plan ──▶ hedge engine ─────────▶   Gemini public market data
                                      │            └─▶ second opinion
                                      │                  │ x402: 402 → sign → settle
                                      │                  ▼
-                                     │            /api/desk/forecast ─▶ Open-Meteo ensemble
-                                 /api/covers ──▶ agent key ──▶ AwningMandate ──▶ venue key ──▶ Gemini trading API
-                                                                    │                          (or paper fills)
-                                 /api/streams ◀── QuickNode Stream ◀┘ contract logs
+                                     │            /api/desk/forecast ───▶ Open-Meteo ensemble
+                                 /api/covers ─┬▶ underwriter key ──▶ AwningPool.offer   (locks the payout)
+                                              ├▶ agent key ────────▶ AwningMandate.openHedge ──▶ premium to the pool
+                                              └▶ Gemini trading API  (the pool's own hedge; paper without keys)
+                                 /api/standing ▶ agent: forecast → Claude decides buy or skip → same path as above
+                                 background ───▶ resolver key ─────▶ AwningPool.settle ──▶ payout to the owner's vault
+                                 /api/streams ◀── QuickNode Stream ◀── logs of both contracts
                                      │
-                                 Postgres: covers, ledger, odds history, gaps
+                                 Postgres: covers, standing orders, decisions, ledger, odds history, gaps
 ```
 
 - `src/lib/gemini` reads Gemini's prediction market API and normalises three market shapes:
   partitions (temperature buckets), ladders (nested price strikes) and moneylines.
 - `src/lib/hedge` is the engine: exposure schema, market matching, leg construction, pricing with
   Gemini's fee formula, and the basis assessment. It is pure and unit-tested against recorded Gemini data.
-- `src/lib/covers` quotes, opens through the mandate, and settles against Gemini's resolution.
+- `src/lib/covers` has the pool offer, opens through the mandate, and settles on Gemini's resolution.
+- `src/lib/agent` runs standing orders: the daily decision and the record of why.
 - `src/lib/desk` is the forecast desk (seller) and the agent's x402 buyer.
 - `src/lib/ledger` stores contract events, fed by QuickNode Streams in production and by reading
   logs directly on a local chain.
-- `src/lib/venue` places orders: through Gemini's trading API when keys are set, on paper otherwise.
+- `src/lib/venue` places the pool's hedge: through Gemini's trading API when keys are set, on paper otherwise.
 
 ## The agent's decision loop
 
-For each request the agent runs a fixed sequence. The model is used for one step only, and never
-chooses which transaction to send.
+**When you ask for cover**, the agent runs a fixed sequence. The model is used for one step and
+never chooses which transaction to send.
 
 1. **Interpret** (Claude, structured output): sentence → `Exposure`, or one clarifying question, or "unlisted".
 2. **Match** (code): find the market that settles on the exposure's subject and date.
 3. **Construct** (code): choose legs, snapping the user's threshold to the market's steps and reporting the snap.
 4. **Check** (code + paid data): for temperature markets, buy an ensemble forecast over x402 from the
    owner's data allowance and compute a fair price per leg.
-5. **Price** (code): cost to buy now at the offer; cost to rest inside the spread, anchored on
-   `min(mid, fair)`; fees from Gemini's schedule.
+5. **Price** (code): what Gemini is asking plus its fee, so the pool can lay the risk off at once.
+   With nobody asking, the middle of the book, anchored on `min(mid, fair)`.
 6. **Explain** (code): basis notes and a fit score.
-7. **Ask the mandate** (agent key): `openHedge`. The outcome is one of opened, opened with the owner's
+7. **Offer** (underwriter key): `AwningPool.offer` locks the payout.
+8. **Ask the mandate** (agent key): `openHedge`. The outcome is one of opened, opened with the owner's
    signature, or `Blocked` with a reason.
-8. **Place orders** (venue): only after the mandate paid. If placement fails the premium is returned.
-9. **Settle** (venue key): when Gemini resolves, `closeHedge` credits winnings and any unspent premium.
+9. **Lay off** (Gemini): the pool buys the position it has just sold. A failure leaves the pool
+   unhedged and the owner's cover untouched.
+10. **Settle** (resolver key): when Gemini resolves, `AwningPool.settle` pays the vault or keeps the premium.
+
+**When you leave a risk with it**, the agent acts with nobody watching. Once a minute, for each
+standing order and for today's and tomorrow's market:
+
+1. **Look** (code + paid data): price the day's cover, and buy that day's forecast.
+2. **Rule out** (code): skip without asking the model if cover costs what it pays, costs more than
+   the owner's cap for one day, or is above the owner's ask-first line.
+3. **Decide** (Claude, structured output): buy or skip, given the price, the market's odds, the
+   forecast's odds, the cap and the owner's own instruction. It must give its reason in plain words.
+4. **Act** (code): on "buy", steps 7 to 9 above. The mandate can still refuse, and that is recorded too.
+5. **Record**: the decision, the reason, and the numbers the agent saw, shown on the agent page.
+
+One decision is kept per order per market day, so a day is never bought twice.
 
 **Safety limits in force**
 
@@ -130,8 +179,11 @@ chooses which transaction to send.
   A cover's onchain `marketRef` commits to the exact contracts and sides it was priced on.
 - At the API: every request that reads or spends an owner's account carries a session signed by
   that owner's key and verified against the chain, so nobody can ask the agent to act for someone else.
-- In the design: the model has no tool that moves money. Prompt injection can at worst produce a
-  wrong `Exposure`, which the owner sees restated on the receipt before buying.
+- In the design: the model makes exactly two kinds of call. It turns a sentence into an `Exposure`,
+  which the owner sees restated before buying. And for a standing order it answers buy or skip for
+  one day. It never chooses an amount, a payee or a market: those come from code, and the mandate
+  bounds them whatever the model says.
+- In the pool: cover exists only on terms the underwriter offered. Anything else paid to the pool is returned.
 
 ## Economic design and risk assumptions
 
@@ -140,29 +192,44 @@ chooses which transaction to send.
 - **Basis risk is the main risk and is stated, not hidden.** Temperature settles on one airport
   station per the NWS daily climate report. Price markets settle on a reference index at one moment.
   A proxy (diesel hedged with crude) is flagged and scored down. The fit score is a heuristic.
-- **Liquidity is thin.** Many contracts have no offer, or only accept resting orders. Awning quotes
-  resting orders by default, shows when nothing can be priced, and refunds premium that never filled.
-- **A quote lasts five minutes.** After that it has to be asked for again, so a price can't be held
-  as a free option on where the market goes. Cover that would cost as much as it pays is not offered.
+- **The pool is the counterparty.** Owners buy from the pool at Gemini's asking price plus Gemini's
+  fee, so the pool can hedge at once and its margin today is zero. When nobody is asking, the pool
+  prices off the middle of the book and carries the risk itself until its resting order fills.
+  A spread for depositors is one parameter away and deliberately not set.
+- **Liquidity is thin, on Gemini and in the pool.** Many Gemini contracts have no offer. The pool
+  refuses cover it can't fully lock, and caps any one market at half its assets.
+- **Depositors' shares are priced on the pool's balance,** not marked to its open book. Someone
+  depositing while the pool has cover outstanding buys into that risk at face value.
+- **A quote lasts five minutes.** After that the offer lapses and the payout is unlocked, so a price
+  can't be held as a free option on where the market goes. Cover that would cost as much as it pays
+  is not offered.
 - **The forecast is a second opinion, not truth.** It is a raw 31-member GFS ensemble with half a
   member of smoothing per bucket and no bias correction. It can lower a bid and cannot raise one.
-- **The venue is trusted.** Gemini is a centrally cleared, dollar-funded exchange with nothing
-  onchain. The venue key is the adapter between the two worlds: it receives USDC premiums, holds the
-  Gemini position, and returns USDC when the market resolves. The contract bounds what it can
-  return (`maxPayout + premium`) but cannot verify the outcome it reports. `evidence` is a hash of
-  the resolution it saw.
+- **Who is trusted, and for what.** Gemini is a centrally cleared, dollar-funded exchange with
+  nothing onchain, so no contract can see its results.
+  - The *resolver* key reports whether the event happened. An owner trusts it to report Gemini's
+    public resolution honestly. `evidence` is a hash of the resolution it saw, the hedge's
+    `marketRef` commits to the exact Gemini contracts, and a resolver that goes silent loses: after
+    `resolveBy` the owner is paid in full.
+  - The *underwriter* key decides what the pool offers. Depositors trust it not to offer cover
+    cheaply on something that has already happened.
+  - In this build one server holds the agent, underwriter and resolver keys. An attacker with only
+    the agent's key gets the day's data allowance. An attacker who takes the server could also
+    misprice or misreport, which costs the pool's depositors or cover holders, bounded by the pool
+    and by each owner's limits. Separating those keys, and a challenge window on results, come next.
 - **Fees** use `rate × price × (1 − price)` per contract with taker 7% and maker 1.75%. These rates
   come from a third-party summary of Gemini's schedule and are labelled as estimates.
 
 ## Sponsor technology
 
-**Arc.** The mandate is deployed on Arc; USDC is both the asset in the vault and the gas, so an
-owner needs one token and sees one balance. The x402 payments settle as EIP-3009
+**Arc.** The mandate and the pool are deployed on Arc; USDC is the asset in the vault, the asset in
+the pool and the gas, so an owner needs one token and sees one balance. The x402 payments settle as EIP-3009
 `transferWithAuthorization` on Arc's native USDC (`0x3600…0000`, EIP-712 domain `USDC`/`2`).
 
 | Contract | Arc testnet (5042002) |
 | --- | --- |
 | AwningMandate | [`0x26945E04a995B26211782bDE5227F679DAbF0f85`](https://testnet.arcscan.app/address/0x26945E04a995B26211782bDE5227F679DAbF0f85) |
+| AwningPool | [`0x24878b8872Beacd813A71c9A710240422bc37F64`](https://testnet.arcscan.app/address/0x24878b8872Beacd813A71c9A710240422bc37F64) |
 | USDC | `0x3600000000000000000000000000000000000000` |
 
 **Gemini Prediction Markets.** Market data: `GET /v1/prediction-markets/events` filtered by
@@ -177,7 +244,7 @@ tracks are stored as gaps.
 - Network: Arc testnet.
 - Dataset: `block_with_receipts`, chosen over `logs` because each block carries its timestamp, so
   the app never calls back to the chain to date an event.
-- Filter: `quicknode/filter.js`. It keeps logs whose `address` is the mandate, attaches the block
+- Filter: `quicknode/filter.js`. It keeps logs whose `address` is the mandate or the pool, attaches the block
   timestamp, and returns `null` for blocks with none, so empty blocks are not delivered.
 - Destination: webhook, `POST /api/streams`. The handler verifies QuickNode's
   `X-QN-Signature` (HMAC-SHA256 over nonce + timestamp + body, keyed with the Stream's security
@@ -199,15 +266,15 @@ Requires Node 22 or newer and [Foundry](https://getfoundry.sh).
 
 ```bash
 npm install
-npm run chain          # local chain with the mandate deployed; writes .env.development.local
+npm run chain          # local chain with the mandate and a funded pool; writes .env.development.local
 npm run dev            # in a second terminal
 ```
 
 Open http://localhost:3000, go to **Your agent**, press **Get test dollars**, then **Set allowance**.
 
 Set `ANTHROPIC_API_KEY` to describe risks in your own words. Everything else is optional; see
-`.env.example`. With no Gemini trading keys, orders fill on paper against Gemini's live prices: the
-markets, prices and resolution are real and only the fill is assumed.
+`.env.example`. With no Gemini trading keys the pool's own hedge fills on paper against Gemini's live
+prices. The cover itself is real either way: the payout is locked onchain and paid on Gemini's resolution.
 
 ### Arc testnet
 
@@ -216,7 +283,7 @@ Put three fresh keys in `.env.arc` (the chain block of `.env.example`, with
 testnet USDC from https://faucet.circle.com, then:
 
 ```bash
-scripts/deploy-arc.sh   # deploys with the venue key, passes gas money to the agent and desk, fills in .env.arc
+scripts/deploy-arc.sh   # deploys both contracts with the venue key, seeds the pool, funds gas, fills in .env.arc
 npm run start:arc       # production build against Arc, http://localhost:3001
 ```
 
@@ -228,7 +295,7 @@ can leave a transaction pending.
 ```bash
 npm test                       # engine, settlement and forecast logic
 npm run typecheck && npm run lint
-cd contracts && forge test     # 94 tests including fuzz and invariants
+cd contracts && forge test     # 121 tests including fuzz and invariants on both contracts
 LIVE=1 npx vitest run src/lib/hedge/live.test.ts   # sentence → priced cover against live Gemini and Claude
 ```
 
@@ -236,16 +303,19 @@ LIVE=1 npx vitest run src/lib/hedge/live.test.ts   # sentence → priced cover a
 
 | Real | Stand-in |
 | --- | --- |
-| Gemini markets, prices, and resolution | Fills, unless Gemini trading keys are set |
+| Gemini markets, prices, and resolution | The pool's hedge on Gemini fills on paper unless trading keys are set |
+| Every cover: the payout locked in the pool, and paid from it | The resolver that reports Gemini's result is one trusted key |
 | Every mandate transaction, including refusals and the hijack test | The owner's key is browser storage rather than a passkey |
+| The agent's daily decisions on standing orders, made by the model | The agent, underwriter and resolver keys sit on one server |
 | x402 payments, settled onchain per request | The forecast desk is run by the same operator as the agent |
-| The forecast data and the odds history | The venue's link between USDC and the Gemini account is one trusted key |
+| The forecast data and the odds history | The pool on testnet is seeded by its operator |
 
 ## What comes next
 
-- Standing cover: "every day the high is under 70" bought each morning inside the monthly limit,
-  which is what the per-period cap in the mandate is for.
+- A challenge window on results, so a wrong report can be disputed before the pool pays or keeps.
+- The underwriter and resolver keys on separate machines from the agent.
+- Open deposits into the pool from the app, and a spread that pays depositors for the risk.
 - Passkey smart accounts for owners, and gas paid for them.
-- A venue adapter that funds the Gemini account from USDC deposits and withdraws payouts, replacing the trusted desk.
+- Funding the pool's Gemini account from its USDC, so its hedge and its collateral are one balance sheet.
 - Bias-corrected forecasts, and fair values for price markets from options-implied volatility.
 - Publishing the gaps list to Gemini as demand for new markets.

@@ -1,10 +1,15 @@
 # Awning contracts
 
+Two contracts. `AwningMandate` limits what an owner's agent can spend. `AwningPool` is the
+counterparty to every cover, and locks each payout before the premium is paid.
+
+## AwningMandate
+
 `AwningMandate` is the spending mandate for the Awning agent. An owner (EOA or ERC-1271 smart
 account) deposits USDC into a per-owner vault, names one agent key, and sets limits. The agent can
 only move that money through two doors, and the limits are enforced onchain, outside the model.
 
-## What it guarantees
+### What it guarantees
 
 For any owner whose agent key is fully compromised:
 
@@ -26,7 +31,7 @@ For any owner whose agent key is fully compromised:
   and move nothing, so a refused attack is an indexable onchain event. Calls from anyone who is not
   the owner's agent revert with `NotAgent()` and emit nothing.
 
-## What it does not guarantee
+### What it does not guarantee
 
 - Funds sent to an allowlisted venue under the unapproved cap are not protected from a hijacked
   agent, only bounded. A hijacked agent can burn up to `premiumPerHedgeCap`/`premiumPeriodCap` on
@@ -39,7 +44,7 @@ For any owner whose agent key is fully compromised:
 - Lowering a cap mid-period applies to amounts already used; it does not claw anything back.
 - `expiresAt == 0` means "expired" (the agent can do nothing until the owner sets a future expiry).
 
-## Trust assumptions about the venue and `closeHedge`
+### Trust assumptions about the venue and `closeHedge`
 
 `closeHedge` is callable only by the hedge's venue, and the contract cannot check the venue's
 claim. A venue that reports `Expired` for a hedge that actually won, or never calls `closeHedge`,
@@ -48,6 +53,52 @@ cannot hurt the owner beyond what it already holds: `Paid` is bounded by `maxPay
 premium (winnings and any premium that went unspent), `Refunded` by `premium`, the venue must have approved the mandate for `payout`, and the hedge can only be
 closed once. The owner chooses which venues to allow, so the venue is a trusted counterparty, the
 same way a broker is. Venues should be allowlisted only if you accept that.
+
+The app only ever asks an owner to allow `AwningPool`, which narrows that trust a good deal.
+
+## AwningPool
+
+An ERC-4626 USDC vault that writes cover. It is a venue in the mandate's sense, but one that can
+only act in the ways below.
+
+### What it guarantees
+
+- **A payout is locked before a premium is paid.** `offer` requires the whole payout to be free in
+  the pool and adds it to `locked`. Depositors can withdraw only `freeAssets()`, so locked money
+  cannot leave except to the owner it was promised to, or back to free when the cover ends.
+- **Cover exists only on offered terms.** The pool never receives a callback when a premium
+  arrives. `taken(hedgeId)` reads the mandate and holds only if the hedge is open, paid to this
+  pool, and matches the offer's owner, premium, payout and market exactly.
+- **Anything else is returned.** A premium paid to the pool with no live offer, or on different
+  terms, can be sent back to the owner's vault by anyone with `reject`. A stolen agent key cannot
+  park an owner's money in the pool.
+- **A silent resolver loses.** If no result is reported by `resolveBy`, anyone can call
+  `claimUnresolved` and the owner is paid in full.
+- **An offer nobody takes does not lock money forever.** After `takeBy`, anyone can `lapse` it. An
+  offer that was taken cannot be lapsed.
+- **No more than `maxMarketShareBps` of the pool rides on one market** at the time of each offer.
+- Payouts go to the owner's vault in the mandate, never to an address the caller supplies.
+
+Invariants checked over random sequences of deposits, withdrawals, offers, exact and inexact takes,
+settlements, rejections and lapses: the pool's USDC balance is at least `locked`; `locked` equals
+the sum of live offers' payouts and equals the per-market tallies; the mandate holds every owner's
+vault balance.
+
+### What it does not guarantee
+
+- **The resolver's report is not verified.** `settle(hedgeId, happened, evidence)` trusts the
+  resolver on whether the event happened. A resolver that reports `false` for an event that
+  happened costs the owner the payout; one that reports `true` wrongly costs depositors. `evidence`
+  is only emitted. The offer's `marketRef` commits to the exact Gemini contracts, so the report can
+  be checked against Gemini's public record after the fact, but nothing onchain does so.
+- **The underwriter's prices are not verified.** Depositors trust the underwriter not to offer
+  cover below what the risk is worth.
+- **Shares are priced on the pool's balance,** not marked to the open book. A deposit made while
+  cover is outstanding buys into that risk at face value, and a premium paid without a matching
+  offer briefly inflates the share price until it is rejected.
+- The market cap is checked when an offer is made. A later withdrawal can leave a market above
+  the share it was allowed at the time.
+- The underwriter and resolver are fixed at deployment and cannot be rotated.
 
 ## Build and test
 
@@ -77,7 +128,8 @@ node contracts/script/export-abi.mjs    # from the repo root; writes src/lib/cha
 
 ## Deploy
 
-`script/Deploy.s.sol` deploys `AwningMandate`. If `USDC_ADDRESS` is set it uses that token,
+`script/Deploy.s.sol` deploys `AwningMandate` and `AwningPool` (set `UNDERWRITER_ADDRESS` to the key
+that will offer and resolve cover; `MANDATE_ADDRESS` reuses a mandate already deployed). If `USDC_ADDRESS` is set it uses that token,
 otherwise it deploys `MockUSDC` first. A broadcast run writes `deployments/<chainId>.json`
 (`chainId`, `mandate`, `usdc`, `mockUsdc`, `deployedAtBlock`; the block is the one the script
 simulated against, so it is at or just before the deployment block and safe as a log-scan start).
