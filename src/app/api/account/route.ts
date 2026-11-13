@@ -4,8 +4,7 @@ import { listStanding } from "@/lib/agent/standing";
 import { chain, chainLabel, explorerTx, mandateAddress, poolAddress, usdcAddress } from "@/lib/chain/config";
 import { agentAddress, readAllowance, readPool } from "@/lib/chain/server";
 import { listCovers } from "@/lib/covers/service";
-import { pollChain, recentActivity } from "@/lib/ledger/ingest";
-import { usesStreams } from "@/lib/ledger/source";
+import { catchUp, recentActivity } from "@/lib/ledger/ingest";
 
 /** Everything the app shows about one owner: allowance, covers, what the agent has done onchain, and the pool behind the cover. */
 export async function GET(request: Request) {
@@ -14,7 +13,7 @@ export async function GET(request: Request) {
 
   try {
     await requireOwner(request, owner.data);
-    if (!usesStreams) await pollChain();
+    await catchUp();
     const [allowance, covers, activity, pool, standing] = await Promise.all([
       readAllowance(owner.data),
       listCovers(owner.data),

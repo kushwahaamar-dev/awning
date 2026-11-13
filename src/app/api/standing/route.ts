@@ -3,8 +3,7 @@ import { address, fail, readBody } from "@/lib/api/respond";
 import { requireOwner } from "@/lib/api/session";
 import { createStanding } from "@/lib/agent/standing";
 import { exposureSchema } from "@/lib/hedge/exposure";
-import { pollChain } from "@/lib/ledger/ingest";
-import { usesStreams } from "@/lib/ledger/source";
+import { catchUp } from "@/lib/ledger/ingest";
 
 const bodySchema = z.object({
   owner: address,
@@ -21,7 +20,7 @@ export async function POST(request: Request) {
   try {
     await requireOwner(request, body.owner);
     const order = await createStanding(body, new URL(request.url).origin);
-    if (!usesStreams) await pollChain();
+    await catchUp({ fresh: true });
     return Response.json({ id: order.id });
   } catch (error) {
     return fail(error);

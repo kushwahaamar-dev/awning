@@ -28,7 +28,8 @@ import {
   type BlockReason,
 } from "./config";
 
-const transport = http(rpcUrl);
+// Reads that happen together travel as one request, which keeps a page refresh well inside a public endpoint's limits.
+const transport = http(rpcUrl, { batch: true });
 export const publicClient = createPublicClient({ chain, transport });
 
 function signer(envName: "AGENT_PRIVATE_KEY" | "VENUE_PRIVATE_KEY") {

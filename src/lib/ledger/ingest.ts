@@ -3,6 +3,7 @@ import { awningMandateAbi, awningPoolAbi } from "../chain/abi";
 import { BLOCK_REASONS, deployBlock, fromUnits, mandateAddress, poolAddress } from "../chain/config";
 import { publicClient } from "../chain/server";
 import { getDb, ledger } from "../db";
+import { usesStreams } from "./source";
 import { desc, sql } from "drizzle-orm";
 
 export type RawLog = Pick<Log<bigint, number, false>, "address" | "topics" | "data" | "blockNumber" | "transactionHash" | "logIndex">;
@@ -55,17 +56,39 @@ export async function ingest(logs: RawLog[], timestamps: Map<bigint, number>) {
 }
 
 const CHUNK = 5_000n;
+// Pages refresh every few seconds and each refresh asks for new events. A public RPC endpoint
+// stops answering if every one of those becomes a request, so reads are shared and spaced out.
+const MIN_GAP_MS = 2_000;
 
-/** Local stand-in for QuickNode Streams: reads the two contracts' logs since the last block stored. */
-export async function pollChain() {
-  const db = await getDb();
-  const [last] = await db.select({ block: sql<number>`max(${ledger.blockNumber})` }).from(ledger);
+type Scan = { to: bigint | null; at: number; running: Promise<void> | null };
+const globals = globalThis as { awningScan?: Scan };
+const scan = (globals.awningScan ??= { to: null, at: 0, running: null });
+
+/**
+ * Local stand-in for QuickNode Streams: reads the two contracts' logs since the last block read.
+ * @param fresh the caller has just sent a transaction and needs it in the ledger before it answers
+ */
+export async function pollChain({ fresh = false } = {}) {
+  if (scan.running) {
+    await scan.running.catch(() => {});
+    // A read that began before the caller's transaction may have missed it.
+    if (!fresh) return;
+  }
+  if (!fresh && Date.now() - scan.at < MIN_GAP_MS) return;
+  scan.running = readNewLogs().finally(() => {
+    scan.at = Date.now();
+    scan.running = null;
+  });
+  return scan.running;
+}
+
+async function readNewLogs() {
   // Uncached: this runs straight after the agent's own transactions, and viem would otherwise answer
   // from a block number a few seconds old and miss them.
   const latest = await publicClient.getBlockNumber({ cacheTime: 0 });
-  let from = last?.block != null ? BigInt(last.block) : deployBlock;
-  // A local chain restarts from block zero while the database remembers the old one.
-  if (from > latest) from = 0n;
+  let from = scan.to !== null ? scan.to + 1n : await lastStoredBlock();
+  // A local chain restarts from block zero while this process, or the database, remembers the old one.
+  if (from > latest + 1n) from = 0n;
 
   for (; from <= latest; from += CHUNK) {
     const to = from + CHUNK - 1n < latest ? from + CHUNK - 1n : latest;
@@ -75,7 +98,25 @@ export async function pollChain() {
       timestamps.set(number, Number((await publicClient.getBlock({ blockNumber: number })).timestamp));
     }
     await ingest(logs, timestamps);
+    // Remembered as it goes, so a quiet chain isn't read again from the last event every time.
+    scan.to = to;
   }
+}
+
+/** Where to start after a restart: the newest event already stored, or the block the contracts were deployed at. */
+async function lastStoredBlock() {
+  const db = await getDb();
+  const [last] = await db.select({ block: sql<number>`max(${ledger.blockNumber})` }).from(ledger);
+  return last?.block != null ? BigInt(last.block) : deployBlock;
+}
+
+/**
+ * Brings the ledger up to date when no Stream is doing it. A read that fails is logged, not thrown:
+ * the events are still on the chain and the next pass picks them up.
+ */
+export async function catchUp({ fresh = false } = {}) {
+  if (usesStreams) return;
+  await pollChain({ fresh }).catch((error) => console.error("could not read new events from the chain", error));
 }
 
 export async function recentActivity(owner: string, limit = 60) {

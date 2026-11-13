@@ -2,8 +2,7 @@ import { z } from "zod";
 import { fail, hex, readBody } from "@/lib/api/respond";
 import { requireOwner } from "@/lib/api/session";
 import { coverOwner, openCover } from "@/lib/covers/service";
-import { pollChain } from "@/lib/ledger/ingest";
-import { usesStreams } from "@/lib/ledger/source";
+import { catchUp } from "@/lib/ledger/ingest";
 
 const bodySchema = z.object({ deadline: z.number().int().positive(), signature: hex.nullable() });
 
@@ -14,7 +13,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/cove
     const { id } = await params;
     await requireOwner(request, await coverOwner(id as `0x${string}`));
     const result = await openCover(id as `0x${string}`, body);
-    if (!usesStreams) await pollChain();
+    await catchUp({ fresh: true });
     return Response.json(result);
   } catch (error) {
     return fail(error);
