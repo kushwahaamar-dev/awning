@@ -39,4 +39,4 @@ block=$(node -p "require('./$DEPLOYMENT').deployedAtBlock")
 sed -i '' -e "s|^NEXT_PUBLIC_MANDATE_ADDRESS=.*|NEXT_PUBLIC_MANDATE_ADDRESS=$mandate|" \
   -e "s|^NEXT_PUBLIC_DEPLOY_BLOCK=.*|NEXT_PUBLIC_DEPLOY_BLOCK=$block|" .env.arc
 
-echo "Mandate $mandate at block $block. Run the app against Arc with: npm run dev:arc"
+echo "Mandate $mandate at block $block. Run the app against Arc with: npm run start:arc"

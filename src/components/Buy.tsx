@@ -21,6 +21,9 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
   const [refused, setRefused] = useState<BlockReason | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { quote } = plan;
+  // A price at or above the payout can't help anyone; the server refuses it too.
+  const resting = quote.resting && quote.resting.total < quote.payout ? quote.resting : null;
+  const now = quote.now && quote.now.total < quote.payout ? quote.now : null;
 
   if (!owner || !account) return null;
 
@@ -102,18 +105,18 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
         </p>
       )}
       <div className="flex flex-wrap gap-3">
-        {quote.resting && (
+        {resting && (
           <button type="button" onClick={() => start("resting")} disabled={busy !== null} className="rounded-sm bg-awning px-5 py-3 text-lg font-bold text-paper disabled:opacity-50">
-            {busy === "resting" ? "Placing order…" : `Leave an order at ${cents(quote.resting.total)}`}
+            {busy === "resting" ? "Placing order…" : `Leave an order at ${cents(resting.total)}`}
           </button>
         )}
-        {quote.now && (
+        {now && (
           <button type="button" onClick={() => start("now")} disabled={busy !== null} className="rounded-sm border-2 border-awning px-5 py-3 text-lg font-bold text-awning disabled:opacity-50">
-            {busy === "now" ? "Buying…" : `Buy now for ${cents(quote.now.total)}`}
+            {busy === "now" ? "Buying…" : `Buy now for ${cents(now.total)}`}
           </button>
         )}
       </div>
-      {quote.resting && (
+      {resting && (
         <p className="mt-2 text-sm text-mute">An order waits for a seller at your price. If nobody takes it, your money comes back.</p>
       )}
       {refused && (

@@ -162,7 +162,7 @@ owner needs one token and sees one balance. The x402 payments settle as EIP-3009
 
 | Contract | Arc testnet (5042002) |
 | --- | --- |
-| AwningMandate | _to be filled in after deployment_ |
+| AwningMandate | [`0x26945E04a995B26211782bDE5227F679DAbF0f85`](https://testnet.arcscan.app/address/0x26945E04a995B26211782bDE5227F679DAbF0f85) |
 | USDC | `0x3600000000000000000000000000000000000000` |
 
 **Gemini Prediction Markets.** Market data: `GET /v1/prediction-markets/events` filtered by
@@ -217,7 +217,7 @@ testnet USDC from https://faucet.circle.com, then:
 
 ```bash
 scripts/deploy-arc.sh   # deploys with the venue key, passes gas money to the agent and desk, fills in .env.arc
-npm run dev:arc         # http://localhost:3001
+npm run start:arc       # production build against Arc, http://localhost:3001
 ```
 
 Arc enforces a 20 gwei minimum base fee; the script sets the gas price because Foundry's defaults

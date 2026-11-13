@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "chain": "scripts/dev-chain.sh",
-    "dev:arc": "node --env-file=.env.arc node_modules/next/dist/bin/next dev -p 3001"
+    "start:arc": "set -a && . ./.env.arc && set +a && next build && next start -p 3001"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

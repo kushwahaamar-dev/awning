@@ -1,0 +1,7 @@
+{
+  "chainId": 5042002,
+  "deployedAtBlock": 72204796,
+  "mandate": "0x26945E04a995B26211782bDE5227F679DAbF0f85",
+  "mockUsdc": false,
+  "usdc": "0x3600000000000000000000000000000000000000"
+}
