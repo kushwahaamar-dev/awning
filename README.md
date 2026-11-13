@@ -136,6 +136,7 @@ live offers.
 - `src/lib/desk` is the forecast desk (seller) and the agent's x402 buyer.
 - `src/lib/ledger` stores contract events, fed by QuickNode Streams in production and by reading
   logs directly on a local chain.
+- `src/lib/chain/cctp.ts` and `/api/cashout` send vault money to other chains through Circle's CCTP.
 - `src/lib/venue` places the pool's hedge: through Gemini's trading API when keys are set, on paper otherwise.
 
 ## The agent's decision loop
@@ -231,6 +232,13 @@ the pool and the gas, so an owner needs one token and sees one balance. The x402
 | AwningMandate | [`0x26945E04a995B26211782bDE5227F679DAbF0f85`](https://testnet.arcscan.app/address/0x26945E04a995B26211782bDE5227F679DAbF0f85) |
 | AwningPool | [`0x24878b8872Beacd813A71c9A710240422bc37F64`](https://testnet.arcscan.app/address/0x24878b8872Beacd813A71c9A710240422bc37F64) |
 | USDC | `0x3600000000000000000000000000000000000000` |
+
+**Circle CCTP.** A payout shouldn't be stuck on the chain it was paid on. "Send money out" on the
+agent page withdraws from the vault and burns the USDC through CCTP V2's `TokenMessengerV2` on Arc
+(domain 26) with the Forwarding Service hook, so Circle mints it natively on Base, Ethereum or
+Avalanche and the receiver needs no gas there. The fee comes from Circle's `/v2/burn/USDC/fees`
+and delivery is tracked through `/v2/messages`. Verified on testnet: $1 out of a vault on Arc,
+$0.95 at the same address on Base Sepolia a few seconds later.
 
 **Gemini Prediction Markets.** Market data: `GET /v1/prediction-markets/events` filtered by
 `category`, `search` and `status`, and `GET /v1/prediction-markets/events/{ticker}` for prices and

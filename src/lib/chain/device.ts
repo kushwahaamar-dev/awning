@@ -1,9 +1,10 @@
 "use client";
 
-import { createPublicClient, createWalletClient, http, type Address, type Hex } from "viem";
+import { createPublicClient, createWalletClient, http, pad, type Address, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { sessionMessage } from "../api/session-message";
 import { awningMandateAbi, usdcAbi } from "./abi";
+import { FORWARD_HOOK, STANDARD_FINALITY, TOKEN_MESSENGER, tokenMessengerAbi } from "./cctp";
 import { chain, hedgeApprovalDomain, hedgeApprovalTypes, mandateAddress, rpcUrl, toUnits, usdcAddress } from "./config";
 
 const STORAGE_KEY = "awning.deviceKey";
@@ -50,6 +51,7 @@ async function send(request: Parameters<ReturnType<typeof wallet>["writeContract
   const hash = await wallet().writeContract(request);
   const receipt = await reader.waitForTransactionReceipt({ hash });
   if (receipt.status !== "success") throw new Error("The transaction was reverted.");
+  return hash;
 }
 
 export type AllowanceSettings = {
@@ -95,6 +97,29 @@ export async function setAllowance(s: AllowanceSettings, onStep: (label: string)
 
 export async function setPaused(paused: boolean) {
   await send({ account: deviceAccount(), chain, address: mandateAddress, abi: awningMandateAbi, functionName: "setPaused", args: [paused] });
+}
+
+/**
+ * Takes money out of the vault and sends it to an address on another chain through Circle's CCTP.
+ * Circle delivers it and takes its fee out of the amount, so nothing is needed on the other chain.
+ * Returns the burn transaction, which is what Circle's delivery is looked up by.
+ */
+export async function cashOut(amount: number, to: { domain: number; address: Address }, fee: number, onStep: (label: string) => void): Promise<Hex> {
+  const base = { account: deviceAccount(), chain } as const;
+  const units = toUnits(amount);
+
+  onStep("Taking it out of your vault");
+  await send({ ...base, address: mandateAddress, abi: awningMandateAbi, functionName: "withdraw", args: [units] });
+  onStep("Handing it to Circle");
+  await send({ ...base, address: usdcAddress, abi: usdcAbi, functionName: "approve", args: [TOKEN_MESSENGER, units] });
+  return send({
+    ...base,
+    address: TOKEN_MESSENGER,
+    abi: tokenMessengerAbi,
+    functionName: "depositForBurnWithHook",
+    // An empty destination caller lets Circle's forwarder submit the mint.
+    args: [units, to.domain, pad(to.address), usdcAddress, pad("0x", { size: 32 }), toUnits(fee), STANDARD_FINALITY, FORWARD_HOOK],
+  });
 }
 
 export type ApprovalRequest = { id: Hex; venue: Address; premium: number; maxPayout: number; marketRef: Hex; deadline: number };

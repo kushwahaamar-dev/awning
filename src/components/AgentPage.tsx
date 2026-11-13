@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
+import { cctpAvailable } from "@/lib/chain/cctp";
 import { setPaused } from "@/lib/chain/device";
 import type { HijackStep } from "@/lib/covers/hijack";
 import { calendarDay, cents, clock, day, percent, usd } from "@/lib/format";
 import { REFUSAL, describeEvent } from "@/lib/words";
 import { AllowanceForm } from "./AllowanceForm";
+import { CashOut } from "./CashOut";
 import { hasAllowance, post, useAccount, type Account, type Decision } from "./account";
 
 const sentence = (clause: string) => `${clause[0].toUpperCase()}${clause.slice(1)}.`;
@@ -14,6 +16,7 @@ function Limits({ account }: { account: Account }) {
   const { refresh } = useAccount();
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const a = account.allowance;
 
@@ -70,9 +73,20 @@ function Limits({ account }: { account: Account }) {
             </div>
           ))}
         </dl>
-        <button type="button" onClick={() => setEditing(true)} className="link mt-6">
-          Change limits
-        </button>
+        {sending ? (
+          <CashOut onClose={() => setSending(false)} />
+        ) : (
+          <div className="mt-6 flex flex-wrap gap-x-8 gap-y-2">
+            <button type="button" onClick={() => setEditing(true)} className="link">
+              Change limits
+            </button>
+            {cctpAvailable && (
+              <button type="button" onClick={() => setSending(true)} className="link">
+                Send money out
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="rounded-[2rem] bg-cobalt p-8 shadow-[0_2rem_3rem_-1.75rem_rgb(0_0_0/0.7)] sm:p-10 lg:col-span-5">
