@@ -44,6 +44,7 @@ export const paperVenue: Venue = {
   },
 };
 
-export function getVenue(): Venue {
-  return paperVenue;
+export async function getVenue(): Promise<Venue> {
+  if (!process.env.GEMINI_API_KEY || !process.env.GEMINI_API_SECRET) return paperVenue;
+  return (await import("./gemini")).geminiVenue;
 }

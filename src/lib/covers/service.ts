@@ -70,7 +70,7 @@ export async function quoteCover(input: {
     status: "quoted",
     plan,
     mode: input.mode,
-    venue: getVenue().name,
+    venue: (await getVenue()).name,
     premium: pricing.total,
     maxPayout: plan.quote.payout,
     orders,
@@ -112,7 +112,19 @@ export async function openCover(id: Hex, approval: { deadline: number; signature
     return { status: "blocked" as const, reason: attempt.reason, txHash: attempt.txHash };
   }
 
-  const orders = await getVenue().place(cover.orders, cover.mode);
+  let orders: Order[];
+  try {
+    orders = await (await getVenue()).place(cover.orders, cover.mode);
+  } catch (error) {
+    // The premium has already left the vault, so a venue that can't place the order has to send it back.
+    const reason = error instanceof Error ? error.message : String(error);
+    const closeTx = await closeHedge(id, "Refunded", cover.premium, keccak256(toHex(reason)));
+    await db
+      .update(covers)
+      .set({ status: "refunded", payout: cover.premium, note: reason, openTx: attempt.txHash, closeTx, closedAt: new Date() })
+      .where(eq(covers.id, id));
+    throw new CoverError(`The order couldn't be placed, so your premium was returned. ${reason}`);
+  }
   await db.update(covers).set({ status: "open", orders, openTx: attempt.txHash }).where(eq(covers.id, id));
   return { status: "open" as const, txHash: attempt.txHash };
 }
@@ -136,7 +148,7 @@ export async function settleOpenCovers() {
     const market = await getMarket(cover.marketTicker);
     if (!market) continue;
 
-    const orders = await getVenue().refresh(cover.orders, market);
+    const orders = await (await getVenue()).refresh(cover.orders, market);
     const result = settlement(orders, cover.premium, market);
     if (!result) {
       await db.update(covers).set({ orders }).where(eq(covers.id, cover.id));
