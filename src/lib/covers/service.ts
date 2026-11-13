@@ -30,8 +30,9 @@ export type CoverTerms = {
 };
 
 export async function quoteCover(input: { owner: Address; exposure: Exposure; coverRatio: number; mode: "now" | "resting" }): Promise<CoverTerms> {
-  const plan = await planCover(input.exposure, listMarkets, { coverRatio: input.coverRatio });
-  if (!plan) throw new CoverError("Gemini no longer lists a market for this.");
+  const planned = await planCover(input.exposure, listMarkets, { coverRatio: input.coverRatio });
+  if (!planned) throw new CoverError("Gemini no longer lists a market for this.");
+  const { plan } = planned;
 
   const pricing = input.mode === "now" ? plan.quote.now : plan.quote.resting;
   if (!pricing) throw new CoverError(input.mode === "now" ? "Nobody is selling this right now. Leave an order instead." : "There is no price to anchor an order on yet.");

@@ -1,4 +1,5 @@
 import type { CoverPlan } from "@/lib/hedge/plan";
+import { CostChart } from "./CostChart";
 
 const HEADINGS = {
   close: "This tracks your risk closely",
@@ -27,6 +28,7 @@ export function Fit({ plan }: { plan: CoverPlan }) {
           <li key={note}>{note}</li>
         ))}
       </ul>
+      <CostChart legs={plan.coverage.legs} />
     </section>
   );
 }

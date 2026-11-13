@@ -29,7 +29,7 @@ describe.skipIf(!process.env.LIVE)("live: sentence to priced cover", () => {
     console.log(JSON.stringify(result, null, 1));
     if (result.status !== "ready") return;
 
-    const plan = await planCover(result.exposure!, listMarkets);
+    const plan = (await planCover(result.exposure!, listMarkets))?.plan;
     console.log(
       JSON.stringify(
         plan && { market: plan.market.title, pays: plan.coverage.pays, legs: plan.coverage.legs, quote: plan.quote, basis: plan.basis },
@@ -37,6 +37,6 @@ describe.skipIf(!process.env.LIVE)("live: sentence to priced cover", () => {
         1,
       ),
     );
-    expect(plan).not.toBeNull();
+    expect(plan).toBeDefined();
   }, 120_000);
 });

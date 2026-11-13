@@ -3,6 +3,7 @@ import { fail, readBody } from "@/lib/api/respond";
 import { listMarkets } from "@/lib/gemini/client";
 import { exposureSchema } from "@/lib/hedge/exposure";
 import { planCover } from "@/lib/hedge/plan";
+import { recordContracts } from "@/lib/odds";
 
 const bodySchema = z.object({
   exposure: exposureSchema,
@@ -14,8 +15,10 @@ export async function POST(request: Request) {
   if (body instanceof Response) return body;
 
   try {
-    const plan = await planCover(body.exposure, listMarkets, { coverRatio: body.coverRatio });
-    return Response.json({ plan });
+    const planned = await planCover(body.exposure, listMarkets, { coverRatio: body.coverRatio });
+    // Every quote adds a point to the price history of the market it looked at.
+    if (planned) await recordContracts(planned.market.contracts);
+    return Response.json({ plan: planned?.plan ?? null });
   } catch (error) {
     return fail(error);
   }
