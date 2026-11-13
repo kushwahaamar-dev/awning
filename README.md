@@ -128,6 +128,8 @@ chooses which transaction to send.
 - In the x402 client: a per-request ceiling of $0.05 and an allowlist of sellers, applied before anything is signed.
 - In the server: quotes are re-priced server-side from live data; the browser's numbers are never trusted.
   A cover's onchain `marketRef` commits to the exact contracts and sides it was priced on.
+- At the API: every request that reads or spends an owner's account carries a session signed by
+  that owner's key and verified against the chain, so nobody can ask the agent to act for someone else.
 - In the design: the model has no tool that moves money. Prompt injection can at worst produce a
   wrong `Exposure`, which the owner sees restated on the receipt before buying.
 

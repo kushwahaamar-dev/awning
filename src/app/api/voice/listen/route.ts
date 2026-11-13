@@ -1,7 +1,10 @@
+import { connection } from "next/server";
 import { fail } from "@/lib/api/respond";
 import { transcribe, voiceEnabled } from "@/lib/voice";
 
 export async function GET() {
+  // Read the key when asked, not when the app was built.
+  await connection();
   return Response.json({ enabled: voiceEnabled() });
 }
 

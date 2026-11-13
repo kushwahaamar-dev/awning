@@ -121,6 +121,9 @@ describe("assessBasis", () => {
     const basis = assessBasis(coldDay, austin, buildCoverage(austin, coldDay.trigger)!);
     expect(basis.notes[0]).toContain("Austin-Bergstrom International Airport");
     expect(basis.level).toBe("close");
+    // coldDay is an ongoing condition, and the market only runs for a day
+    expect(basis.notes).toContain("This covers one day. Each further day you want covered is a separate purchase.");
+    expect(basis.fit).toBe(100);
   });
 
   it("marks a proxy hedge on an unquoted, snapped strike as loose", () => {

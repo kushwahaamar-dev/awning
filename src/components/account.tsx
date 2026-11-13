@@ -3,7 +3,8 @@
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
 import useSWR from "swr";
 import type { Address } from "viem";
-import { deviceAddress } from "@/lib/chain/device";
+import { SESSION_HEADER } from "@/lib/api/session-message";
+import { deviceAddress, sessionToken } from "@/lib/chain/device";
 import type { Allowance } from "@/lib/chain/server";
 import type { CoverStatus, Order } from "@/lib/db/schema";
 import type { CoverPlan } from "@/lib/hedge/plan";
@@ -50,7 +51,7 @@ const AccountContext = createContext<AccountState | null>(null);
 const REFRESH_MS = 5_000;
 
 async function fetchAccount(url: string): Promise<Account> {
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: { [SESSION_HEADER]: await sessionToken() } });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error);
   return data;
@@ -83,7 +84,11 @@ export const hasAllowance = (account: Account) =>
   account.allowance.agent.toLowerCase() === account.setup.agent.toLowerCase() && account.allowance.balance > 0;
 
 export async function post<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "content-type": "application/json", [SESSION_HEADER]: await sessionToken() },
+    body: JSON.stringify(body),
+  });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? `Request failed (${res.status})`);
   return data;

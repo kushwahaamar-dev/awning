@@ -1,4 +1,5 @@
 import { address, fail } from "@/lib/api/respond";
+import { requireOwner } from "@/lib/api/session";
 import { chain, chainLabel, explorerTx, mandateAddress, usdcAddress } from "@/lib/chain/config";
 import { agentAddress, readAllowance, venueAddress } from "@/lib/chain/server";
 import { listCovers } from "@/lib/covers/service";
@@ -11,6 +12,7 @@ export async function GET(request: Request) {
   if (!owner.success) return Response.json({ error: "owner must be an address" }, { status: 400 });
 
   try {
+    await requireOwner(request, owner.data);
     if (!usesStreams) await pollChain();
     const [allowance, covers, activity] = await Promise.all([readAllowance(owner.data), listCovers(owner.data), recentActivity(owner.data)]);
     return Response.json({

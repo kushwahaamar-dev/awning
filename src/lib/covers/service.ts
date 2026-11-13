@@ -89,6 +89,13 @@ export async function quoteCover(input: {
   };
 }
 
+export async function coverOwner(id: Hex): Promise<Address> {
+  const db = await getDb();
+  const [cover] = await db.select({ owner: covers.owner }).from(covers).where(eq(covers.id, id));
+  if (!cover) throw new CoverError("That quote doesn't exist.");
+  return cover.owner as Address;
+}
+
 /** The agent asks the mandate for the premium, and only places orders if the mandate paid it. */
 export async function openCover(id: Hex, approval: { deadline: number; signature: Hex | null }) {
   const db = await getDb();
@@ -145,19 +152,25 @@ export async function settleOpenCovers() {
   const open = await db.select().from(covers).where(eq(covers.status, "open"));
 
   for (const cover of open) {
-    const market = await getMarket(cover.marketTicker);
-    if (!market) continue;
-
-    const orders = await (await getVenue()).refresh(cover.orders, market);
-    const result = settlement(orders, cover.premium, market);
-    if (!result) {
-      await db.update(covers).set({ orders }).where(eq(covers.id, cover.id));
-      continue;
-    }
-
-    const evidence = keccak256(toHex(JSON.stringify(market.contracts.map((c) => [c.symbol, c.resolvedYes]))));
-    const closeTx = await closeHedge(cover.id as Hex, result.outcome, result.payout, evidence);
-    const status = result.outcome === "Paid" ? "paid" : result.outcome === "Refunded" ? "refunded" : "expired";
-    await db.update(covers).set({ status, orders, payout: result.payout, closeTx, closedAt: new Date() }).where(eq(covers.id, cover.id));
+    // One cover that can't be checked right now must not hold up the others.
+    await settle(cover).catch((error) => console.error(`could not settle cover ${cover.id}`, error));
   }
+}
+
+async function settle(cover: typeof covers.$inferSelect) {
+  const db = await getDb();
+  const market = await getMarket(cover.marketTicker);
+  if (!market) return;
+
+  const orders = await (await getVenue()).refresh(cover.orders, market);
+  const result = settlement(orders, cover.premium, market);
+  if (!result) {
+    await db.update(covers).set({ orders }).where(eq(covers.id, cover.id));
+    return;
+  }
+
+  const evidence = keccak256(toHex(JSON.stringify(market.contracts.map((c) => [c.symbol, c.resolvedYes]))));
+  const closeTx = await closeHedge(cover.id as Hex, result.outcome, result.payout, evidence);
+  const status = result.outcome === "Paid" ? "paid" : result.outcome === "Refunded" ? "refunded" : "expired";
+  await db.update(covers).set({ status, orders, payout: result.payout, closeTx, closedAt: new Date() }).where(eq(covers.id, cover.id));
 }

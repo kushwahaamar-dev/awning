@@ -48,6 +48,10 @@ export function assessBasis(exposure: Exposure, market: Market, coverage: Covera
     fit -= 15;
   }
 
+  if (exposure.recurring && market.subject.family === "temperature") {
+    notes.push("This covers one day. Each further day you want covered is a separate purchase.");
+  }
+
   const unquoted = coverage.legs.some((l) => l.ask === null);
   const wide = coverage.legs.some((l) => l.bid !== null && l.ask !== null && l.ask - l.bid > WIDE_SPREAD);
   if (unquoted) {

@@ -2,6 +2,7 @@
 
 import { createPublicClient, createWalletClient, http, type Address, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { sessionMessage } from "../api/session-message";
 import { awningMandateAbi, usdcAbi } from "./abi";
 import { chain, hedgeApprovalDomain, hedgeApprovalTypes, mandateAddress, rpcUrl, toUnits, usdcAddress } from "./config";
 
@@ -22,6 +23,24 @@ function deviceAccount() {
 }
 
 export const deviceAddress = (): Address => deviceAccount().address;
+
+const SESSION_KEY = "awning.session";
+const SESSION_SECONDS = 12 * 3600;
+
+/** Proof for the server that requests come from this device's owner. Signed once, reused until it nears expiry. */
+export async function sessionToken(): Promise<string> {
+  const saved = localStorage.getItem(SESSION_KEY);
+  const account = deviceAccount();
+  if (saved) {
+    const { owner, expires } = JSON.parse(atob(saved));
+    if (owner === account.address && expires > Date.now() / 1000 + 60) return saved;
+  }
+  const expires = Math.floor(Date.now() / 1000) + SESSION_SECONDS;
+  const signature = await account.signMessage({ message: sessionMessage(account.address, expires) });
+  const token = btoa(JSON.stringify({ owner: account.address, expires, signature }));
+  localStorage.setItem(SESSION_KEY, token);
+  return token;
+}
 
 const transport = http(rpcUrl);
 const reader = createPublicClient({ chain, transport });

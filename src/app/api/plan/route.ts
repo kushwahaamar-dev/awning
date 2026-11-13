@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { address, fail, readBody } from "@/lib/api/respond";
+import { requireOwner } from "@/lib/api/session";
 import { secondOpinion } from "@/lib/desk/second-opinion";
 import { listMarkets } from "@/lib/gemini/client";
 import { exposureSchema } from "@/lib/hedge/exposure";
@@ -19,6 +20,7 @@ export async function POST(request: Request) {
 
   try {
     const { owner } = body;
+    if (owner) await requireOwner(request, owner);
     const origin = new URL(request.url).origin;
     const planned = await planCover(body.exposure, listMarkets, {
       coverRatio: body.coverRatio,

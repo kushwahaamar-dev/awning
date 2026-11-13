@@ -1,4 +1,6 @@
 import { settleOpenCovers } from "./covers/service";
+import { pollChain } from "./ledger/ingest";
+import { usesStreams } from "./ledger/source";
 import { recordOdds } from "./odds";
 
 let running = false;
@@ -10,6 +12,7 @@ export async function tick() {
   try {
     await settleOpenCovers();
     await recordOdds();
+    if (!usesStreams) await pollChain();
   } finally {
     running = false;
   }

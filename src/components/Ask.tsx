@@ -74,7 +74,7 @@ export function Ask({ turns, busy, error, unlisted, onSay, voice }: Props) {
               submit(draft);
             }
           }}
-          placeholder={question ? "Your answer" : "If it rains all weekend, my food truck…"}
+          placeholder={question ? "Your answer" : "If it's too cold to sit outside, my patio…"}
           className="w-full resize-none rounded-sm border-2 border-ink bg-paper p-4 text-xl placeholder:text-mute/70"
         />
         <div className="mt-3 flex items-center gap-4">

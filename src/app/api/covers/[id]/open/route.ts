@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { fail, hex, readBody } from "@/lib/api/respond";
-import { openCover } from "@/lib/covers/service";
+import { requireOwner } from "@/lib/api/session";
+import { coverOwner, openCover } from "@/lib/covers/service";
 import { pollChain } from "@/lib/ledger/ingest";
 import { usesStreams } from "@/lib/ledger/source";
 
@@ -11,6 +12,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/cove
   if (body instanceof Response) return body;
   try {
     const { id } = await params;
+    await requireOwner(request, await coverOwner(id as `0x${string}`));
     const result = await openCover(id as `0x${string}`, body);
     if (!usesStreams) await pollChain();
     return Response.json(result);

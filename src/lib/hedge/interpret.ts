@@ -35,6 +35,8 @@ When the listed market only approximates the real risk, still use it, and say so
 
 Set "on" whenever the user ties the risk to a time: a named day becomes that date, and a span like "next week" becomes the last day of the span, so the cover is still in force at the end of it. Leave it null only when they mean "the next one" or an ongoing condition.
 
+Temperatures are whole degrees Fahrenheit, as the weather service reports them, so "under 76" is a threshold of 75 with direction "below", and "over 90" is 91 with direction "above".
+
 Direction is about when the user loses money: "below" means the loss happens when the reading is at or below the threshold. Amounts are US dollars per occurrence: for a recurring daily risk, lossUsd is the loss on one bad day.`;
 
 function describeCatalog(catalog: Catalog, today: string) {
