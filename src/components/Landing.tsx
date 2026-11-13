@@ -6,6 +6,7 @@ import { shortAddress } from "@/lib/format";
 import { Ascii, type Scene } from "./Ascii";
 import { LiveFigures } from "./LiveFigures";
 import { External } from "./icons";
+import { Mark } from "./Logo";
 
 const STEPS: { scene: Scene; label: string; title: string; body: string }[] = [
   { scene: "storm", label: "Storm clouds and lightning over dark hills", title: "Say it", body: "Type or speak the thing that costs you money." },
@@ -51,24 +52,66 @@ const TRUSTED = [
   "The agent's key and the pool's keys share a server.",
 ];
 
-/** A section that uses the width: its title and one line stay put on the left while the detail scrolls on the right. */
-function Split({ id, title, lead, children }: { id: string; title: string; lead: ReactNode; children: ReactNode }) {
+/** A section that uses the width: title, one line and its key figure on the left, the detail on the right. */
+function Split({ id, title, lead, aside, children }: { id: string; title: string; lead: ReactNode; aside: ReactNode; children: ReactNode }) {
   return (
-    <section id={id} className="mt-40 grid scroll-mt-14 gap-x-20 gap-y-12 border-t border-line pt-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
+    <section id={id} className="mt-32 grid scroll-mt-14 gap-x-20 gap-y-12 border-t border-line pt-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
       <div className="lg:sticky lg:top-24 lg:self-start">
         <h2 className="heading">{title}</h2>
-        <div className="mt-5 max-w-md text-xl leading-snug text-muted">{lead}</div>
+        <p className="mt-5 max-w-md text-xl leading-snug text-muted">{lead}</p>
+        <div className="mt-10">{aside}</div>
       </div>
       <div>{children}</div>
     </section>
   );
 }
 
+function Figure({ value, tone = "", children }: { value: string; tone?: string; children: ReactNode }) {
+  return (
+    <>
+      <p className={`figure text-[clamp(3.5rem,7vw,6.5rem)] leading-none ${tone}`}>{value}</p>
+      <p className="mt-4 max-w-sm text-muted">{children}</p>
+    </>
+  );
+}
+
+/** A quote the app really gave on Arc testnet, shown so the product is on the page before anyone clicks. */
+function ExampleQuote() {
+  const rows = [
+    { label: "The market's odds it happens", value: "7%" },
+    { label: "What this cover costs", value: "$25.60", strong: true },
+    { label: "If it happens, you're up", value: "$274.40" },
+  ];
+  return (
+    <figure className="rise panel p-6 max-[88rem]:hidden" style={{ "--i": 3 } as React.CSSProperties}>
+      <p className="text-soft">&ldquo;If Chicago&rsquo;s high stays under 46 tomorrow, my coffee cart is out about $300.&rdquo;</p>
+      <p className="mt-5 flex items-center justify-between border-t border-line pt-5 text-sm text-muted">
+        <span className="flex items-center gap-2">
+          <Mark className="size-4 text-accent" />
+          Cover
+        </span>
+        <span className="num">Saturday, Nov 14</span>
+      </p>
+      <p className="title mt-4">Pays $300 if Chicago&rsquo;s high is 45°F or below</p>
+      <dl className="rows mt-4 border-y border-line">
+        {rows.map(({ label, value, strong }) => (
+          <div key={label} className={`flex items-baseline justify-between gap-6 py-2.5 ${strong ? "text-fg" : "text-muted"}`}>
+            <dt>{label}</dt>
+            <dd className={`num ${strong ? "text-xl text-accent" : "text-soft"}`}>{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="status status-accent mt-4">The $300 is locked in the pool before you pay</p>
+      <figcaption className="mt-4 text-xs text-faint">A real quote on Arc testnet, 13 November 2026.</figcaption>
+    </figure>
+  );
+}
+
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="py-4 pr-5 xl:px-5 xl:first:pl-0">
-      <dt className="text-xs text-muted">{label}</dt>
-      <dd className="num mt-1.5">{children}</dd>
+    <div className="flex items-baseline justify-between gap-6 py-3">
+      <dt className="text-muted">{label}</dt>
+      <dd className="num text-sm">{children}</dd>
     </div>
   );
 }
@@ -87,36 +130,41 @@ function Contract({ address }: { address: string | undefined }) {
 export function Landing() {
   return (
     <>
-      <section className="relative pt-24 pb-[62vw] sm:pt-32 lg:min-h-[58vw] lg:pb-0">
-        <div aria-hidden className="bleed">
-          <Ascii scene="street" label="" className="hero-scene" />
+      <section className="pt-20 sm:pt-28">
+        <div className="grid items-start gap-x-16 gap-y-12 min-[88rem]:grid-cols-[minmax(0,1fr)_25rem]">
+          <div>
+            <h1 className="display rise">
+              <span className="block lg:whitespace-nowrap">Say what could go wrong.</span>
+              <span className="block lg:whitespace-nowrap">Get paid when it does.</span>
+            </h1>
+            <p className="rise mt-7 max-w-xl text-lg text-muted" style={{ "--i": 1 } as React.CSSProperties}>
+              Cover for the bad days insurers won&rsquo;t touch. Priced by Gemini prediction markets, paid out on Arc.
+            </p>
+            <Form action="/app" className="composer rise mt-9 flex max-w-2xl items-center gap-2 p-2 pl-5" style={{ "--i": 2 } as React.CSSProperties}>
+              <label htmlFor="ask" className="sr-only">
+                Describe the risk
+              </label>
+              <input
+                id="ask"
+                name="risk"
+                autoComplete="off"
+                placeholder="If Austin stays under 76° tomorrow, my ice cream truck loses $300"
+                className="min-w-0 grow bg-transparent py-2 text-lg placeholder:text-faint focus:outline-none"
+              />
+              <button type="submit" className="btn btn-primary">
+                Find cover
+              </button>
+            </Form>
+          </div>
+          <ExampleQuote />
         </div>
-        <h1 className="display rise">
-          <span className="block">Say what could go wrong.</span>
-          <span className="block">Get paid when it does.</span>
-        </h1>
-        <p className="rise mt-7 max-w-xl text-lg text-muted" style={{ "--i": 1 } as React.CSSProperties}>
-          Cover for the bad days insurers won&rsquo;t touch. Priced by Gemini prediction markets, paid out on Arc.
-        </p>
-        <Form action="/app" className="composer rise mt-9 flex max-w-2xl items-center gap-2 p-2 pl-5" style={{ "--i": 2 } as React.CSSProperties}>
-          <label htmlFor="ask" className="sr-only">
-            Describe the risk
-          </label>
-          <input
-            id="ask"
-            name="risk"
-            autoComplete="off"
-            placeholder="If Austin stays under 76° tomorrow, my ice cream truck loses $300"
-            className="min-w-0 grow bg-transparent py-2 text-lg placeholder:text-faint focus:outline-none"
-          />
-          <button type="submit" className="btn btn-primary">
-            Find cover
-          </button>
-        </Form>
+        <div aria-hidden className="band rise mt-6" style={{ "--i": 4 } as React.CSSProperties}>
+          <Ascii scene="street" label="" />
+        </div>
       </section>
       <LiveFigures />
 
-      <section id="how" className="mt-40 scroll-mt-14 border-t border-line pt-12">
+      <section id="how" className="mt-32 scroll-mt-14 border-t border-line pt-12">
         <div className="grid gap-x-20 gap-y-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
           <h2 className="heading">How it works</h2>
           <p className="max-w-md text-xl leading-snug text-muted lg:pt-2">Describe the risk in a sentence. The rest is done for you.</p>
@@ -137,10 +185,13 @@ export function Landing() {
       <Split
         id="limits"
         title="An agent you can&rsquo;t rob"
-        lead={
+        lead={<>Its spending limits are a contract on {chainLabel}. We hand its key to an attacker, and this is what the chain does.</>}
+        aside={
           <>
-            <p>Its spending limits are a contract on {chainLabel}. We hand its key to an attacker, and this is what the chain does.</p>
-            <Link href="/agent" className="btn btn-secondary mt-7 text-base">
+            <Figure value="$2.00" tone="text-accent">
+              The most they get: one day&rsquo;s data budget. You set it, and $2 is the default.
+            </Figure>
+            <Link href="/agent" className="btn btn-secondary mt-7">
               Run it yourself
             </Link>
           </>
@@ -153,39 +204,49 @@ export function Landing() {
           </p>
           <ol className="rows">
             {ATTACK.map(({ tried, verdict, tone }) => (
-              <li key={tried} className="flex items-center justify-between gap-6 px-6 py-4 text-lg">
+              <li key={tried} className="flex items-center justify-between gap-6 px-6 py-5 text-lg">
                 <span className="text-soft">{tried}</span>
                 <span className={`status shrink-0 ${tone}`}>{verdict}</span>
               </li>
             ))}
           </ol>
-          <p className="border-t border-line px-6 py-5 text-lg">The most they get is one day&rsquo;s data budget. You set it; the default is $2.</p>
         </div>
       </Split>
 
-      <Split id="built" title="How it&rsquo;s built" lead="One cover, from sentence to payout, and what does each step.">
+      <Split
+        id="built"
+        title="How it&rsquo;s built"
+        lead="One cover, from sentence to payout, and what does each step."
+        aside={
+          <dl className="rows max-w-md border-y border-line">
+            <Fact label="Agent's limits">
+              <Contract address={mandateAddress} />
+            </Fact>
+            <Fact label="Cover pool">
+              <Contract address={poolAddress} />
+            </Fact>
+            <Fact label="Contract tests">126 passing</Fact>
+            <Fact label="Chain">{chainLabel[0].toUpperCase() + chainLabel.slice(1)}</Fact>
+          </dl>
+        }
+      >
         <ol className="rows border-y border-line">
           {PATH.map(({ title, body, made }) => (
-            <li key={title} className="grid items-baseline gap-x-8 gap-y-1 py-4 sm:grid-cols-[6rem_minmax(0,1fr)_auto]">
+            <li key={title} className="grid items-baseline gap-x-8 gap-y-1 py-5 sm:grid-cols-[6rem_minmax(0,1fr)_auto]">
               <h3 className="text-lg font-[510]">{title}</h3>
               <p className="text-lg text-muted">{body}</p>
               <p className="num text-sm text-soft">{made.join(" + ")}</p>
             </li>
           ))}
         </ol>
-        <dl className="mt-4 grid grid-cols-2 divide-line xl:grid-cols-4 xl:divide-x">
-          <Fact label="Agent's limits">
-            <Contract address={mandateAddress} />
-          </Fact>
-          <Fact label="Cover pool">
-            <Contract address={poolAddress} />
-          </Fact>
-          <Fact label="Contract tests">126 passing</Fact>
-          <Fact label="Chain">{chainLabel[0].toUpperCase() + chainLabel.slice(1)}</Fact>
-        </dl>
       </Split>
 
-      <Split id="checked" title="What we checked" lead="126 contract tests, fuzzing, and an independent review before anyone else looked.">
+      <Split
+        id="checked"
+        title="What we checked"
+        lead="We had it reviewed independently, fixed what was found, and wrote down what is still trusted."
+        aside={<Figure value="126">Contract tests, with fuzzing and invariant runs on both contracts.</Figure>}
+      >
         <div className="grid gap-x-14 gap-y-12 xl:grid-cols-2">
           <div>
             <h3 className="title">Found in review, now fixed</h3>
@@ -210,7 +271,7 @@ export function Landing() {
         </div>
       </Split>
 
-      <section className="mt-40 grid justify-items-center border-t border-line pt-28 text-center">
+      <section className="mt-32 grid justify-items-center border-t border-line pt-24 text-center">
         <h2 className="display">Say what could go wrong.</h2>
         <Link href="/app" className="btn btn-lg btn-primary mt-9">
           Open the app
