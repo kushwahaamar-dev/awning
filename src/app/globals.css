@@ -16,7 +16,7 @@
   --color-good: #4cb782;
   --color-bad: #f0635d;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   --text-xs: 0.75rem;
@@ -37,11 +37,10 @@ html {
 body {
   background: var(--color-bg);
   color: var(--color-fg);
-  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   font-size: 0.9375rem;
   line-height: 1.6;
-  letter-spacing: -0.011em;
-  font-feature-settings: "cv01", "ss03";
+  letter-spacing: -0.006em;
 }
 
 :focus-visible {
@@ -56,10 +55,11 @@ body {
 @layer components {
   /* Type. One family, medium weight, tight: the sizes do the talking. */
   .display {
-    font-size: clamp(2.5rem, 5.4vw, 4.25rem);
-    font-weight: 510;
-    line-height: 1.02;
-    letter-spacing: -0.03em;
+    font-family: var(--font-geist-serif), ui-serif, Georgia, serif;
+    font-size: clamp(2.75rem, 6.2vw, 5rem);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.025em;
     text-wrap: balance;
   }
   .heading {
@@ -74,6 +74,11 @@ body {
     font-weight: 510;
     line-height: 1.25;
     letter-spacing: -0.018em;
+  }
+  /* A figure read live from the chain, set in dots like the scenes. */
+  .figure {
+    font-family: var(--font-geist-pixel-circle), var(--font-geist-mono), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
   }
   /* Money, odds, addresses, times: anything that is read as a value. */
   .num {
@@ -144,12 +149,12 @@ body {
   }
   .btn-danger,
   .btn-recording {
-    background: rgb(240 99 93 / 0.12);
-    border-color: rgb(240 99 93 / 0.32);
+    background: var(--color-raised);
+    border-color: var(--color-edge);
     color: #ff8a84;
   }
   .btn-danger:hover:not(:disabled) {
-    background: rgb(240 99 93 / 0.2);
+    background: #1f2023;
   }
   .btn-recording {
     animation: pulse 1400ms ease-in-out infinite;
@@ -168,34 +173,31 @@ body {
     text-decoration-color: var(--color-muted);
   }
 
-  .badge {
+  /* A state: a small dot that carries the colour, and plain text beside it. */
+  .status {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
-    height: 1.5rem;
-    padding: 0 0.5rem;
-    border-radius: 999px;
-    border: 1px solid var(--color-line);
-    background: rgb(255 255 255 / 0.03);
+    gap: 0.5rem;
     color: var(--color-soft);
-    font-size: 0.75rem;
-    font-weight: 510;
+    font-size: 0.8125rem;
     white-space: nowrap;
   }
-  .badge-accent {
-    border-color: rgb(242 181 74 / 0.3);
-    background: rgb(242 181 74 / 0.1);
-    color: var(--color-accent);
+  .status::before {
+    content: "";
+    flex: none;
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: var(--dot, var(--color-faint));
   }
-  .badge-good {
-    border-color: rgb(76 183 130 / 0.3);
-    background: rgb(76 183 130 / 0.1);
-    color: #6fd3a0;
+  .status-accent {
+    --dot: var(--color-accent);
   }
-  .badge-bad {
-    border-color: rgb(240 99 93 / 0.32);
-    background: rgb(240 99 93 / 0.1);
-    color: #ff8a84;
+  .status-good {
+    --dot: var(--color-good);
+  }
+  .status-bad {
+    --dot: var(--color-bad);
   }
   .dot {
     flex: none;

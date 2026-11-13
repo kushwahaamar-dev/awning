@@ -46,10 +46,7 @@ export function Storefront() {
               ))}
         </nav>
         <span className="ml-auto flex items-center gap-3">
-          <span className="badge max-sm:hidden">
-            <span className="dot text-good" />
-            {isLocalChain ? "Local test chain" : chain.name}
-          </span>
+          <span className="status status-good text-muted max-sm:hidden">{isLocalChain ? "Local test chain" : chain.name}</span>
           {landing && (
             <Link href="/app" className="btn btn-primary h-8 px-3 text-sm">
               Open the app

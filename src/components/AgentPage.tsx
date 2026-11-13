@@ -60,8 +60,7 @@ function Limits({ account }: { account: Account }) {
       <div className="panel p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
           <h2 className="title">Allowance</h2>
-          <span className={`badge ${a.paused ? "badge-bad" : "badge-good"}`}>
-            <span className="dot" />
+          <span className={`status ${a.paused ? "status-bad" : "status-good"}`}>
             {a.paused ? "Paused" : `In force on ${account.setup.chainName}`}
           </span>
         </div>
@@ -94,7 +93,7 @@ function Limits({ account }: { account: Account }) {
 
       <div className="panel p-6 sm:p-8">
         <p className="text-muted">The most a hijacked agent could take right now</p>
-        <p className="num mt-4 text-[clamp(3rem,6vw,4.5rem)] leading-none font-medium tracking-[-0.04em] text-accent">{cents(a.dataLeftToday)}</p>
+        <p className="figure mt-4 text-[clamp(3rem,6vw,4.5rem)] leading-none text-accent">{cents(a.dataLeftToday)}</p>
         <p className="mt-4 text-muted">The rest can only go to the pool, which returns anything it didn&rsquo;t offer.</p>
         <button type="button" onClick={togglePause} disabled={busy} className={`btn mt-6 ${a.paused ? "btn-primary" : "btn-danger"}`}>
           {busy ? "One moment…" : a.paused ? "Let the agent resume" : "Pause the agent"}
@@ -107,9 +106,9 @@ function Limits({ account }: { account: Account }) {
 }
 
 const DECISIONS = {
-  bought: { label: "Bought", tone: "badge-good" },
+  bought: { label: "Bought", tone: "status-good" },
   skipped: { label: "Left it", tone: "" },
-  refused: { label: "Refused", tone: "badge-bad" },
+  refused: { label: "Refused", tone: "status-bad" },
 } as const;
 
 /** The numbers the agent had in front of it, so its reasoning can be checked against them. */
@@ -158,7 +157,7 @@ function StandingOrders({ account }: { account: Account }) {
                 <li key={decision.id} className="grid gap-x-8 gap-y-2 px-6 py-5 sm:grid-cols-[8.5rem_1fr] sm:px-8">
                   <div className="flex items-center gap-3 sm:flex-col sm:items-start sm:gap-2">
                     <p className="num text-sm text-muted">{calendarDay(decision.day)}</p>
-                    <span className={`badge ${DECISIONS[decision.kind].tone}`}>{DECISIONS[decision.kind].label}</span>
+                    <span className={`status ${DECISIONS[decision.kind].tone}`}>{DECISIONS[decision.kind].label}</span>
                   </div>
                   <div>
                     <p className="text-soft">{decision.reason}</p>
@@ -221,7 +220,7 @@ function HijackTest() {
                     {!step.ok && <p className="mt-0.5 text-sm text-muted">{sentence(REFUSAL[step.reason])}</p>}
                     {step.returned && <p className="mt-0.5 text-sm text-muted">Your limits allowed it, but the pool never offered that cover.</p>}
                   </div>
-                  <span className={`badge land shrink-0 ${!step.ok ? "badge-bad" : step.returned ? "badge-accent" : ""}`} style={order(i)}>
+                  <span className={`status land shrink-0 ${!step.ok ? "status-bad" : step.returned ? "status-accent" : ""}`} style={order(i)}>
                     {!step.ok ? "Refused" : step.returned ? "Sent back" : "Went through"}
                   </span>
                 </li>

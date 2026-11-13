@@ -7,20 +7,20 @@ import type { BlockReason } from "@/lib/chain/config";
 import { useAccount, type Cover } from "./account";
 import { External, Lock } from "./icons";
 
-function state(cover: Cover): { label: string; tone: "" | "badge-accent" | "badge-good" | "badge-bad" } {
+function state(cover: Cover): { label: string; tone: "" | "status-accent" | "status-good" | "status-bad" } {
   switch (cover.status) {
     case "opening":
       return { label: "Being placed", tone: "" };
     case "open":
-      return { label: `In force until ${day(cover.expiresAt)}`, tone: "badge-accent" };
+      return { label: `In force until ${day(cover.expiresAt)}`, tone: "status-accent" };
     case "paid":
-      return { label: `Paid ${cents(cover.payout ?? 0)}`, tone: "badge-good" };
+      return { label: `Paid ${cents(cover.payout ?? 0)}`, tone: "status-good" };
     case "refunded":
       return { label: `${cents(cover.payout ?? 0)} returned`, tone: "" };
     case "expired":
       return { label: "Ended, it didn't happen", tone: "" };
     case "blocked":
-      return { label: `Refused: ${REFUSAL[cover.note as BlockReason] ?? cover.note}`, tone: "badge-bad" };
+      return { label: `Refused: ${REFUSAL[cover.note as BlockReason] ?? cover.note}`, tone: "status-bad" };
     default:
       return { label: cover.status, tone: "" };
   }
@@ -62,7 +62,7 @@ export function Covers() {
                   )}
                 </p>
               </div>
-              <span className={`badge justify-self-start ${tone}`}>{label}</span>
+              <span className={`status justify-self-start ${tone}`}>{label}</span>
             </li>
           );
         })}
@@ -89,7 +89,7 @@ export function Covers() {
           ].map(({ label, value }) => (
             <div key={label} className="px-5 py-5 first:pl-0">
               <dt className="text-xs text-muted">{label}</dt>
-              <dd className="num mt-2 text-[clamp(1.125rem,2.2vw,1.625rem)]">{usd(Math.round(value))}</dd>
+              <dd className="figure mt-2 text-[clamp(1.25rem,2.4vw,1.75rem)]">{usd(Math.round(value))}</dd>
             </div>
           ))}
         </dl>

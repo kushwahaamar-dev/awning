@@ -15,10 +15,10 @@ const STEPS: { scene: Scene; label: string; title: string; body: string }[] = [
 
 // What a stolen agent key can do, in the order the test on the agent page tries it.
 const ATTACK = [
-  { tried: "Pay a premium to the attacker's own address", verdict: "Refused", tone: "badge-bad" },
-  { tried: "Pay the pool for cover nobody offered", verdict: "Sent back", tone: "badge-accent" },
-  { tried: "Spend everything on one premium", verdict: "Refused", tone: "badge-bad" },
-  { tried: "Draw everything as data spending", verdict: "Refused", tone: "badge-bad" },
+  { tried: "Pay a premium to the attacker's own address", verdict: "Refused", tone: "status-bad" },
+  { tried: "Pay the pool for cover nobody offered", verdict: "Sent back", tone: "status-accent" },
+  { tried: "Spend everything on one premium", verdict: "Refused", tone: "status-bad" },
+  { tried: "Draw everything as data spending", verdict: "Refused", tone: "status-bad" },
   { tried: "Take what's left of today's data allowance", verdict: "Went through", tone: "" },
 ];
 
@@ -139,7 +139,7 @@ export function Landing() {
             {ATTACK.map(({ tried, verdict, tone }) => (
               <li key={tried} className="flex items-center justify-between gap-6 px-5 py-3.5">
                 <span className="text-soft">{tried}</span>
-                <span className={`badge shrink-0 ${tone}`}>{verdict}</span>
+                <span className={`status shrink-0 ${tone}`}>{verdict}</span>
               </li>
             ))}
           </ol>
@@ -183,9 +183,7 @@ export function Landing() {
         </Head>
         <div className="mt-14 grid gap-x-16 gap-y-12 lg:grid-cols-2">
           <div>
-            <h3 className="flex items-center gap-3 font-[510]">
-              <span className="badge badge-good">Fixed</span> Found in review
-            </h3>
+            <h3 className="font-[510]">Found in review, now fixed</h3>
             <ul className="rows mt-5 border-y border-line text-muted">
               {FIXED.map((item) => (
                 <li key={item} className="py-3.5">
@@ -195,9 +193,7 @@ export function Landing() {
             </ul>
           </div>
           <div>
-            <h3 className="flex items-center gap-3 font-[510]">
-              <span className="badge badge-accent">Open</span> Still trusted
-            </h3>
+            <h3 className="font-[510]">Still trusted</h3>
             <ul className="rows mt-5 border-y border-line text-muted">
               {TRUSTED.map((item) => (
                 <li key={item} className="py-3.5">

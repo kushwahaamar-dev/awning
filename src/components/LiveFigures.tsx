@@ -29,7 +29,7 @@ export function LiveFigures() {
       {figures.map(({ label, value }) => (
         <div key={label} className="py-5 pr-5 lg:px-5 lg:first:pl-0">
           <dt className="text-xs text-muted">{label}</dt>
-          <dd className="num mt-1.5 text-xl">{value}</dd>
+          <dd className="figure mt-1 text-[1.75rem] leading-tight">{value}</dd>
         </div>
       ))}
     </dl>
