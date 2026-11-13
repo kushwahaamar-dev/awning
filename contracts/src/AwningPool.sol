@@ -15,7 +15,9 @@ import {AwningMandate} from "./AwningMandate.sol";
 /// happened, the pool pays the owner's vault or keeps the premium. Depositors hold ERC-4626
 /// shares and can only withdraw what is not locked behind open cover.
 /// @dev The pool never learns of a premium arriving; it reads the mandate to see whether an offer
-/// was taken. Terms that don't match an offer exactly can be sent back by anyone with `reject`.
+/// was taken. Anything else an owner's vault paid here can be sent back by anyone with `reject`.
+/// For the same reason the pool keeps its own books: a premium counts as the pool's only once the
+/// cover it paid for has settled, so money that merely landed here can't be withdrawn or promised.
 contract AwningPool is ERC4626, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -43,8 +45,10 @@ contract AwningPool is ERC4626, ReentrancyGuard {
     /// Most of the pool that may ride on a single market, in basis points of its assets.
     uint16 public immutable maxMarketShareBps;
 
-    /// USDC promised to open offers and covers. Never more than the pool holds.
+    /// USDC promised to open offers and covers. Never more than the pool has booked.
     uint256 public locked;
+    /// What the pool counts as its own: deposits, less withdrawals and payouts, plus premiums earned.
+    uint256 private booked;
     mapping(bytes32 hedgeId => Offer) public offers;
     mapping(bytes32 marketRef => uint256) public exposure;
 
@@ -100,17 +104,23 @@ contract AwningPool is ERC4626, ReentrancyGuard {
         maxMarketShareBps = maxMarketShareBps_;
     }
 
-    /// @notice USDC in the pool that isn't promised to anyone.
-    function freeAssets() public view returns (uint256) {
-        uint256 held = totalAssets();
-        return held > locked ? held - locked : 0;
+    /// @notice What depositors' shares are worth in total. Premiums for cover still open, and
+    /// anything sent here that the pool didn't ask for, are held but not counted.
+    function totalAssets() public view override returns (uint256) {
+        return booked;
     }
 
-    /// @notice Whether the owner's agent has paid the premium for this offer, on exactly its terms.
+    /// @notice USDC in the pool that isn't promised to anyone.
+    function freeAssets() public view returns (uint256) {
+        return booked - locked;
+    }
+
+    /// @notice Whether the owner's agent paid the premium for this offer, on exactly its terms and
+    /// before it lapsed.
     function taken(bytes32 hedgeId) public view returns (bool) {
         Offer storage o = offers[hedgeId];
         if (o.status != OfferStatus.Live) return false;
-        (bool open, bool matches,,) = _onMandate(hedgeId, o);
+        (bool open, bool matches,) = _onMandate(o.owner, hedgeId, o);
         return open && matches;
     }
 
@@ -134,7 +144,7 @@ contract AwningPool is ERC4626, ReentrancyGuard {
         if (payout > freeAssets()) revert NotEnoughFree();
 
         uint256 onMarket = exposure[marketRef] + payout;
-        if (onMarket > (totalAssets() * maxMarketShareBps) / 10_000) revert TooMuchOnOneMarket();
+        if (onMarket > (booked * maxMarketShareBps) / 10_000) revert TooMuchOnOneMarket();
 
         exposure[marketRef] = onMarket;
         locked += payout;
@@ -155,10 +165,12 @@ contract AwningPool is ERC4626, ReentrancyGuard {
     function settle(bytes32 hedgeId, bool happened, bytes32 evidence) external nonReentrant {
         if (msg.sender != resolver) revert NotResolver();
         Offer storage o = _takenOffer(hedgeId);
-        uint256 payout = happened ? o.payout : 0;
-        address owner = o.owner;
+        (address owner, uint256 payout) = (o.owner, happened ? o.payout : 0);
         _release(o);
+        // the premium is earned now, whichever way it went
+        booked = booked + o.premium - payout;
         _close(
+            owner,
             hedgeId,
             happened ? AwningMandate.HedgeStatus.Paid : AwningMandate.HedgeStatus.Expired,
             payout,
@@ -173,7 +185,7 @@ contract AwningPool is ERC4626, ReentrancyGuard {
         Offer storage o = _takenOffer(hedgeId);
         (address owner, uint256 premium) = (o.owner, o.premium);
         _release(o);
-        _close(hedgeId, AwningMandate.HedgeStatus.Refunded, premium, evidence);
+        _close(owner, hedgeId, AwningMandate.HedgeStatus.Refunded, premium, evidence);
         emit Voided(hedgeId, owner, premium, evidence);
     }
 
@@ -184,33 +196,36 @@ contract AwningPool is ERC4626, ReentrancyGuard {
         if (block.timestamp <= o.resolveBy) revert StillOpen();
         (address owner, uint256 payout) = (o.owner, o.payout);
         _release(o);
-        _close(hedgeId, AwningMandate.HedgeStatus.Paid, payout, bytes32(0));
+        booked = booked + o.premium - payout;
+        _close(owner, hedgeId, AwningMandate.HedgeStatus.Paid, payout, bytes32(0));
         emit ClaimedUnresolved(hedgeId, owner, payout);
     }
 
-    /// @notice Anyone. Unlock an offer nobody took in time.
+    /// @notice Anyone. Unlock an offer nobody took in time. A premium paid late, or on other terms,
+    /// doesn't count as taking it; `reject` sends that back.
     function lapse(bytes32 hedgeId) external nonReentrant {
         Offer storage o = offers[hedgeId];
         if (o.status != OfferStatus.Live) revert OfferNotLive();
         if (block.timestamp <= o.takeBy) revert StillOpen();
-        (bool open,,,) = _onMandate(hedgeId, o);
-        if (open) revert AlreadyTaken();
+        (bool open, bool matches,) = _onMandate(o.owner, hedgeId, o);
+        if (open && matches) revert AlreadyTaken();
         _release(o);
         emit Lapsed(hedgeId);
     }
 
-    /// @notice Anyone. Send back a premium that reached the pool without a matching live offer,
-    /// which is what a stolen agent key paying the pool directly would produce.
-    function reject(bytes32 hedgeId) external nonReentrant {
+    /// @notice Anyone. Send back a premium an owner's vault paid the pool without taking a live
+    /// offer: no offer at all, different terms, or too late. A stolen agent key paying the pool
+    /// directly produces exactly this.
+    function reject(address owner, bytes32 hedgeId) external nonReentrant {
         Offer storage o = offers[hedgeId];
-        (bool open, bool matches, uint256 premium, address owner) = _onMandate(hedgeId, o);
+        (bool open, bool matches, uint256 premium) = _onMandate(owner, hedgeId, o);
         if (!open) revert NothingToReject();
-        if (o.status == OfferStatus.Live) {
+        if (o.status == OfferStatus.Live && o.owner == owner) {
             if (matches) revert AlreadyTaken();
-            // the hedge id is spent on the mandate, so this offer can never be taken
+            // this owner's id is spent on the mandate, so the offer made to them can never be taken
             _release(o);
         }
-        _close(hedgeId, AwningMandate.HedgeStatus.Refunded, premium, bytes32(0));
+        _close(owner, hedgeId, AwningMandate.HedgeStatus.Refunded, premium, bytes32(0));
         emit Rejected(hedgeId, owner, premium);
     }
 
@@ -228,28 +243,50 @@ contract AwningPool is ERC4626, ReentrancyGuard {
         return owned < free ? owned : free;
     }
 
+    function _deposit(address caller, address receiver, uint256 assets, uint256 shares)
+        internal
+        override
+    {
+        super._deposit(caller, receiver, assets, shares);
+        booked += assets;
+    }
+
+    function _withdraw(
+        address caller,
+        address receiver,
+        address owner,
+        uint256 assets,
+        uint256 shares
+    ) internal override {
+        booked -= assets;
+        super._withdraw(caller, receiver, owner, assets, shares);
+    }
+
     function _takenOffer(bytes32 hedgeId) private view returns (Offer storage o) {
         o = offers[hedgeId];
         if (o.status != OfferStatus.Live) revert OfferNotLive();
-        (bool open, bool matches,,) = _onMandate(hedgeId, o);
+        (bool open, bool matches,) = _onMandate(o.owner, hedgeId, o);
         if (!open || !matches) revert NotTaken();
     }
 
-    /// @dev What the mandate holds under this id: whether it is an open hedge paid to this pool,
-    /// whether its terms are exactly the offer's, the premium it paid, and whose vault paid it.
-    function _onMandate(bytes32 hedgeId, Offer storage o)
+    /// @dev What the mandate holds for this owner under this id: whether it is an open hedge paid
+    /// to this pool, whether it took the offer (same owner and terms, paid before the offer
+    /// lapsed), and the premium it paid.
+    function _onMandate(address owner, bytes32 hedgeId, Offer storage o)
         private
         view
-        returns (bool open, bool matches, uint256 premium, address owner)
+        returns (bool open, bool matches, uint256 premium)
     {
         address venue;
         uint96 maxPayout;
+        uint64 openedAt;
         AwningMandate.HedgeStatus status;
         bytes32 marketRef;
-        (owner, venue, premium, maxPayout,, status, marketRef) = mandate.hedges(hedgeId);
+        (, venue, premium, maxPayout, openedAt, status, marketRef) =
+            mandate.hedges(mandate.hedgeKey(owner, hedgeId));
         open = status == AwningMandate.HedgeStatus.Open && venue == address(this);
         matches = owner == o.owner && premium == o.premium && maxPayout == o.payout
-            && marketRef == o.marketRef;
+            && marketRef == o.marketRef && openedAt <= o.takeBy;
     }
 
     function _release(Offer storage o) private {
@@ -259,12 +296,15 @@ contract AwningPool is ERC4626, ReentrancyGuard {
     }
 
     function _close(
+        address owner,
         bytes32 hedgeId,
         AwningMandate.HedgeStatus outcome,
         uint256 amount,
         bytes32 evidence
     ) private {
-        if (amount != 0) IERC20(asset()).forceApprove(address(mandate), amount);
-        mandate.closeHedge(hedgeId, outcome, amount, evidence);
+        if (amount != 0) {
+            IERC20(asset()).forceApprove(address(mandate), amount);
+        }
+        mandate.closeHedge(owner, hedgeId, outcome, amount, evidence);
     }
 }

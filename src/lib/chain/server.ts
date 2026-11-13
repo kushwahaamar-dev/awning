@@ -4,7 +4,9 @@ import {
   createPublicClient,
   createTestClient,
   createWalletClient,
+  encodeAbiParameters,
   http,
+  keccak256,
   nonceManager,
   parseEther,
   parseEventLogs,
@@ -127,8 +129,17 @@ export const settleCover = async (hedgeId: Hex, happened: boolean, evidence: Hex
 /** Unlocks an offer nobody took in time. */
 export const lapseOffer = async (hedgeId: Hex) => sent(await signers().venue.writeContract({ ...pool, functionName: "lapse", args: [hedgeId] }));
 
-/** Sends back a premium that reached the pool without a matching offer. */
-export const rejectPremium = async (hedgeId: Hex) => sent(await signers().venue.writeContract({ ...pool, functionName: "reject", args: [hedgeId] }));
+/** Sends back a premium an owner's vault paid the pool without taking a live offer. */
+export const rejectPremium = async (owner: Address, hedgeId: Hex) =>
+  sent(await signers().venue.writeContract({ ...pool, functionName: "reject", args: [owner, hedgeId] }));
+
+const OFFER_STATES = ["none", "live", "closed"] as const;
+
+/** Whether the pool still has a payout locked under this id. */
+export async function offerState(hedgeId: Hex): Promise<(typeof OFFER_STATES)[number]> {
+  const offer = await publicClient.readContract({ ...pool, functionName: "offers", args: [hedgeId] });
+  return OFFER_STATES[offer[5]];
+}
 
 /** Whether the premium was paid on exactly the terms the pool offered, which is what makes the cover real. */
 export const coverTaken = (hedgeId: Hex) => publicClient.readContract({ ...pool, functionName: "taken", args: [hedgeId] });
@@ -146,9 +157,11 @@ export async function readPool(): Promise<PoolState> {
 
 const HEDGE_STATES = ["none", "open", "paid", "expired", "refunded"] as const;
 
-/** What the contract itself says about a hedge, for when the database and the chain may disagree. */
-export async function hedgeState(hedgeId: Hex): Promise<(typeof HEDGE_STATES)[number]> {
-  const hedge = await publicClient.readContract({ ...mandate, functionName: "hedges", args: [hedgeId] });
+/** What the mandate itself says about an owner's hedge, for when the database and the chain may disagree. */
+export async function hedgeState(owner: Address, hedgeId: Hex): Promise<(typeof HEDGE_STATES)[number]> {
+  // The mandate files hedges per owner; this is its `hedgeKey`.
+  const key = keccak256(encodeAbiParameters([{ type: "address" }, { type: "bytes32" }], [owner, hedgeId]));
+  const hedge = await publicClient.readContract({ ...mandate, functionName: "hedges", args: [key] });
   return HEDGE_STATES[hedge[5]];
 }
 

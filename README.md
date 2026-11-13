@@ -96,15 +96,22 @@ depositors earn premiums and bear payouts.
 | Step | What happens onchain |
 | --- | --- |
 | Offer | The underwriter posts `offer(hedgeId, owner, premium, payout, marketRef, takeBy, resolveBy)`. The pool must hold `payout` free, and locks it. No more than half the pool may ride on one market |
-| Take | The owner's agent pays the premium through the mandate with the pool as venue. The pool never hears about it; `taken(hedgeId)` reads the mandate and checks the terms match the offer exactly |
+| Take | The owner's agent pays the premium through the mandate with the pool as venue. The pool never hears about it; `taken(hedgeId)` reads the mandate and checks that the same owner paid exactly the offered terms before `takeBy` |
 | Settle | The resolver reports whether the event happened. The pool pays the owner's vault the full payout, or keeps the premium |
 | Lapse | An offer nobody took by `takeBy` can be unlocked by anyone |
-| Reject | A premium that reached the pool without a matching live offer can be sent back by anyone |
+| Reject | A premium that reached the pool without taking a live offer (none, other terms, or too late) can be sent back by anyone |
 | Claim | If no result is reported by `resolveBy` (three days after the market closes), anyone can trigger the payout to the owner |
 
-Depositors can withdraw only what isn't locked. The invariant suite checks, over random sequences
-of every action, that the pool always holds what it has locked and that `locked` equals the sum of
-live offers.
+Depositors can withdraw only what isn't locked. The pool keeps its own books: a premium counts as
+the pool's only once its cover has settled, so money that merely landed there can't be withdrawn or
+promised to someone else. Hedge ids belong to their owner in the mandate, so nobody can use up an
+id the pool has offered to someone else. The invariant suite checks, over random sequences of every
+action including late and mismatched payments, that the pool holds everything on its books, that
+its books cover everything locked, and that `locked` equals the sum of live offers.
+
+An independent review of the first version of the pool found that an offer could be taken after its
+deadline, that another account could spend an offered id, and that stray premiums were counted as
+free assets. All three are fixed and have tests.
 
 ## Architecture
 
@@ -199,8 +206,10 @@ One decision is kept per order per market day, so a day is never bought twice.
   A spread for depositors is one parameter away and deliberately not set.
 - **Liquidity is thin, on Gemini and in the pool.** Many Gemini contracts have no offer. The pool
   refuses cover it can't fully lock, and caps any one market at half its assets.
-- **Depositors' shares are priced on the pool's balance,** not marked to its open book. Someone
-  depositing while the pool has cover outstanding buys into that risk at face value.
+- **Depositors' shares are priced on the pool's books,** not marked to its open cover. Someone
+  depositing while the pool has cover outstanding buys into that risk at face value, and a depositor
+  who learns a result before it is reported can leave ahead of the loss. A withdrawal delay would
+  close that; it isn't built.
 - **A quote lasts five minutes.** After that the offer lapses and the payout is unlocked, so a price
   can't be held as a free option on where the market goes. Cover that would cost as much as it pays
   is not offered.
@@ -303,7 +312,7 @@ can leave a transaction pending.
 ```bash
 npm test                       # engine, settlement and forecast logic
 npm run typecheck && npm run lint
-cd contracts && forge test     # 121 tests including fuzz and invariants on both contracts
+cd contracts && forge test     # 126 tests including fuzz and invariants on both contracts
 LIVE=1 npx vitest run src/lib/hedge/live.test.ts   # sentence → priced cover against live Gemini and Claude
 ```
 

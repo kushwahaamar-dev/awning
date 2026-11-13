@@ -34,6 +34,8 @@ export const covers = pgTable(
     orders: jsonb().$type<Order[]>().notNull(),
     marketTicker: text().notNull(),
     expiresAt: timestamp({ withTimezone: true }).notNull(),
+    /** The pool may still have this cover's payout locked. Cleared once the chain says the offer is closed. */
+    offerOpen: boolean().notNull().default(true),
     openTx: text(),
     closeTx: text(),
     note: text(),
@@ -104,8 +106,11 @@ export type DecisionFacts = {
   forecastOdds: number | null;
 };
 
-/** refused: the agent chose to buy and the mandate said no. */
-export type DecisionKind = "bought" | "skipped" | "refused";
+/**
+ * deciding: the agent has claimed this day and is working on it, so no other pass will.
+ * refused: the agent chose to buy and the mandate said no.
+ */
+export type DecisionKind = "deciding" | "bought" | "skipped" | "refused";
 
 /** One day of one standing order: what the agent did about it, and why, in its own words. */
 export const decisions = pgTable(

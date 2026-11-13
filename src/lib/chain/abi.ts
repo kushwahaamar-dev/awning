@@ -49,6 +49,11 @@ export const awningMandateAbi = [
     "name": "closeHedge",
     "inputs": [
       {
+        "name": "owner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
         "name": "hedgeId",
         "type": "bytes32",
         "internalType": "bytes32"
@@ -227,10 +232,34 @@ export const awningMandateAbi = [
   },
   {
     "type": "function",
+    "name": "hedgeKey",
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "hedgeId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
     "name": "hedges",
     "inputs": [
       {
-        "name": "hedgeId",
+        "name": "key",
         "type": "bytes32",
         "internalType": "bytes32"
       }
@@ -1553,6 +1582,11 @@ export const awningPoolAbi = [
     "type": "function",
     "name": "reject",
     "inputs": [
+      {
+        "name": "owner",
+        "type": "address",
+        "internalType": "address"
+      },
       {
         "name": "hedgeId",
         "type": "bytes32",

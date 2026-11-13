@@ -26,7 +26,8 @@ export type Cover = {
   createdAt: string;
 };
 
-export type Decision = { id: number; day: string; kind: DecisionKind; reason: string; facts: DecisionFacts; at: string };
+/** A day the agent has finished with. Days it is still working on aren't sent to the browser. */
+export type Decision = { id: number; day: string; kind: Exclude<DecisionKind, "deciding">; reason: string; facts: DecisionFacts; at: string };
 
 export type Standing = {
   id: number;

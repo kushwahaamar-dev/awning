@@ -81,7 +81,8 @@ contract AwningMandate is EIP712, ReentrancyGuard {
     mapping(address owner => mapping(address venue => bool)) public venueAllowed;
     mapping(address owner => mapping(uint256 day => uint256)) public floatDrawn;
     mapping(address owner => mapping(uint256 period => uint256)) public premiumSpent;
-    mapping(bytes32 hedgeId => Hedge) public hedges;
+    /// Keyed by `hedgeKey(owner, hedgeId)`: ids belong to an owner, so nobody else can use one up.
+    mapping(bytes32 key => Hedge) public hedges;
 
     event Deposited(address indexed owner, uint256 amount);
     event Withdrawn(address indexed owner, uint256 amount);
@@ -260,7 +261,7 @@ contract AwningMandate is EIP712, ReentrancyGuard {
         if (premium == 0) revert ZeroAmount();
         if (maxPayout < premium) revert InvalidPayout();
         if (maxPayout > type(uint96).max) revert AmountTooLarge();
-        if (hedges[hedgeId].status != HedgeStatus.None) revert HedgeExists();
+        if (hedges[hedgeKey(owner, hedgeId)].status != HedgeStatus.None) revert HedgeExists();
 
         HedgeRequest memory r = HedgeRequest({
             hedgeId: hedgeId,
@@ -279,16 +280,24 @@ contract AwningMandate is EIP712, ReentrancyGuard {
         return true;
     }
 
+    /// @notice Where an owner's hedge is stored in `hedges`.
+    function hedgeKey(address owner, bytes32 hedgeId) public pure returns (bytes32) {
+        return keccak256(abi.encode(owner, hedgeId));
+    }
+
     /// @notice Venue only. Settle an open hedge and return funds to the owner's vault. `Paid`
     /// pays 1..maxPayout plus whatever premium went unspent, so at most maxPayout + premium;
     /// `Expired` pays nothing; `Refunded` returns 1..premium. The venue must have approved
     /// this contract for `payout`. `evidence` is only emitted.
     /// @dev Nothing onchain checks the venue's claim of an outcome; see the README trust notes.
-    function closeHedge(bytes32 hedgeId, HedgeStatus outcome, uint256 payout, bytes32 evidence)
-        external
-        nonReentrant
-    {
-        Hedge storage h = hedges[hedgeId];
+    function closeHedge(
+        address owner,
+        bytes32 hedgeId,
+        HedgeStatus outcome,
+        uint256 payout,
+        bytes32 evidence
+    ) external nonReentrant {
+        Hedge storage h = hedges[hedgeKey(owner, hedgeId)];
         if (h.venue == address(0) || msg.sender != h.venue) revert NotVenue();
         if (h.status != HedgeStatus.Open) revert HedgeNotOpen();
 
@@ -303,7 +312,6 @@ contract AwningMandate is EIP712, ReentrancyGuard {
             revert InvalidOutcome();
         }
 
-        address owner = h.owner;
         h.status = outcome;
         balanceOf[owner] += payout;
         if (payout != 0) usdc.safeTransferFrom(msg.sender, address(this), payout);
@@ -385,7 +393,7 @@ contract AwningMandate is EIP712, ReentrancyGuard {
     function _recordHedge(address owner, HedgeRequest memory r) private {
         premiumSpent[owner][block.timestamp / 30 days] += r.premium;
         balanceOf[owner] -= r.premium;
-        hedges[r.hedgeId] = Hedge({
+        hedges[hedgeKey(owner, r.hedgeId)] = Hedge({
             owner: owner,
             venue: r.venue,
             // forge-lint: disable-next-line(unsafe-typecast)

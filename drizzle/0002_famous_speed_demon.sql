@@ -1,0 +1,1 @@
+ALTER TABLE "covers" ADD COLUMN "offer_open" boolean DEFAULT true NOT NULL;

@@ -19,6 +19,7 @@ contract PoolHandler is Test {
     address public backer = makeAddr("backer");
 
     bytes32[] public ids;
+    bytes32[] public strays;
     bytes32[3] public markets = [keccak256("m0"), keccak256("m1"), keccak256("m2")];
     uint256 public paidOut;
     uint256 public settled;
@@ -77,9 +78,10 @@ contract PoolHandler is Test {
         } catch {}
     }
 
-    /// The agent pays for an offer, sometimes on terms that don't match it.
-    function take(uint256 pick, bool exact) external {
+    /// The agent pays for an offer, sometimes on terms that don't match it, sometimes too late.
+    function take(uint256 pick, bool exact, bool late) external {
         if (ids.length == 0) return;
+        if (late) vm.warp(block.timestamp + 6 minutes);
         bytes32 id = ids[pick % ids.length];
         (, uint96 premium, uint96 payout,,, AwningPool.OfferStatus status, bytes32 market) =
             pool.offers(id);
@@ -102,9 +104,20 @@ contract PoolHandler is Test {
         } catch {}
     }
 
-    function reject(uint256 pick) external {
-        if (ids.length == 0) return;
-        try pool.reject(ids[pick % ids.length]) {} catch {}
+    /// The agent pays the pool for cover nobody offered.
+    function stray(uint96 amount) external {
+        bytes32 id = keccak256(abi.encode("stray", strays.length));
+        amount = uint96(bound(amount, 1, 1_000e6));
+        vm.prank(agent);
+        try mandate.openHedge(owner, id, address(pool), amount, amount, bytes32(0), 0, "") {
+            strays.push(id);
+        } catch {}
+    }
+
+    function reject(uint256 pick, bool aStray) external {
+        bytes32[] storage from = aStray ? strays : ids;
+        if (from.length == 0) return;
+        try pool.reject(owner, from[pick % from.length]) {} catch {}
     }
 
     function lapse(uint256 pick, uint32 wait) external {
@@ -132,9 +145,11 @@ contract AwningPoolInvariantTest is Test {
         return new AwningPool(mandate, makeAddr("underwriter"), makeAddr("resolver"), 5_000);
     }
 
-    /// Everything promised to open offers and covers is in the pool.
+    /// Everything promised to open offers and covers is on the pool's books, and everything on
+    /// its books is really in the pool.
     function invariant_holds_what_it_has_locked() public view {
-        assertGe(usdc.balanceOf(address(pool)), pool.locked());
+        assertGe(pool.totalAssets(), pool.locked());
+        assertGe(usdc.balanceOf(address(pool)), pool.totalAssets());
     }
 
     /// `locked` is exactly the payouts of the offers still live, and matches the per-market tally.

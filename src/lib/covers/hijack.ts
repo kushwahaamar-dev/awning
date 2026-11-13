@@ -13,6 +13,8 @@ export type HijackStep = { tried: string; amount: number; returned?: true } & At
 /**
  * Plays an attacker who fully controls the agent: same key, no scruples. Nothing here is simulated.
  * Each step is a real transaction signed by the agent, and the contracts decide what happens to it.
+ * It costs the owner real money: the last step keeps what is left of the day's data allowance, and
+ * the dollar that goes to the pool and back still counts against the month's cover limit.
  */
 export async function hijack(owner: Address): Promise<{ steps: HijackStep[]; taken: number }> {
   const allowance = await readAllowance(owner);
@@ -36,7 +38,7 @@ export async function hijack(owner: Address): Promise<{ steps: HijackStep[]; tak
   await attempt("Pay the pool for cover nobody offered", dollar, () => premium(stray, dollar, poolAddress));
   const last = steps.at(-1)!;
   if (last.ok) {
-    await rejectPremium(stray);
+    await rejectPremium(owner, stray);
     last.returned = true;
   }
 

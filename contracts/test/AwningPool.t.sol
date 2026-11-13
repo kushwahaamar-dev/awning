@@ -240,7 +240,7 @@ contract AwningPoolTest is Test {
         assertEq(mandate.balanceOf(owner), vaultBefore - 50e6);
 
         vm.prank(stranger);
-        pool.reject(H1);
+        pool.reject(owner, H1);
         assertEq(mandate.balanceOf(owner), vaultBefore);
         assertEq(pool.totalAssets(), SEED);
     }
@@ -251,7 +251,7 @@ contract AwningPoolTest is Test {
         _take(H1, PREMIUM, PAYOUT + 1, MARKET);
         assertFalse(pool.taken(H1));
 
-        pool.reject(H1);
+        pool.reject(owner, H1);
         assertEq(mandate.balanceOf(owner), vaultBefore);
         assertEq(pool.locked(), 0);
     }
@@ -260,12 +260,98 @@ contract AwningPoolTest is Test {
         _offer(H1);
         _take(H1, PREMIUM, PAYOUT, MARKET);
         vm.expectRevert(AwningPool.AlreadyTaken.selector);
-        pool.reject(H1);
+        pool.reject(owner, H1);
+    }
+
+    function test_a_premium_paid_after_the_offer_lapsed_is_not_cover() public {
+        _offer(H1);
+        vm.warp(takeBy + 1);
+        // exactly the offered terms, but late: by now the result might be known
+        _take(H1, PREMIUM, PAYOUT, MARKET);
+        assertFalse(pool.taken(H1));
+
+        vm.prank(resolver);
+        vm.expectRevert(AwningPool.NotTaken.selector);
+        pool.settle(H1, true, EVIDENCE);
+        vm.warp(resolveBy + 1);
+        vm.expectRevert(AwningPool.NotTaken.selector);
+        pool.claimUnresolved(H1);
+
+        uint256 vaultBefore = mandate.balanceOf(owner);
+        pool.reject(owner, H1);
+        assertEq(mandate.balanceOf(owner), vaultBefore + PREMIUM);
+        assertEq(pool.locked(), 0);
+        assertEq(pool.totalAssets(), SEED);
+    }
+
+    function test_lapse_is_not_blocked_by_a_late_premium() public {
+        _offer(H1);
+        vm.warp(takeBy + 1);
+        _take(H1, PREMIUM, PAYOUT, MARKET);
+        pool.lapse(H1);
+        assertEq(pool.locked(), 0);
+        // and the premium is still there to send back
+        pool.reject(owner, H1);
+        assertEq(usdc.balanceOf(address(pool)), SEED);
+    }
+
+    function test_someone_else_using_the_same_id_cannot_block_or_claim_an_offer() public {
+        address squatter = makeAddr("squatter");
+        usdc.mint(squatter, 10e6);
+        vm.startPrank(squatter);
+        usdc.approve(address(mandate), type(uint256).max);
+        mandate.deposit(10e6);
+        mandate.setPolicy(squatter, uint64(block.timestamp + 1 days), 0, 10e6, 10e6, 10e6);
+        mandate.setVenue(address(pool), true);
+        vm.stopPrank();
+
+        _offer(H1);
+        // the id is public once offered; the squatter uses it first, from their own vault
+        vm.prank(squatter);
+        assertTrue(mandate.openHedge(squatter, H1, address(pool), 1, PAYOUT, MARKET, 0, ""));
+        assertFalse(pool.taken(H1));
+
+        // the owner the offer was made to can still take it
+        _take(H1, PREMIUM, PAYOUT, MARKET);
+        assertTrue(pool.taken(H1));
+
+        // the squatter gets their unit back, and the owner's cover is untouched
+        pool.reject(squatter, H1);
+        assertEq(mandate.balanceOf(squatter), 10e6);
+        assertTrue(pool.taken(H1));
+        assertEq(pool.locked(), PAYOUT);
+    }
+
+    function test_money_that_only_landed_in_the_pool_cannot_be_withdrawn_or_promised() public {
+        _take(H1, 50e6, 50e6, MARKET);
+        assertEq(usdc.balanceOf(address(pool)), SEED + 50e6);
+        assertEq(pool.totalAssets(), SEED);
+        assertEq(pool.maxWithdraw(backer), SEED);
+
+        vm.prank(backer);
+        pool.withdraw(SEED, backer, backer);
+        // empty by its own books, so it can promise nothing, yet it still holds what it must return
+        vm.prank(underwriter);
+        vm.expectRevert(AwningPool.NotEnoughFree.selector);
+        pool.offer(H2, owner, 1, 2, MARKET, takeBy, resolveBy);
+
+        pool.reject(owner, H1);
+        assertEq(usdc.balanceOf(address(pool)), 0);
+    }
+
+    function test_a_premium_is_not_the_pools_until_the_cover_settles() public {
+        _offer(H1);
+        _take(H1, PREMIUM, PAYOUT, MARKET);
+        assertEq(pool.totalAssets(), SEED);
+        assertEq(pool.freeAssets(), SEED - PAYOUT);
+        vm.prank(resolver);
+        pool.settle(H1, false, EVIDENCE);
+        assertEq(pool.totalAssets(), SEED + PREMIUM);
     }
 
     function test_reject_needs_an_open_hedge_paid_to_this_pool() public {
         vm.expectRevert(AwningPool.NothingToReject.selector);
-        pool.reject(H1);
+        pool.reject(owner, H1);
     }
 
     // --- depositors ---
@@ -324,7 +410,8 @@ contract AwningPoolTest is Test {
             vm.prank(backer);
             pool.withdraw(withdrawal, backer, backer);
         }
-        assertGe(usdc.balanceOf(address(pool)), pool.locked());
+        assertGe(usdc.balanceOf(address(pool)), pool.totalAssets());
+        assertGe(pool.totalAssets(), pool.locked());
 
         uint256 vaultBefore = mandate.balanceOf(owner);
         vm.prank(resolver);

@@ -163,7 +163,7 @@ contract AwningMandateTest is Test {
     }
 
     function _status(bytes32 id) internal view returns (AwningMandate.HedgeStatus st) {
-        (,,,,, st,) = mandate.hedges(id);
+        (,,,,, st,) = mandate.hedges(mandate.hedgeKey(owner, id));
     }
 
     function _assertNothingMoved(uint256 balBefore, uint256 usdcBefore) internal view {
@@ -541,7 +541,7 @@ contract AwningMandateTest is Test {
             uint64 at,
             AwningMandate.HedgeStatus st,
             bytes32 m
-        ) = mandate.hedges(H1);
+        ) = mandate.hedges(mandate.hedgeKey(owner, H1));
         assertEq(o, owner);
         assertEq(v, venue);
         assertEq(prem, 20e6);
@@ -620,23 +620,11 @@ contract AwningMandateTest is Test {
         mandate.openHedge(owner, H1, venue, 10e6, 40e6, MARKET, 0, "");
 
         vm.prank(venue);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
         vm.prank(agent);
         vm.expectRevert(AwningMandate.HedgeExists.selector);
         mandate.openHedge(owner, H1, venue, 10e6, 40e6, MARKET, 0, "");
     }
-
-    function test_openHedge_hedgeIdIsGlobalAcrossOwners() public {
-        assertTrue(_open(H1, 10e6));
-        address ownerB = makeAddr("ownerB");
-        _fund(ownerB, DEPOSIT);
-        _configure(ownerB);
-        vm.prank(agent);
-        vm.expectRevert(AwningMandate.HedgeExists.selector);
-        mandate.openHedge(ownerB, H1, venue, 10e6, 40e6, MARKET, 0, "");
-    }
-
-    // ---------------------------------------------------------------- openHedge: every BlockReason
 
     function _expectHedgeBlocked(AwningMandate.BlockReason reason, uint256 premium) internal {
         _expectBlocked(AwningMandate.Action.OpenHedge, reason, premium, venue, H1);
@@ -878,7 +866,7 @@ contract AwningMandateTest is Test {
         vm.expectEmit(true, true, false, true, address(mandate));
         emit HedgeClosed(H1, owner, AwningMandate.HedgeStatus.Paid, 80e6, keccak256("fill"));
         vm.prank(venue);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Paid, 80e6, keccak256("fill"));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Paid, 80e6, keccak256("fill"));
 
         assertEq(mandate.balanceOf(owner), DEPOSIT - 20e6 + 80e6);
         assertEq(usdc.balanceOf(venue), venueBefore - 80e6);
@@ -890,7 +878,7 @@ contract AwningMandateTest is Test {
         vm.expectEmit(true, true, false, true, address(mandate));
         emit HedgeClosed(H1, owner, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
         vm.prank(venue);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
         assertEq(mandate.balanceOf(owner), DEPOSIT - 20e6);
         assertEq(uint8(_status(H1)), uint8(AwningMandate.HedgeStatus.Expired));
     }
@@ -900,8 +888,8 @@ contract AwningMandateTest is Test {
         _open(H2, 20e6);
         _venueFundsAndApproves(0);
         vm.startPrank(venue);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Refunded, 20e6, bytes32(0));
-        mandate.closeHedge(H2, AwningMandate.HedgeStatus.Refunded, 7e6, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Refunded, 20e6, bytes32(0));
+        mandate.closeHedge(owner, H2, AwningMandate.HedgeStatus.Refunded, 7e6, bytes32(0));
         vm.stopPrank();
         assertEq(mandate.balanceOf(owner), DEPOSIT - 20e6 + 7e6);
         assertEq(usdc.balanceOf(venue), 40e6 - 27e6);
@@ -910,7 +898,7 @@ contract AwningMandateTest is Test {
     function test_closeHedge_doesNotRestoreUsedPremiumAllowance() public {
         _open(H1, 20e6);
         vm.prank(venue);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
         assertEq(mandate.premiumSpent(owner, block.timestamp / 30 days), 20e6);
     }
 
@@ -918,27 +906,27 @@ contract AwningMandateTest is Test {
         _open(H1, 20e6);
         vm.prank(attacker);
         vm.expectRevert(AwningMandate.NotVenue.selector);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
 
         vm.prank(agent);
         vm.expectRevert(AwningMandate.NotVenue.selector);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
 
         vm.prank(venue);
         vm.expectRevert(AwningMandate.NotVenue.selector);
-        mandate.closeHedge(H2, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
+        mandate.closeHedge(owner, H2, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
 
         vm.prank(address(0)); // unknown hedge has venue == 0; address(0) must not match
         vm.expectRevert(AwningMandate.NotVenue.selector);
-        mandate.closeHedge(H2, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
+        mandate.closeHedge(owner, H2, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
     }
 
     function test_closeHedge_revertsWhenNotOpen() public {
         _open(H1, 20e6);
         vm.startPrank(venue);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
         vm.expectRevert(AwningMandate.HedgeNotOpen.selector);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
         vm.stopPrank();
     }
 
@@ -946,9 +934,9 @@ contract AwningMandateTest is Test {
         _open(H1, 20e6);
         vm.startPrank(venue);
         vm.expectRevert(AwningMandate.InvalidOutcome.selector);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.None, 0, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.None, 0, bytes32(0));
         vm.expectRevert(AwningMandate.InvalidOutcome.selector);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Open, 0, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Open, 0, bytes32(0));
         vm.stopPrank();
     }
 
@@ -957,7 +945,7 @@ contract AwningMandateTest is Test {
         _venueFundsAndApproves(1_000e6);
         uint256 before = mandate.balanceOf(owner);
         vm.prank(venue);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Paid, 80e6 + 20e6, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Paid, 80e6 + 20e6, bytes32(0));
         assertEq(mandate.balanceOf(owner), before + 100e6);
         assertEq(uint8(_status(H1)), uint8(AwningMandate.HedgeStatus.Paid));
     }
@@ -967,18 +955,41 @@ contract AwningMandateTest is Test {
         _venueFundsAndApproves(1_000e6);
         vm.startPrank(venue);
         vm.expectRevert(AwningMandate.InvalidPayout.selector);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Paid, 0, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Paid, 0, bytes32(0));
         // winnings are capped at maxPayout, and at most the whole premium can come back with them
         vm.expectRevert(AwningMandate.InvalidPayout.selector);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Paid, 80e6 + 20e6 + 1, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Paid, 80e6 + 20e6 + 1, bytes32(0));
         vm.expectRevert(AwningMandate.InvalidPayout.selector);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Expired, 1, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Expired, 1, bytes32(0));
         vm.expectRevert(AwningMandate.InvalidPayout.selector);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Refunded, 0, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Refunded, 0, bytes32(0));
         vm.expectRevert(AwningMandate.InvalidPayout.selector);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Refunded, 20e6 + 1, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Refunded, 20e6 + 1, bytes32(0));
         vm.stopPrank();
         // all of the above left the hedge open
+        assertEq(uint8(_status(H1)), uint8(AwningMandate.HedgeStatus.Open));
+    }
+
+    function test_hedgeIds_belongToTheirOwner() public {
+        address other = makeAddr("other");
+        usdc.mint(other, 100e6);
+        vm.startPrank(other);
+        usdc.approve(address(mandate), type(uint256).max);
+        mandate.deposit(100e6);
+        mandate.setPolicy(other, uint64(block.timestamp + TTL), 0, PER_HEDGE, PERIOD_CAP, PER_HEDGE);
+        mandate.setVenue(venue, true);
+        // someone else using an id first doesn't use it up for anyone but themselves
+        assertTrue(mandate.openHedge(other, H1, venue, 5e6, 5e6, MARKET, 0, ""));
+        vm.stopPrank();
+
+        assertTrue(_open(H1, 20e6));
+        (address o,, uint96 premium,,,,) = mandate.hedges(mandate.hedgeKey(owner, H1));
+        assertEq(o, owner);
+        assertEq(premium, 20e6);
+
+        // and closing one owner's hedge leaves the other's open
+        vm.prank(venue);
+        mandate.closeHedge(other, H1, AwningMandate.HedgeStatus.Expired, 0, bytes32(0));
         assertEq(uint8(_status(H1)), uint8(AwningMandate.HedgeStatus.Open));
     }
 
@@ -987,7 +998,7 @@ contract AwningMandateTest is Test {
         // venue holds 20 and never approved the mandate
         vm.prank(venue);
         vm.expectRevert();
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Refunded, 10e6, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Refunded, 10e6, bytes32(0));
         assertEq(uint8(_status(H1)), uint8(AwningMandate.HedgeStatus.Open));
         assertEq(mandate.balanceOf(owner), DEPOSIT - 20e6);
     }
@@ -999,7 +1010,7 @@ contract AwningMandateTest is Test {
         vm.warp(block.timestamp + TTL + 1);
         _venueFundsAndApproves(100e6);
         vm.prank(venue);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Paid, 50e6, bytes32(0));
+        mandate.closeHedge(owner, H1, AwningMandate.HedgeStatus.Paid, 50e6, bytes32(0));
         assertEq(mandate.balanceOf(owner), DEPOSIT - 20e6 + 50e6);
     }
 
@@ -1275,7 +1286,7 @@ contract AwningMandateTest is Test {
             : bound(payoutSeed, 1, outcome == AwningMandate.HedgeStatus.Paid ? maxPayout : premium);
 
         vm.prank(venue);
-        mandate.closeHedge(H1, outcome, payout, bytes32(0));
+        mandate.closeHedge(owner, H1, outcome, payout, bytes32(0));
 
         assertEq(usdc.balanceOf(address(mandate)) + usdc.balanceOf(venue), supplyHeld);
         assertEq(mandate.balanceOf(owner), DEPOSIT - premium + payout);

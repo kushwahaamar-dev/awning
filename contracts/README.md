@@ -46,7 +46,7 @@ For any owner whose agent key is fully compromised:
 
 ### Trust assumptions about the venue and `closeHedge`
 
-`closeHedge` is callable only by the hedge's venue, and the contract cannot check the venue's
+`closeHedge(owner, hedgeId, ...)` is callable only by the hedge's venue, and the contract cannot check the venue's
 claim. A venue that reports `Expired` for a hedge that actually won, or never calls `closeHedge`,
 costs the owner the payout. `evidence` is only emitted, never verified. In exchange the venue
 cannot hurt the owner beyond what it already holds: `Paid` is bounded by `maxPayout` plus the
@@ -66,12 +66,21 @@ only act in the ways below.
 - **A payout is locked before a premium is paid.** `offer` requires the whole payout to be free in
   the pool and adds it to `locked`. Depositors can withdraw only `freeAssets()`, so locked money
   cannot leave except to the owner it was promised to, or back to free when the cover ends.
-- **Cover exists only on offered terms.** The pool never receives a callback when a premium
-  arrives. `taken(hedgeId)` reads the mandate and holds only if the hedge is open, paid to this
-  pool, and matches the offer's owner, premium, payout and market exactly.
-- **Anything else is returned.** A premium paid to the pool with no live offer, or on different
-  terms, can be sent back to the owner's vault by anyone with `reject`. A stolen agent key cannot
-  park an owner's money in the pool.
+- **Cover exists only on offered terms, taken in time.** The pool never receives a callback when a
+  premium arrives. `taken(hedgeId)` reads the mandate and holds only if the hedge is open, paid to
+  this pool, matches the offer's owner, premium, payout and market exactly, and was opened no
+  later than `takeBy`. A premium paid after the offer lapsed buys nothing, however long the offer
+  sat unlapsed.
+- **Anything else is returned.** A premium paid to the pool with no live offer, on different terms,
+  or too late can be sent back to that owner's vault by anyone with `reject(owner, hedgeId)`. A
+  stolen agent key cannot park an owner's money in the pool.
+- **Money that merely landed in the pool is not the pool's.** `totalAssets()` is the pool's own
+  ledger (deposits, withdrawals, payouts, and premiums once their cover settles), not its token
+  balance. A stray premium can't be withdrawn by a depositor or locked behind a new offer, so
+  `reject` can always pay it back.
+- **Nobody else can use up an offered id.** The mandate stores hedges per owner
+  (`hedgeKey(owner, hedgeId)`), so another account opening a hedge under the same id touches only
+  its own vault.
 - **A silent resolver loses.** If no result is reported by `resolveBy`, anyone can call
   `claimUnresolved` and the owner is paid in full.
 - **An offer nobody takes does not lock money forever.** After `takeBy`, anyone can `lapse` it. An
@@ -79,10 +88,10 @@ only act in the ways below.
 - **No more than `maxMarketShareBps` of the pool rides on one market** at the time of each offer.
 - Payouts go to the owner's vault in the mandate, never to an address the caller supplies.
 
-Invariants checked over random sequences of deposits, withdrawals, offers, exact and inexact takes,
-settlements, rejections and lapses: the pool's USDC balance is at least `locked`; `locked` equals
-the sum of live offers' payouts and equals the per-market tallies; the mandate holds every owner's
-vault balance.
+Invariants checked over random sequences of deposits, withdrawals, offers, takes that are exact,
+inexact or late, stray premiums, settlements, rejections and lapses: the pool's USDC balance is at
+least `totalAssets()`, which is at least `locked`; `locked` equals the sum of live offers' payouts
+and equals the per-market tallies; the mandate holds every owner's vault balance.
 
 ### What it does not guarantee
 
@@ -93,9 +102,12 @@ vault balance.
   be checked against Gemini's public record after the fact, but nothing onchain does so.
 - **The underwriter's prices are not verified.** Depositors trust the underwriter not to offer
   cover below what the risk is worth.
-- **Shares are priced on the pool's balance,** not marked to the open book. A deposit made while
-  cover is outstanding buys into that risk at face value, and a premium paid without a matching
-  offer briefly inflates the share price until it is rejected.
+- **Shares are not marked to the open book.** A deposit made while cover is outstanding buys into
+  that risk at face value, and a depositor who knows a result before the resolver reports it can
+  withdraw free assets at full price and leave the loss to the rest. A withdrawal delay would fix
+  this and is not built.
+- A premium the agent pays without taking an offer is returned in full, but the mandate still
+  counts it against the owner's 30-day cap. A stolen agent key can waste allowance that way.
 - The market cap is checked when an offer is made. A later withdrawal can leave a market above
   the share it was allowed at the time.
 - The underwriter and resolver are fixed at deployment and cannot be rotated.

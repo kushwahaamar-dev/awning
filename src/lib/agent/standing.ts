@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, ne } from "drizzle-orm";
 import type { Address } from "viem";
 import { readAllowance } from "../chain/server";
 import { CoverError, openCover, quoteCover } from "../covers/service";
@@ -16,8 +16,6 @@ import { decide } from "./decide";
 type Order = typeof standing.$inferSelect;
 
 const DAY_MS = 24 * 3600 * 1000;
-// Orders being worked on right now, so the timer and a fresh request can't both buy the same day.
-const working = new Set<number>();
 
 /** Leaves a risk with the agent to cover every day, and has it deal with the days already listed. */
 export async function createStanding(input: { owner: Address; exposure: Exposure; coverRatio: number; dailyCap: number; instruction: string | null }, origin: string) {
@@ -46,7 +44,7 @@ export async function listStanding(owner: string) {
   const log = await db
     .select()
     .from(decisions)
-    .where(inArray(decisions.standingId, orders.map((o) => o.id)))
+    .where(and(inArray(decisions.standingId, orders.map((o) => o.id)), ne(decisions.kind, "deciding")))
     .orderBy(desc(decisions.day), desc(decisions.id))
     .limit(60);
   return orders.map((order) => ({ ...order, decisions: log.filter((d) => d.standingId === order.id) }));
@@ -61,64 +59,96 @@ export async function runStanding(origin: string) {
 }
 
 async function work(order: Order, origin: string) {
-  if (working.has(order.id)) return;
-  working.add(order.id);
-  try {
-    // Today's market and tomorrow's: close enough for the forecast to mean something.
-    for (const day of [easternDate(new Date()), easternDate(new Date(Date.now() + DAY_MS))]) {
-      await considerDay(order, day, origin);
-    }
-  } finally {
-    working.delete(order.id);
+  // Today's market and tomorrow's: close enough for the forecast to mean something.
+  for (const day of [easternDate(new Date()), easternDate(new Date(Date.now() + DAY_MS))]) {
+    await considerDay(order, day, origin);
   }
 }
 
+const NOTHING: DecisionFacts = { pays: "", payout: 0, premium: 0, marketOdds: null, forecastOdds: null };
+
+/**
+ * Decides one day of one order, at most once. The day is claimed in the database before anything
+ * else happens, and the unique index on (order, day) is the lock: a second pass, another process,
+ * or a restart finds the claim and leaves the day alone. A claim is only given back when nothing
+ * can have been bought, so the worst a crash can do is skip a day, never buy it twice.
+ */
 async function considerDay(order: Order, day: string, origin: string) {
   const db = await getDb();
-  const [done] = await db.select({ id: decisions.id }).from(decisions).where(and(eq(decisions.standingId, order.id), eq(decisions.day, day)));
-  if (done) return;
+  const [claim] = await db
+    .insert(decisions)
+    .values({ standingId: order.id, owner: order.owner, day, kind: "deciding", reason: "", facts: NOTHING })
+    .onConflictDoNothing()
+    .returning({ id: decisions.id });
+  if (!claim) return;
+
+  const mine = eq(decisions.id, claim.id);
+  let facts = NOTHING;
+  const giveBack = async () => {
+    await db.delete(decisions).where(mine);
+  };
+  const record = async (kind: DecisionKind, reason: string, coverId: string | null = null) => {
+    await db.update(decisions).set({ kind, reason, facts, coverId, at: new Date() }).where(mine);
+  };
 
   const owner = order.owner as Address;
   const exposure = { ...order.exposure, on: day };
-  const planned = await planCover(exposure, listMarkets, {
-    coverRatio: order.coverRatio,
-    // The agent pays for this itself, out of the owner's daily data allowance.
-    fairValue: async (market) => {
-      const opinion = await secondOpinion(owner, market, origin).catch(() => null);
-      return opinion && { ...opinion.forecast, paid: opinion.paid };
-    },
-  });
-  // Not listed yet, or already closed. Either way there is nothing to decide today.
-  if (!planned || marketDay(planned.market) !== day) return;
-  const { plan } = planned;
-  const offer = offerPrice(plan.quote);
-  if (!offer) return;
+  let terms;
+  let verdict;
+  try {
+    const planned = await planCover(exposure, listMarkets, {
+      coverRatio: order.coverRatio,
+      // The agent pays for this itself, out of the owner's daily data allowance.
+      fairValue: async (market) => {
+        const opinion = await secondOpinion(owner, market, origin).catch(() => null);
+        return opinion && { ...opinion.forecast, paid: opinion.paid };
+      },
+    });
+    const offer = planned && marketDay(planned.market) === day ? offerPrice(planned.plan.quote) : null;
+    // Not listed yet, already closed, or nobody quoting. There is nothing to decide; look again next pass.
+    if (!planned || !offer) return giveBack();
+    const { plan } = planned;
 
-  const facts: DecisionFacts = {
-    pays: plan.coverage.pays,
-    payout: plan.quote.payout,
-    premium: offer.pricing.total,
-    marketOdds: plan.quote.marketOdds,
-    forecastOdds: plan.forecast?.odds ?? null,
-  };
-  const record = (kind: DecisionKind, reason: string, coverId: string | null = null) =>
-    db.insert(decisions).values({ standingId: order.id, owner: order.owner, day, kind, reason, facts, coverId }).onConflictDoNothing();
+    facts = {
+      pays: plan.coverage.pays,
+      payout: plan.quote.payout,
+      premium: offer.pricing.total,
+      marketOdds: plan.quote.marketOdds,
+      forecastOdds: plan.forecast?.odds ?? null,
+    };
 
-  // Limits the agent can check for itself come before asking the model anything.
-  const { approvalThreshold } = await readAllowance(owner);
-  if (facts.premium >= facts.payout) return record("skipped", `Cover costs ${cents(facts.premium)} for a ${usd(facts.payout)} payout, so there was nothing left to protect. I left it.`);
-  if (facts.premium > order.dailyCap) return record("skipped", `Cover costs ${cents(facts.premium)}, over the ${usd(order.dailyCap)} a day you set. I left it.`);
-  if (facts.premium > approvalThreshold) {
-    return record("skipped", `Cover costs ${cents(facts.premium)}, above the ${usd(approvalThreshold)} I may spend without asking you. I left it; buy it yourself from the Cover page if you want it.`);
+    // Limits the agent can check for itself come before asking the model anything.
+    const { approvalThreshold } = await readAllowance(owner);
+    if (facts.premium >= facts.payout) return record("skipped", `Cover costs ${cents(facts.premium)} for a ${usd(facts.payout)} payout, so there was nothing left to protect. I left it.`);
+    if (facts.premium > order.dailyCap) return record("skipped", `Cover costs ${cents(facts.premium)}, over the ${usd(order.dailyCap)} a day you set. I left it.`);
+    if (facts.premium > approvalThreshold) {
+      return record("skipped", `Cover costs ${cents(facts.premium)}, above the ${usd(approvalThreshold)} I may spend without asking you. I left it; buy it yourself from the Cover page if you want it.`);
+    }
+
+    verdict = await decide({ risk: order.exposure.summary, day, instruction: order.instruction, dailyCap: order.dailyCap, facts });
+    if (verdict.decision === "skip") return record("skipped", verdict.reason);
+
+    terms = await quoteCover({ owner, exposure, coverRatio: order.coverRatio, origin });
+  } catch (error) {
+    // The pool or the market turning the cover down is an answer for the day. Anything else
+    // (the model or Gemini being unreachable) is worth another try.
+    if (error instanceof CoverError) return record("skipped", `I decided to buy, but couldn't: ${error.message}`);
+    await giveBack();
+    throw error;
   }
 
-  const verdict = await decide({ risk: order.exposure.summary, day, instruction: order.instruction, dailyCap: order.dailyCap, facts });
-  if (verdict.decision === "skip") return record("skipped", verdict.reason);
-
-  const terms = await quoteCover({ owner, exposure, coverRatio: order.coverRatio, origin });
   // The price can move between deciding and buying. If it moved past a limit, the decision no longer holds.
-  if (terms.premium > order.dailyCap || terms.needsApproval) return;
-  const result = await openCover(terms.id, { deadline: terms.deadline, signature: null });
-  if (result.status === "blocked") return record("refused", `I tried to buy it for ${cents(terms.premium)}, but your allowance refused: ${REFUSAL[result.reason]}.`, terms.id);
-  return record("bought", verdict.reason, terms.id);
+  if (terms.premium > order.dailyCap || terms.needsApproval) {
+    return record("skipped", `The price moved to ${cents(terms.premium)} as I went to buy, past what I may spend on my own. I left it.`);
+  }
+
+  // Past this line money may move, so the claim is never given back, whatever goes wrong.
+  try {
+    const result = await openCover(terms.id, { deadline: terms.deadline, signature: null });
+    if (result.status === "blocked") return record("refused", `I tried to buy it for ${cents(terms.premium)}, but your allowance refused: ${REFUSAL[result.reason]}.`, terms.id);
+    await record("bought", verdict.reason, terms.id);
+  } catch (error) {
+    await record("skipped", `Something went wrong as I was buying, so I stopped for the day rather than risk buying twice. ${error instanceof CoverError ? error.message : "Check Your cover to see whether it went through."}`, terms.id);
+    if (!(error instanceof CoverError)) throw error;
+  }
 }

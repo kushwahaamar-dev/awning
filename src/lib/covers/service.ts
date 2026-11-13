@@ -1,7 +1,7 @@
-import { and, desc, eq, gt, inArray, lt } from "drizzle-orm";
+import { and, desc, eq, inArray, lt } from "drizzle-orm";
 import { keccak256, toHex, type Address, type Hex } from "viem";
 import { poolAddress } from "../chain/config";
-import { PoolFull, coverTaken, hedgeState, lapseOffer, offerCover, openHedge, readAllowance, rejectPremium, settleCover } from "../chain/server";
+import { PoolFull, coverTaken, hedgeState, lapseOffer, offerCover, offerState, openHedge, readAllowance, rejectPremium, settleCover } from "../chain/server";
 import { covers, getDb, type Order } from "../db";
 import { secondOpinion } from "../desk/second-opinion";
 import { getMarket, listMarkets } from "../gemini/client";
@@ -17,8 +17,9 @@ export class CoverError extends Error {}
 // A quote is a price at a moment. Past this it has to be asked for again, or it becomes a free
 // option on wherever the market went. The pool's offer lapses at the same moment.
 const QUOTE_LIFETIME_SECONDS = 5 * 60;
-// How long a cover may sit half-opened before the background pass decides a request died mid-way.
-const STALLED_AFTER_MS = 2 * 60 * 1000;
+// How long after an offer's deadline the background pass waits before tidying up, so a request
+// still in flight, or a clock a few seconds out, isn't cut across.
+const SETTLE_DOWN_MS = 60 * 1000;
 // If no result has been reported this long after the market closes, the owner can claim the payout.
 const RESOLVE_GRACE_SECONDS = 3 * 24 * 3600;
 
@@ -75,6 +76,23 @@ export async function quoteCover(input: {
     needsApproval: pricing.total > allowance.approvalThreshold,
   };
 
+  // The row goes in first, so an offer can never be locked onchain with nothing here to release it.
+  const db = await getDb();
+  await db.insert(covers).values({
+    id: terms.id,
+    owner: input.owner.toLowerCase(),
+    status: "quoted",
+    plan,
+    mode,
+    venue: (await getVenue()).name,
+    premium: terms.premium,
+    maxPayout: terms.maxPayout,
+    // What the pool will buy on Gemini to lay off the risk it is about to take on.
+    orders: plan.coverage.legs.map((leg, i) => ({ symbol: leg.symbol, side: leg.side, price: pricing.prices[i], quantity: plan.quote.contracts, id: null, filled: 0 })),
+    marketTicker: plan.market.ticker,
+    expiresAt: new Date(plan.market.expiresAt),
+  });
+
   try {
     await offerCover({
       hedgeId: terms.id,
@@ -86,25 +104,11 @@ export async function quoteCover(input: {
       resolveBy: Math.floor(new Date(plan.market.expiresAt).getTime() / 1000) + RESOLVE_GRACE_SECONDS,
     });
   } catch (error) {
-    if (error instanceof PoolFull) throw new CoverError("The pool can't back a payout that large on this market right now. Cover less of the loss.");
-    throw error;
+    if (!(error instanceof PoolFull)) throw error;
+    // The pool said no before anything was sent, so there is nothing onchain to tidy.
+    await db.delete(covers).where(eq(covers.id, terms.id));
+    throw new CoverError("The pool can't back a payout that large on this market right now. Cover less of the loss.");
   }
-
-  const db = await getDb();
-  await db.insert(covers).values({
-    id: terms.id,
-    owner: input.owner.toLowerCase(),
-    status: "quoted",
-    plan,
-    mode,
-    venue: (await getVenue()).name,
-    premium: terms.premium,
-    maxPayout: terms.maxPayout,
-    // What the pool will buy on Gemini to lay off the risk it has just taken on.
-    orders: plan.coverage.legs.map((leg, i) => ({ symbol: leg.symbol, side: leg.side, price: pricing.prices[i], quantity: plan.quote.contracts, id: null, filled: 0 })),
-    marketTicker: plan.market.ticker,
-    expiresAt: new Date(plan.market.expiresAt),
-  });
   return terms;
 }
 
@@ -122,14 +126,18 @@ export async function openCover(id: Hex, approval: { deadline: number; signature
   const [cover] = await db.update(covers).set({ status: "opening" }).where(and(eq(covers.id, id), eq(covers.status, "quoted"))).returning();
   if (!cover) throw new CoverError("That quote has already been used.");
 
+  // Anything that stops here hands the row back as a plain quote, and reconcile() unlocks its offer.
+  const release = () => db.update(covers).set({ status: "quoted" }).where(eq(covers.id, id));
+
   const age = Date.now() - cover.createdAt.getTime();
   if (age > QUOTE_LIFETIME_SECONDS * 1000 || cover.expiresAt.getTime() <= Date.now()) {
-    await db.delete(covers).where(eq(covers.id, id));
+    await release();
     throw new CoverError("That price has expired. Ask for a fresh quote.");
   }
 
+  const owner = cover.owner as Address;
   const attempt = await openHedge({
-    owner: cover.owner as Address,
+    owner,
     hedgeId: id,
     venue: poolAddress,
     premium: cover.premium,
@@ -138,8 +146,9 @@ export async function openCover(id: Hex, approval: { deadline: number; signature
     deadline: approval.deadline,
     ownerSignature: approval.signature ?? "0x",
   }).catch(async (error) => {
-    // A revert moved nothing, so the quote is simply dead. Anything less certain is left for reconcile().
-    if ((await hedgeState(id)) === "none") await db.delete(covers).where(eq(covers.id, id));
+    // A revert moved nothing, so this is a plain quote again. Anything less certain stays claimed
+    // for reconcile(), which reads the chain to see what really happened.
+    if ((await hedgeState(owner, id)) === "none") await release();
     throw error;
   });
 
@@ -150,8 +159,11 @@ export async function openCover(id: Hex, approval: { deadline: number; signature
 
   // The premium is only worth paying if it met a live offer. One that lapsed a moment earlier gets it sent straight back.
   if (!(await coverTaken(id))) {
-    const closeTx = await rejectPremium(id);
-    await db.update(covers).set({ status: "refunded", payout: cover.premium, openTx: attempt.txHash, closeTx, closedAt: new Date() }).where(eq(covers.id, id));
+    const closeTx = await rejectPremium(owner, id);
+    await db
+      .update(covers)
+      .set({ status: "refunded", payout: cover.premium, offerOpen: false, openTx: attempt.txHash, closeTx, closedAt: new Date() })
+      .where(eq(covers.id, id));
     throw new CoverError("That price expired as you bought it, so your premium was returned. Ask for a fresh quote.");
   }
 
@@ -185,43 +197,55 @@ export async function listCovers(owner: string) {
     .limit(50);
 }
 
-/** Tidies up after quotes that went nowhere and requests that died mid-way. */
+/**
+ * Tidies up after quotes that went nowhere and requests that died mid-way. The chain is the record:
+ * each row is resolved by what the pool and the mandate say about it, and a row only stops being
+ * looked at once the pool's offer is closed, so a failed attempt is simply tried again next pass.
+ */
 async function reconcile() {
   const db = await getDb();
-  const lapsed = new Date(Date.now() - QUOTE_LIFETIME_SECONDS * 1000);
-
-  // An offer nobody took keeps its payout locked until someone says so. Quotes the owner walked away
-  // from, and ones the mandate refused, both leave one behind.
-  const untaken = await db
-    .select({ id: covers.id, status: covers.status })
-    .from(covers)
-    .where(and(inArray(covers.status, ["quoted", "blocked"]), lt(covers.createdAt, lapsed), gt(covers.createdAt, new Date(lapsed.getTime() - 3600_000))));
-  for (const { id, status } of untaken) {
-    // Fails harmlessly when the offer was already unlocked on an earlier pass.
-    await lapseOffer(id as Hex).catch(() => {});
-    if (status === "quoted") await db.delete(covers).where(eq(covers.id, id));
-  }
-
-  const stalled = await db
+  const due = await db
     .select()
     .from(covers)
-    .where(and(eq(covers.status, "opening"), lt(covers.createdAt, new Date(lapsed.getTime() - STALLED_AFTER_MS))));
-  for (const cover of stalled) {
-    const id = cover.id as Hex;
-    const state = await hedgeState(id);
-    if (state === "none") {
-      await lapseOffer(id).catch(() => {});
-      await db.delete(covers).where(eq(covers.id, id));
-    } else if (state === "open" && (await coverTaken(id))) {
-      // The premium was paid and the request died before saying so. The cover has been in force all along.
-      await db.update(covers).set({ status: "open" }).where(eq(covers.id, id));
-    } else if (state === "open") {
-      const closeTx = await rejectPremium(id);
-      await db.update(covers).set({ status: "refunded", payout: cover.premium, closeTx, closedAt: new Date() }).where(eq(covers.id, id));
-    } else {
-      await db.update(covers).set({ status: state, closedAt: new Date() }).where(eq(covers.id, id));
-    }
+    .where(
+      and(
+        eq(covers.offerOpen, true),
+        inArray(covers.status, ["quoted", "opening", "blocked"]),
+        lt(covers.createdAt, new Date(Date.now() - QUOTE_LIFETIME_SECONDS * 1000 - SETTLE_DOWN_MS)),
+      ),
+    );
+
+  for (const cover of due) {
+    // One row that can't be dealt with right now must not hold up the others.
+    await tidy(cover).catch((error) => console.error(`could not reconcile cover ${cover.id}`, error));
   }
+}
+
+async function tidy(cover: typeof covers.$inferSelect) {
+  const db = await getDb();
+  const id = cover.id as Hex;
+  const owner = cover.owner as Address;
+  const row = eq(covers.id, id);
+
+  if ((await offerState(id)) === "live") {
+    if (await coverTaken(id)) {
+      // The premium was paid in time and the request died before saying so. The cover has been in force all along.
+      await db.update(covers).set({ status: "open" }).where(row);
+      await layOff(cover);
+      return;
+    }
+    if ((await hedgeState(owner, id)) === "open") {
+      // Paid, but too late or on other terms, so it bought nothing. It goes back.
+      const closeTx = await rejectPremium(owner, id);
+      await db.update(covers).set({ status: "refunded", payout: cover.premium, offerOpen: false, closeTx, closedAt: new Date() }).where(row);
+      return;
+    }
+    await lapseOffer(id);
+  }
+
+  // The offer is closed (or was never made), so nothing is locked for this row any more.
+  if (cover.status === "blocked") await db.update(covers).set({ offerOpen: false }).where(row);
+  else await db.delete(covers).where(row);
 }
 
 /** Checks every open cover against Gemini, and has the pool pay or close the ones that have resolved. */
@@ -251,14 +275,17 @@ async function settle(cover: typeof covers.$inferSelect) {
   const payout = result === "happened" ? cover.maxPayout : 0;
 
   // If an earlier pass settled the cover but died before recording it, the chain is the record to follow.
-  const state = await hedgeState(cover.id as Hex);
+  const state = await hedgeState(cover.owner as Address, cover.id as Hex);
   if (state !== "open") {
-    if (state !== "none") await db.update(covers).set({ status: state, orders, payout, closedAt: new Date() }).where(eq(covers.id, cover.id));
+    if (state !== "none") await db.update(covers).set({ status: state, orders, payout, offerOpen: false, closedAt: new Date() }).where(eq(covers.id, cover.id));
     return;
   }
 
   // What Gemini resolved, so anyone can check the pool's report against Gemini's public record.
   const evidence = keccak256(toHex(JSON.stringify(market.contracts.map((c) => [c.symbol, c.resolvedYes]))));
   const closeTx = await settleCover(cover.id as Hex, result === "happened", evidence);
-  await db.update(covers).set({ status: result === "happened" ? "paid" : "expired", orders, payout, closeTx, closedAt: new Date() }).where(eq(covers.id, cover.id));
+  await db
+    .update(covers)
+    .set({ status: result === "happened" ? "paid" : "expired", orders, payout, offerOpen: false, closeTx, closedAt: new Date() })
+    .where(eq(covers.id, cover.id));
 }

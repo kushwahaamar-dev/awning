@@ -30,6 +30,7 @@ contract MandateHandler is Test {
     uint256 public ghostBlocked;
 
     bytes32[] public openIds;
+    mapping(bytes32 id => address) public ownerOf;
     uint256 nextId;
 
     constructor(AwningMandate mandate_, MockUSDC usdc_) {
@@ -145,6 +146,7 @@ contract MandateHandler is Test {
         );
         if (ok) {
             openIds.push(bytes32(nextId));
+            ownerOf[bytes32(nextId)] = owners[i];
             ++ghostHedgesOpened;
         } else {
             ++ghostBlocked;
@@ -169,7 +171,9 @@ contract MandateHandler is Test {
         if (openIds.length == 0) return;
         uint256 idx = idSeed % openIds.length;
         bytes32 id = openIds[idx];
-        (, address venue, uint96 premium, uint96 maxPayout,,,) = mandate.hedges(id);
+        address owner = ownerOf[id];
+        (, address venue, uint96 premium, uint96 maxPayout,,,) =
+            mandate.hedges(mandate.hedgeKey(owner, id));
 
         uint256 pick = outcomeSeed % 3;
         AwningMandate.HedgeStatus outcome = AwningMandate.HedgeStatus(2 + pick);
@@ -179,7 +183,7 @@ contract MandateHandler is Test {
 
         usdc.mint(venue, payout); // the venue is solvent in this model
         vm.prank(venue);
-        mandate.closeHedge(id, outcome, payout, bytes32(0));
+        mandate.closeHedge(owner, id, outcome, payout, bytes32(0));
 
         openIds[idx] = openIds[openIds.length - 1];
         openIds.pop();
