@@ -13,6 +13,9 @@ export function marketDay(market: Pick<Market, "subject" | "startsAt" | "expires
   return easternDay.format(new Date(market.startsAt ?? market.expiresAt));
 }
 
+/** The calendar day it is, or will be, on the US east coast, where Gemini dates its markets. */
+export const easternDate = (at: Date) => easternDay.format(at);
+
 const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
 /** Finds the listed market that settles on the thing the user is exposed to, or null if Gemini has none. */

@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
   try {
-    await tick();
+    await tick(new URL(request.url).origin);
     return Response.json({ ok: true });
   } catch (error) {
     return fail(error);

@@ -1,5 +1,6 @@
 import { address, fail } from "@/lib/api/respond";
 import { requireOwner } from "@/lib/api/session";
+import { listStanding } from "@/lib/agent/standing";
 import { chain, chainLabel, explorerTx, mandateAddress, poolAddress, usdcAddress } from "@/lib/chain/config";
 import { agentAddress, readAllowance, readPool } from "@/lib/chain/server";
 import { listCovers } from "@/lib/covers/service";
@@ -14,11 +15,18 @@ export async function GET(request: Request) {
   try {
     await requireOwner(request, owner.data);
     if (!usesStreams) await pollChain();
-    const [allowance, covers, activity, pool] = await Promise.all([readAllowance(owner.data), listCovers(owner.data), recentActivity(owner.data), readPool()]);
+    const [allowance, covers, activity, pool, standing] = await Promise.all([
+      readAllowance(owner.data),
+      listCovers(owner.data),
+      recentActivity(owner.data),
+      readPool(),
+      listStanding(owner.data),
+    ]);
     return Response.json({
       allowance,
       covers,
       pool,
+      standing,
       activity: activity.map((event) => ({ ...event, explorer: explorerTx(event.txHash) })),
       setup: { chainId: chain.id, chainName: chainLabel, mandate: mandateAddress, usdc: usdcAddress, agent: agentAddress(), venue: poolAddress },
     });

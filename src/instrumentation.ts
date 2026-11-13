@@ -4,5 +4,6 @@ const EVERY_MS = 60_000;
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs" || process.env.VERCEL) return;
   const { tick } = await import("./lib/tick");
-  setInterval(() => tick().catch((error) => console.error("tick failed", error)), EVERY_MS);
+  const origin = process.env.AWNING_DESK_URL ?? `http://localhost:${process.env.PORT ?? 3000}`;
+  setInterval(() => tick(origin).catch((error) => console.error("tick failed", error)), EVERY_MS);
 }

@@ -6,7 +6,8 @@ import type { Address } from "viem";
 import { SESSION_HEADER } from "@/lib/api/session-message";
 import { deviceAddress, sessionToken } from "@/lib/chain/device";
 import type { Allowance, PoolState } from "@/lib/chain/server";
-import type { CoverStatus, Order } from "@/lib/db/schema";
+import type { CoverStatus, DecisionFacts, DecisionKind, Order } from "@/lib/db/schema";
+import type { Exposure } from "@/lib/hedge/exposure";
 import type { CoverPlan } from "@/lib/hedge/plan";
 
 export type Cover = {
@@ -25,6 +26,17 @@ export type Cover = {
   createdAt: string;
 };
 
+export type Decision = { id: number; day: string; kind: DecisionKind; reason: string; facts: DecisionFacts; at: string };
+
+export type Standing = {
+  id: number;
+  exposure: Exposure;
+  coverRatio: number;
+  dailyCap: number;
+  instruction: string | null;
+  decisions: Decision[];
+};
+
 export type Activity = {
   id: string;
   kind: string;
@@ -39,6 +51,8 @@ export type Account = {
   covers: Cover[];
   /** The pool that backs every cover. */
   pool: PoolState;
+  /** Risks left with the agent to cover every day. */
+  standing: Standing[];
   activity: Activity[];
   setup: { chainId: number; chainName: string; mandate: Address; usdc: Address; agent: Address; venue: Address };
 };

@@ -9,6 +9,11 @@ export function day(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
 }
 
+/** For a bare calendar date (YYYY-MM-DD), which must not shift when read in a timezone behind UTC. */
+export function calendarDay(date: string) {
+  return new Date(`${date}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
+}
+
 export function clock(iso: string) {
   return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 }

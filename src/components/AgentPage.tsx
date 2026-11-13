@@ -3,10 +3,10 @@
 import { useState, type CSSProperties } from "react";
 import { setPaused } from "@/lib/chain/device";
 import type { HijackStep } from "@/lib/covers/hijack";
-import { cents, clock, day, usd } from "@/lib/format";
+import { calendarDay, cents, clock, day, percent, usd } from "@/lib/format";
 import { REFUSAL, describeEvent } from "@/lib/words";
 import { AllowanceForm } from "./AllowanceForm";
-import { hasAllowance, post, useAccount, type Account } from "./account";
+import { hasAllowance, post, useAccount, type Account, type Decision } from "./account";
 
 const sentence = (clause: string) => `${clause[0].toUpperCase()}${clause.slice(1)}.`;
 
@@ -86,6 +86,77 @@ function Limits({ account }: { account: Account }) {
         {a.paused && <p className="mt-4 font-bold text-sun">The agent is paused. It can&rsquo;t spend anything until you let it resume.</p>}
       </div>
     </div>
+  );
+}
+
+const DECISIONS = {
+  bought: { label: "Bought", chip: "bg-cobalt text-cream" },
+  skipped: { label: "Left it", chip: "bg-tint text-ink" },
+  refused: { label: "Refused", chip: "bg-persimmon text-ink" },
+} as const;
+
+/** The numbers the agent had in front of it, so its reasoning can be checked against them. */
+function sawThen({ facts }: Decision) {
+  const odds = [facts.marketOdds !== null && `market ${percent(facts.marketOdds)}`, facts.forecastOdds !== null && `weather model ${percent(facts.forecastOdds)}`].filter(Boolean);
+  return `${cents(facts.premium)} to cover ${usd(facts.payout)}${odds.length ? `. Odds: ${odds.join(", ")}` : ""}.`;
+}
+
+function StandingOrders({ account }: { account: Account }) {
+  const { owner, refresh } = useAccount();
+  const [stopping, setStopping] = useState<number | null>(null);
+  if (account.standing.length === 0) return null;
+
+  async function stop(id: number) {
+    setStopping(id);
+    try {
+      await post(`/api/standing/${id}/stop`, { owner });
+      await refresh();
+    } finally {
+      setStopping(null);
+    }
+  }
+
+  return (
+    <section id="standing" className="mt-24 scroll-mt-8">
+      <h2 className="display display-lg">What you&rsquo;ve left with the agent</h2>
+      <p className="mt-4 max-w-2xl text-lg text-haze">
+        Each day it looks at the price and a forecast it pays for, and decides for itself whether the cover is worth buying. These are its own
+        words on each call.
+      </p>
+      {account.standing.map((order) => (
+        <article key={order.id} className="surface mt-8 rounded-[2rem] p-7 shadow-[0_2rem_3rem_-1.75rem_rgb(0_0_0/0.7)] sm:p-10">
+          <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
+            <div className="max-w-2xl">
+              <h3 className="display display-md">{order.exposure.summary}</h3>
+              <p className="mt-2 text-mute">
+                Every day, up to {usd(order.dailyCap)} a day.{order.instruction && <> You told it: &ldquo;{order.instruction}&rdquo;</>}
+              </p>
+            </div>
+            <button type="button" onClick={() => stop(order.id)} disabled={stopping === order.id} className="btn btn-outline">
+              {stopping === order.id ? "Stopping…" : "Stop"}
+            </button>
+          </div>
+          {order.decisions.length === 0 ? (
+            <p className="tear mt-6 pt-5 text-lg">Nothing to decide yet. It acts when the next day&rsquo;s market is listed.</p>
+          ) : (
+            <ol className="mt-6 divide-y divide-rule border-y border-rule">
+              {order.decisions.map((decision) => (
+                <li key={decision.id} className="grid gap-x-8 gap-y-2 py-5 sm:grid-cols-[9rem_1fr]">
+                  <div className="flex items-center gap-3 sm:block">
+                    <p className="till text-sm text-mute">{calendarDay(decision.day)}</p>
+                    <span className={`inline-block rounded-full px-3 py-1 text-sm font-bold sm:mt-2 ${DECISIONS[decision.kind].chip}`}>{DECISIONS[decision.kind].label}</span>
+                  </div>
+                  <div>
+                    <p className="text-lg">{decision.reason}</p>
+                    <p className="till mt-1.5 text-sm text-mute">{sawThen(decision)}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </article>
+      ))}
+    </section>
   );
 }
 
@@ -210,6 +281,7 @@ export function AgentPage() {
           </div>
         )}
       </section>
+      {ready && <StandingOrders account={account} />}
       {ready && <HijackTest />}
       <ActivityFeed account={account} />
     </>

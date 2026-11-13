@@ -9,6 +9,7 @@ import { offerPrice } from "@/lib/hedge/quote";
 import type { CoverPlan } from "@/lib/hedge/plan";
 import { REFUSAL } from "@/lib/words";
 import { AllowanceForm } from "./AllowanceForm";
+import { Standing } from "./Standing";
 import { hasAllowance, post, useAccount } from "./account";
 
 type Opened = { status: "open"; txHash: string } | { status: "blocked"; reason: BlockReason; txHash: string };
@@ -116,6 +117,7 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
         </p>
       )}
       {error && <p className="mt-3 text-brick">{error}</p>}
+      <Standing plan={plan} coverRatio={coverRatio} price={price.total} />
     </div>
   );
 }
