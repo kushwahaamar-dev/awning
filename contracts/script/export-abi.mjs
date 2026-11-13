@@ -23,6 +23,8 @@ const body = [
   "",
   `export const awningMandateAbi = ${JSON.stringify(loadAbi("AwningMandate"), null, 2)} as const;`,
   "",
+  `export const awningPoolAbi = ${JSON.stringify(loadAbi("AwningPool"), null, 2)} as const;`,
+  "",
   `export const usdcAbi = ${JSON.stringify(loadAbi("MockUSDC"), null, 2)} as const;`,
   "",
 ].join("\n");
