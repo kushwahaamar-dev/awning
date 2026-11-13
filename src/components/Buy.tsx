@@ -30,8 +30,7 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
   if (!hasAllowance(account)) {
     return (
       <div className="mt-6 border-t border-line pt-5">
-        <p className="font-[510]">Before Awning can buy this, give your agent an allowance.</p>
-        <p className="mt-1 mb-5 text-sm text-muted">You set the limits. They are enforced by a contract, not by the agent.</p>
+        <p className="mb-5 font-[510]">First, give your agent an allowance.</p>
         <AllowanceForm />
       </div>
     );
@@ -101,8 +100,8 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
     <div className="mt-5">
       {overLimit && (
         <p className="note mb-4 text-sm">
-          This costs more than the {usd(account.allowance.perCoverCap)} you allow for one cover, so your allowance will refuse it. Cover less of
-          the loss, or raise the limit under Your agent.
+          This is over your {usd(account.allowance.perCoverCap)} limit for one cover and will be refused. Cover less, or raise the limit under
+          Your agent.
         </p>
       )}
       <button type="button" onClick={start} disabled={busy} className="btn btn-lg btn-primary w-full">
@@ -111,8 +110,7 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
       <p className="mt-3 flex gap-2 text-xs text-muted">
         <Lock className="mt-0.5 size-3.5 flex-none text-accent" />
         <span>
-          The pool holds {usd(account.pool.free)} that isn&rsquo;t promised to anyone. It locks your {usd(quote.payout)} in a contract on{" "}
-          {account.setup.chainName} before your premium moves.
+          The pool locks your {usd(quote.payout)} on {account.setup.chainName} before your premium moves.
         </span>
       </p>
       {refused && (

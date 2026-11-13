@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, type CSSProperties } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useEffectEvent, useRef, useState, type CSSProperties } from "react";
 import type { Interpretation, Turn } from "@/lib/hedge/interpret";
 import type { CoverPlan } from "@/lib/hedge/plan";
 import { cents, usd } from "@/lib/format";
@@ -89,6 +90,20 @@ export function Desk() {
     }
   }
 
+  // A sentence typed on the landing page arrives in the address; price it once and tidy the address.
+  const asked = useSearchParams().get("risk");
+  const router = useRouter();
+  const arrived = useRef(false);
+  const arrive = useEffectEvent((text: string) => {
+    if (arrived.current) return;
+    arrived.current = true;
+    router.replace("/app");
+    if (text.trim()) say(text.trim());
+  });
+  useEffect(() => {
+    if (asked !== null) arrive(asked);
+  }, [asked]);
+
   function startOver() {
     setTurns([]);
     setPlan(null);
@@ -107,11 +122,11 @@ export function Desk() {
           <button type="button" onClick={startOver} className="link text-sm">
             Describe a different risk
           </button>
-          <div className="panel mt-6 flex h-36 items-center overflow-hidden">
-            <Ascii {...sceneFor(plan)} className="w-full bg-[#060708]" />
+          <div className="fade-edges mt-4 flex h-40 items-center overflow-hidden">
+            <Ascii {...sceneFor(plan)} className="w-full" />
           </div>
-          <p className="mt-8 text-sm text-muted">You said</p>
-          <h1 className="heading mt-2 max-w-2xl">{plan.exposure.summary}</h1>
+          <p className="mt-4 text-sm text-muted">You said</p>
+          <h1 className="mt-2 max-w-xl text-[1.75rem] leading-[1.2] font-[510] tracking-[-0.02em] text-balance">{plan.exposure.summary}</h1>
           <Fit plan={plan} />
         </div>
       </div>

@@ -55,11 +55,11 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
   }
 
   return (
-    <div className="grid items-start gap-x-14 gap-y-10 pt-16 sm:pt-24 lg:grid-cols-[minmax(0,1fr)_24rem]">
+    <div className="grid items-start gap-x-14 gap-y-10 pt-16 sm:pt-24 lg:grid-cols-[minmax(0,1fr)_26rem]">
       <section>
         <h1 className="heading rise">What could go wrong for your business?</h1>
-        <p className="rise mt-4 max-w-xl text-lg text-muted" style={order(1)}>
-          Say it the way you&rsquo;d tell a friend. Awning finds the market that pays when it happens, and shows you the price before you spend anything.
+        <p className="rise mt-4 text-lg text-muted" style={order(1)}>
+          Say it the way you&rsquo;d tell a friend. You see the price before you spend anything.
         </p>
 
         {said.length > 0 && (
@@ -125,15 +125,15 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
           <div className="panel mt-5 p-5">
             <p className="font-[510]">Gemini doesn&rsquo;t list a market for that yet.</p>
             <p className="mt-1 text-muted">
-              {unlisted.wanted ? `We've noted "${unlisted.wanted}" as a market people are asking for. ` : "Nothing listed today settles on that. "}
-              Right now cover exists for daily high temperatures in 49 US cities, oil, gas and metal prices, crypto prices, and game results.
+              {unlisted.wanted && `We've noted "${unlisted.wanted}" as one people want. `}
+              Today there is cover for daily highs in 49 US cities, oil, gas and metal prices, crypto prices, and game results.
             </p>
           </div>
         )}
 
         {fresh && (
           <div className="rise mt-10" style={order(3)}>
-            <p className="text-sm text-muted">Or start from one of these</p>
+            <p className="text-sm text-muted">Or try one of these</p>
             <ul className="rows mt-3 border-y border-line">
               {EXAMPLES.map(({ kind, text }) => (
                 <li key={kind}>
@@ -154,12 +154,9 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
         )}
       </section>
       {fresh && (
-        <figure className="rise panel overflow-hidden max-lg:hidden" style={order(4)}>
-          <Ascii scene="storm" label="Storm clouds over dark hills, lightning coming down" className="bg-[#060708]" />
-          <figcaption className="border-t border-line px-5 py-3 text-sm text-muted">
-            Weather, prices, results. If a market settles on it, Awning can cover it.
-          </figcaption>
-        </figure>
+        <div className="rise max-lg:hidden" style={order(4)}>
+          <Ascii scene="storm" label="Storm clouds over dark hills, lightning coming down" className="fade-soft" />
+        </div>
       )}
     </div>
   );

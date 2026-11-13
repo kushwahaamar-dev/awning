@@ -60,11 +60,11 @@ export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
       </dl>
       {price ? (
         <p className="mt-3 text-xs text-faint">
-          The cost is Gemini&rsquo;s price for this, including an estimated {cents(price.fees)} in exchange fees.
-          {forecast && ` Your agent paid ${cents(forecast.paid)} for a ${forecast.members}-run forecast to check the price against.`}
+          Gemini&rsquo;s price, including about {cents(price.fees)} in exchange fees.
+          {forecast && ` Your agent paid ${cents(forecast.paid)} for the ${forecast.members}-run forecast.`}
         </p>
       ) : (
-        <p className="note note-bad mt-4">Nobody is quoting this market right now, so there is no price to show. Check back closer to the date.</p>
+        <p className="note note-bad mt-4">Nobody is quoting this market right now. Check back closer to the date.</p>
       )}
 
       <div className="mt-6">
@@ -92,13 +92,13 @@ export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
       ) : (
         price && (
           <p className="note mt-5">
-            The market treats this as all but certain, so cover would cost as much as it pays. Try a threshold that is less likely to be hit.
+            The market sees this as near certain, so cover costs as much as it pays. Try a threshold less likely to be hit.
           </p>
         )
       )}
 
       <div className="mt-6 border-t border-line pt-4 text-xs text-faint">
-        <p>What the pool buys on Gemini to cover itself, {quote.contracts.toLocaleString("en-US")} contracts of each:</p>
+        <p>The pool&rsquo;s hedge on Gemini, {quote.contracts.toLocaleString("en-US")} contracts of each:</p>
         <ul className="num mt-1.5 space-y-0.5">
           {coverage.legs.map((leg) => (
             <li key={leg.symbol}>

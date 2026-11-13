@@ -72,8 +72,8 @@ export function Covers() {
         <div>
           <h3 className="title">Where a payout comes from</h3>
           <p className="mt-2 text-muted">
-            A pool of USDC in a contract on {setup.chainName}. It locks the whole payout when you buy, pays your vault when Gemini&rsquo;s market
-            resolves your way, and covers its own risk by buying the same position on Gemini.{" "}
+            A USDC pool in a contract on {setup.chainName}. It locks the full payout when you buy and pays your vault when Gemini resolves the
+            market.{" "}
             {poolPage && (
               <a href={poolPage} target="_blank" rel="noreferrer" className="link">
                 See the contract
@@ -81,13 +81,13 @@ export function Covers() {
             )}
           </p>
         </div>
-        <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-[0.875rem] border border-line bg-line">
+        <dl className="grid grid-cols-3 divide-x divide-line border-y border-line">
           {[
             { label: "In the pool", value: pool.assets },
             { label: "Locked behind cover", value: pool.locked },
             { label: "Free", value: pool.free },
           ].map(({ label, value }) => (
-            <div key={label} className="bg-bg p-5">
+            <div key={label} className="px-5 py-5 first:pl-0">
               <dt className="text-xs text-muted">{label}</dt>
               <dd className="num mt-2 text-[clamp(1.125rem,2.2vw,1.625rem)]">{usd(Math.round(value))}</dd>
             </div>

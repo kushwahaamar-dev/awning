@@ -51,7 +51,7 @@ export function Standing({ plan, coverRatio, price }: { plan: CoverPlan; coverRa
       }}
     >
       <p className="font-[510]">Leave this with your agent</p>
-      <p className="mt-1 text-sm text-muted">Each day it checks the price against a forecast, buys when the cover is worth it, leaves it when it isn&rsquo;t, and tells you why.</p>
+      <p className="mt-1 text-sm text-muted">Each day it checks the price against a forecast, buys only if it&rsquo;s worth it, and tells you why.</p>
 
       <label htmlFor="dailyCap" className="mt-5 flex items-baseline justify-between gap-4">
         <span>Most to pay for one day</span>
@@ -70,7 +70,7 @@ export function Standing({ plan, coverRatio, price }: { plan: CoverPlan; coverRa
           />
         </span>
       </label>
-      <p className="mt-1 text-xs text-faint">It can act alone up to the {usd(askFirst)} you set as your ask-first line.</p>
+      <p className="mt-1 text-xs text-faint">Up to your {usd(askFirst)} ask-first line.</p>
 
       <label htmlFor="instruction" className="mt-5 block">
         Anything it should know

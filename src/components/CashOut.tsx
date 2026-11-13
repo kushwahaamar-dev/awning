@@ -62,8 +62,7 @@ export function CashOut({ onClose }: { onClose: () => void }) {
           </p>
         ) : (
           <p className="text-soft">
-            <span className="font-[510] text-fg">On its way to {sent.to.name}.</span> Circle is delivering {cents(sent.arrives)}; this takes a few
-            seconds.
+            <span className="font-[510] text-fg">On its way to {sent.to.name}.</span> Circle is delivering {cents(sent.arrives)}.
           </p>
         )}
         <button type="button" onClick={onClose} className="link mt-4 text-sm">
@@ -82,7 +81,7 @@ export function CashOut({ onClose }: { onClose: () => void }) {
       }}
     >
       <p className="font-[510]">Send money out to another chain</p>
-      <p className="mt-1 text-sm text-muted">Circle moves the dollars and delivers them. You need nothing on the other chain to receive them.</p>
+      <p className="mt-1 text-sm text-muted">Circle delivers it. You need nothing on the other chain.</p>
 
       <label htmlFor="cashAmount" className="mt-5 flex items-baseline justify-between gap-4">
         <span>How much</span>

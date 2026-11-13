@@ -10,7 +10,7 @@ const figures = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] }
 
 export const metadata: Metadata = {
   title: "Awning",
-  description: "Say what could go wrong for your business. Awning finds cover for it on Gemini prediction markets.",
+  description: "Cover for the bad days insurers won't touch, priced by Gemini prediction markets and paid out on Arc.",
 };
 
 export const viewport: Viewport = { themeColor: "#08090a" };
@@ -19,9 +19,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${text.variable} ${figures.variable} h-full antialiased`}>
       <body className="relative flex min-h-full flex-col">
-        <div aria-hidden className="backdrop" />
         <Storefront />
-        <main className="mx-auto w-full max-w-6xl grow px-5 pb-32 sm:px-8">
+        <main className="mx-auto w-full max-w-[75rem] grow px-5 pb-32 sm:px-8">
           <AccountProvider>{children}</AccountProvider>
         </main>
         <Footer />

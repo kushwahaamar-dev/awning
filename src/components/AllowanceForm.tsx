@@ -7,11 +7,11 @@ import { usd } from "@/lib/format";
 import { post, useAccount } from "./account";
 
 const FIELDS = [
-  { key: "deposit", label: "Put into your vault", hint: "Premiums are paid from here, and payouts land here." },
+  { key: "deposit", label: "Put into your vault", hint: "Premiums leave from here. Payouts land here." },
   { key: "perCoverCap", label: "Most it can spend on one cover", hint: null },
   { key: "monthlyCap", label: "Most it can spend on cover in a month", hint: null },
-  { key: "approvalThreshold", label: "Ask me first above", hint: "Anything larger needs a tap from you on this device." },
-  { key: "dailyDataCap", label: "Daily allowance for buying data", hint: "Forecasts and prices the agent pays for per request. This is all a hijacked agent could ever take." },
+  { key: "approvalThreshold", label: "Ask me first above", hint: "Anything larger needs your signature." },
+  { key: "dailyDataCap", label: "Daily allowance for buying data", hint: "What it pays per request for forecasts. This is the most a hijacked agent could take." },
 ] as const;
 
 type Key = (typeof FIELDS)[number]["key"];

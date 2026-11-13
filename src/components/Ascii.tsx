@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 // Animated scenes from ascii-magic-art (MIT). Each is a small module that draws a frame of text for
-// a moment in time; the library's player paints it as halftone dots on a canvas.
+// a moment in time; the library's player paints it as halftone dots on a canvas, here in one ink.
 const CELL_WIDTH = 0.602; // a monospace cell is this wide for each unit of font size
 
 const SCENES = {
@@ -18,8 +18,8 @@ const SCENES = {
 export type Scene = keyof typeof SCENES;
 
 /**
- * One scene, scaled to the width it is given. It plays only while on screen and holds a still frame
- * for anyone who prefers reduced motion. It is decoration with a description, not content.
+ * One scene, scaled to the width it is given and drawn in the text colour. It plays only while on
+ * screen and holds a still frame for anyone who prefers reduced motion.
  */
 export function Ascii({ scene, label, className = "" }: { scene: Scene; label: string; className?: string }) {
   const box = useRef<HTMLDivElement>(null);
@@ -44,7 +44,7 @@ export function Ascii({ scene, label, className = "" }: { scene: Scene; label: s
     let stop: (() => void) | undefined;
     let gone = false;
     Promise.all([import("ascii-magic-art/runtime/player.js"), SCENES[scene].load()]).then(([{ play }, piece]) => {
-      if (!gone) stop = play(text, piece, { look: { look: "dots" }, maxFps: 24 });
+      if (!gone) stop = play(text, piece, { look: { look: "dots", mono: true }, maxFps: 24 });
     });
 
     return () => {
@@ -59,8 +59,8 @@ export function Ascii({ scene, label, className = "" }: { scene: Scene; label: s
   }, [scene, cols]);
 
   return (
-    <div ref={box} role="img" aria-label={label} className={`overflow-hidden ${className}`} style={{ aspectRatio: ratio }}>
-      <pre ref={pre} aria-hidden className="m-0 leading-none text-soft" />
+    <div ref={box} role="img" aria-label={label} className={`ascii overflow-hidden ${className}`} style={{ aspectRatio: ratio }}>
+      <pre ref={pre} aria-hidden className="m-0 leading-none" />
     </div>
   );
 }

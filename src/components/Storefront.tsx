@@ -12,6 +12,7 @@ const APP = [
 
 const STORY = [
   { href: "#how", label: "How it works" },
+  { href: "#limits", label: "Limits" },
   { href: "#built", label: "How it's built" },
   { href: "#checked", label: "What we checked" },
 ];
@@ -22,7 +23,7 @@ export function Storefront() {
   const landing = path === "/";
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-bg/75 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-8 px-5 sm:px-8">
+      <div className="mx-auto flex h-14 max-w-[75rem] items-center gap-8 px-5 sm:px-8">
         <Link href="/" aria-label="Awning, home" className="rounded-md">
           <Logo />
         </Link>

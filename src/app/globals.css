@@ -295,24 +295,20 @@ body {
     box-shadow: 0 0 0 4px rgb(255 255 255 / 0.1);
   }
 
-  /* Light from above the page and a faint grid that fades out. Kept very quiet. */
-  .backdrop {
-    position: absolute;
-    inset: 0 0 auto;
-    z-index: -1;
-    height: 46rem;
-    pointer-events: none;
-    background:
-      radial-gradient(52rem 26rem at 50% -8rem, rgb(242 181 74 / 0.13), transparent 70%),
-      radial-gradient(40rem 22rem at 88% 2rem, rgb(94 106 210 / 0.1), transparent 70%);
+  /* Scenes are drawn in one quiet ink and dissolve into the page instead of sitting in a frame. */
+  .ascii {
+    color: var(--color-muted);
   }
-  .backdrop::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(rgb(255 255 255 / 0.11) 1px, transparent 1px);
-    background-size: 1.5rem 1.5rem;
-    mask-image: radial-gradient(60rem 30rem at 50% 0, #000, transparent 75%);
+  .fade-edges {
+    mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 55%, transparent),
+      linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+    mask-composite: intersect;
+  }
+  .fade-out {
+    mask-image: radial-gradient(closest-side, #000 40%, transparent);
+  }
+  .fade-soft {
+    mask-image: radial-gradient(ellipse 62% 64% at center, #000 42%, transparent);
   }
 
   /* Content settles into place on load, in order. */

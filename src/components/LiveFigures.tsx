@@ -21,13 +21,13 @@ export function LiveFigures() {
     { label: "Locked behind cover", value: dollars(data?.pool.locked) },
     { label: "Covers written", value: data?.covers ?? "…" },
     { label: "Paid out", value: dollars(data?.paidOut) },
-    { label: "Attempts refused onchain", value: data?.refused ?? "…" },
+    { label: "Refused onchain", value: data?.refused ?? "…" },
   ];
 
   return (
-    <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[0.875rem] border border-line bg-line sm:grid-cols-3 lg:grid-cols-5" aria-live="off">
+    <dl className="grid grid-cols-2 border-y border-line sm:grid-cols-3 lg:grid-cols-5 lg:divide-x lg:divide-line" aria-live="off">
       {figures.map(({ label, value }) => (
-        <div key={label} className="bg-bg px-5 py-4">
+        <div key={label} className="py-5 pr-5 lg:px-5 lg:first:pl-0">
           <dt className="text-xs text-muted">{label}</dt>
           <dd className="num mt-1.5 text-xl">{value}</dd>
         </div>

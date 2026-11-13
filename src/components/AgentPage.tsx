@@ -93,9 +93,9 @@ function Limits({ account }: { account: Account }) {
       </div>
 
       <div className="panel p-6 sm:p-8">
-        <p className="text-muted">If someone took over the agent this minute, the most they could move to themselves is</p>
+        <p className="text-muted">The most a hijacked agent could take right now</p>
         <p className="num mt-4 text-[clamp(3rem,6vw,4.5rem)] leading-none font-medium tracking-[-0.04em] text-accent">{cents(a.dataLeftToday)}</p>
-        <p className="mt-4 text-muted">Everything else can only go to the pool you approved, and the pool sends back what it didn&rsquo;t offer.</p>
+        <p className="mt-4 text-muted">The rest can only go to the pool, which returns anything it didn&rsquo;t offer.</p>
         <button type="button" onClick={togglePause} disabled={busy} className={`btn mt-6 ${a.paused ? "btn-primary" : "btn-danger"}`}>
           {busy ? "One moment…" : a.paused ? "Let the agent resume" : "Pause the agent"}
         </button>
@@ -136,10 +136,7 @@ function StandingOrders({ account }: { account: Account }) {
   return (
     <section id="standing" className="mt-24 scroll-mt-20">
       <h2 className="heading">What you&rsquo;ve left with the agent</h2>
-      <p className="mt-3 max-w-2xl text-lg text-muted">
-        Each day it looks at the price and a forecast it pays for, and decides for itself whether the cover is worth buying. These are its own
-        words on each call.
-      </p>
+      <p className="mt-3 text-lg text-muted">Each day it decides whether cover is worth buying, and says why.</p>
       {account.standing.map((order) => (
         <article key={order.id} className="panel mt-8">
           <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-4 p-6 sm:p-8">
@@ -154,7 +151,7 @@ function StandingOrders({ account }: { account: Account }) {
             </button>
           </div>
           {order.decisions.length === 0 ? (
-            <p className="border-t border-line px-6 py-5 text-muted sm:px-8">Nothing to decide yet. It acts when the next day&rsquo;s market is listed.</p>
+            <p className="border-t border-line px-6 py-5 text-muted sm:px-8">Nothing yet. It acts when the next day&rsquo;s market is listed.</p>
           ) : (
             <ol className="rows border-t border-line">
               {order.decisions.map((decision) => (
@@ -200,10 +197,7 @@ function HijackTest() {
     <section className="mt-24 grid gap-x-16 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
       <div>
         <h2 className="heading">Test the limits</h2>
-        <p className="mt-3 text-lg text-muted">
-          Agents read things strangers wrote, and sooner or later one gets talked into something. This hands the agent&rsquo;s own key to an
-          attacker and lets them try to empty your vault, with real transactions.
-        </p>
+        <p className="mt-3 text-lg text-muted">Hand the agent&rsquo;s key to an attacker and let them try to empty your vault. The transactions are real.</p>
         <button type="button" onClick={run} disabled={busy} className="btn btn-lg btn-danger mt-6">
           {busy ? "Attacking…" : "Hijack my agent"}
         </button>
@@ -236,7 +230,7 @@ function HijackTest() {
             <p className="title border-t border-line px-5 py-5">The attacker got away with {cents(result.taken)}.</p>
           </>
         ) : (
-          <p className="px-5 py-10 text-center text-muted">Each attempt is a real transaction. What the contracts say to each one shows up here.</p>
+          <p className="px-5 py-10 text-center text-muted">What the contracts say to each attempt shows up here.</p>
         )}
       </div>
     </section>
@@ -247,7 +241,7 @@ function ActivityFeed({ account }: { account: Account }) {
   return (
     <section className="mt-24">
       <h2 className="heading">Everything the agent has done</h2>
-      <p className="mt-3 max-w-xl text-lg text-muted">Read from the contracts&rsquo; own record on {account.setup.chainName}, including what it was refused.</p>
+      <p className="mt-3 text-lg text-muted">Read from {account.setup.chainName}, refusals included.</p>
       {account.activity.length === 0 ? (
         <p className="mt-8 text-soft">Nothing yet. It starts when you set an allowance.</p>
       ) : (
@@ -283,16 +277,15 @@ export function AgentPage() {
   return (
     <>
       <section className="pt-16 sm:pt-24">
-        <div className="mb-10 grid items-end gap-x-14 gap-y-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="mb-10 grid items-center gap-x-14 gap-y-8 lg:grid-cols-[minmax(0,1fr)_24rem]">
           <div>
-            <h1 className="display rise max-w-[13em]">{ready ? "What your agent is allowed to do" : "Give your agent an allowance"}</h1>
-            <p className="rise mt-5 max-w-2xl text-lg text-muted" style={order(1)}>
-              The agent buys cover and data on your behalf. These limits are written into a contract on {account.setup.chainName}, so they
-              hold even if the agent is fooled or taken over.
+            <h1 className="heading rise">{ready ? "What your agent is allowed to do" : "Give your agent an allowance"}</h1>
+            <p className="rise mt-4 max-w-xl text-lg text-muted" style={order(1)}>
+              A contract on {account.setup.chainName} enforces these limits, even if the agent is fooled or taken over.
             </p>
           </div>
-          <div className="rise panel overflow-hidden max-lg:hidden" style={order(2)}>
-            <Ascii scene="lighthouse" label="A lighthouse on a cliff sweeping its beam across a starry night" className="bg-[#060708]" />
+          <div className="rise max-lg:hidden" style={order(2)}>
+            <Ascii scene="lighthouse" label="A lighthouse on a cliff sweeping its beam across a starry night" className="fade-soft" />
           </div>
         </div>
         <div className="rise" style={order(2)}>
