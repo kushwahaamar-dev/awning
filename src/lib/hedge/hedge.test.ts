@@ -31,7 +31,7 @@ describe("buildCoverage", () => {
     const coverage = buildCoverage(austin, coldDay.trigger)!;
     expect(coverage.legs.map((l) => l.label)).toEqual(["74°F or below", "75°F to 76°F", "77°F to 78°F"]);
     expect(coverage.legs.every((l) => l.side === "yes")).toBe(true);
-    expect(coverage.pays).toBe("the reading is 78°F or below");
+    expect(coverage.pays).toBe("Austin's high is 78°F or below");
     expect(coverage.snappedTo).toBeNull();
   });
 
@@ -54,13 +54,13 @@ describe("buildCoverage", () => {
 
     const fall = buildCoverage(wti, { family: "price", asset: "WTI", direction: "below", threshold: 81 })!;
     expect(fall.legs).toMatchObject([{ label: "$81 or above", side: "no" }]);
-    expect(fall.pays).toBe("the price is below $81");
+    expect(fall.pays).toBe("WTI oil is below $81");
   });
 
   it("prices a No leg from the mirrored Yes book", () => {
     const coverage = buildCoverage(game, { family: "game", team: "Texas", outcome: "loses" })!;
     expect(coverage.legs).toMatchObject([{ label: "Texas", side: "no", bid: 0.61, ask: 0.63 }]);
-    expect(coverage.pays).toBe("Texas Longhorns do not win");
+    expect(coverage.pays).toBe("the Texas Longhorns don't win");
   });
 
   it("refuses a trigger the market cannot express", () => {

@@ -54,6 +54,12 @@ function ranged(market: Market): Ranged[] {
   );
 }
 
+function subjectName({ subject }: Market) {
+  if (subject.family === "temperature") return `${subject.city}'s high`;
+  if (subject.family === "price") return subject.name.replace(/^Oil \((.+)\)$/, "$1 oil");
+  return "the result";
+}
+
 function format(value: number, unit: Market["unit"]) {
   return unit === "$" ? `$${value.toLocaleString("en-US")}` : `${value}${unit ?? ""}`;
 }
@@ -71,7 +77,7 @@ function coverPartition(market: Market, direction: "above" | "below", threshold:
     .sort((a, b) => (a.lo ?? -Infinity) - (b.lo ?? -Infinity));
   return {
     legs: inside.map((b) => leg(b.contract, "yes")),
-    pays: `the reading is ${format(edge, market.unit)} or ${direction === "below" ? "below" : "above"}`,
+    pays: `${subjectName(market)} is ${format(edge, market.unit)} or ${direction === "below" ? "below" : "above"}`,
     snappedTo: edge === threshold ? null : edge,
   };
 }
@@ -85,7 +91,10 @@ function coverLadder(market: Market, direction: "above" | "below", threshold: nu
   const contract = strikes.find((b) => b.lo === strike)!.contract;
   return {
     legs: [leg(contract, direction === "above" ? "yes" : "no")],
-    pays: direction === "above" ? `the price is ${format(strike, "$")} or above` : `the price is below ${format(strike, "$")}`,
+    pays:
+      direction === "above"
+        ? `${subjectName(market)} is at ${format(strike, "$")} or above`
+        : `${subjectName(market)} is below ${format(strike, "$")}`,
     snappedTo: strike === threshold ? null : strike,
   };
 }
@@ -101,8 +110,8 @@ function coverGame(market: Market, team: string, outcome: "wins" | "loses"): Cov
 
   // A No on the team pays on a loss or a tie, which is what "they didn't win" costs the user.
   return outcome === "wins"
-    ? { legs: [leg(contract, "yes")], pays: `${contract.outcome.team} win`, snappedTo: null }
-    : { legs: [leg(contract, "no")], pays: `${contract.outcome.team} do not win`, snappedTo: null };
+    ? { legs: [leg(contract, "yes")], pays: `the ${contract.outcome.team} win`, snappedTo: null }
+    : { legs: [leg(contract, "no")], pays: `the ${contract.outcome.team} don't win`, snappedTo: null };
 }
 
 export function buildCoverage(market: Market, trigger: Trigger): Coverage | null {

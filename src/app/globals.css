@@ -1,26 +1,102 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-sailcloth: #f2f5f1;
+  --color-paper: #ffffff;
+  --color-awning: #0e4a39;
+  --color-awning-deep: #0a3327;
+  --color-ink: #13231c;
+  --color-mute: #5a6b62;
+  --color-rule: #d3dcd5;
+  --color-marigold: #f0b323;
+  --color-brick: #b4281e;
+
+  --font-sans: var(--font-text), system-ui, sans-serif;
+  --font-display: var(--font-display), var(--font-text), sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.3125rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2.25rem;
+  --text-4xl: 3rem;
+  --text-5xl: 3.75rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  /* How far the awning is rolled out: the share of the loss under cover, 0–1. */
+  --cover: 0.3;
+  --stripe: 3.5rem;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-sailcloth);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-marigold);
+  outline-offset: 2px;
+}
+
+/* The awning: canvas that rolls out as cover increases, with a scalloped valance. */
+.awning-canvas,
+.awning-valance {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-awning) 0 calc(var(--stripe) / 2),
+    var(--color-paper) calc(var(--stripe) / 2) var(--stripe)
+  );
+}
+
+.awning-canvas {
+  height: calc(0.75rem + var(--cover) * 5.5rem);
+  transition: height 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Light falls off toward the wall, so the canvas reads as sloping away from it. */
+  box-shadow: inset 0 1.25rem 1.5rem -1rem rgb(10 51 39 / 0.55);
+}
+
+.awning-valance {
+  height: calc(var(--stripe) / 4 + 0.375rem);
+  mask: radial-gradient(circle at 50% 0, #000 calc(var(--stripe) / 4), #0000 calc(var(--stripe) / 4 + 0.5px)) 0 0.375rem /
+      calc(var(--stripe) / 2) 100% repeat-x,
+    linear-gradient(#000, #000) 0 0 / 100% 0.375rem no-repeat;
+}
+
+.awning-shade {
+  height: calc(var(--cover) * 9rem);
+  background: linear-gradient(rgb(14 74 57 / 0.13), rgb(14 74 57 / 0));
+  transition: height 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* A till receipt: paper with a torn lower edge. */
+.receipt {
+  background: var(--color-paper);
+  filter: drop-shadow(0 1px 0 var(--color-rule)) drop-shadow(0 0.75rem 1.25rem rgb(19 35 28 / 0.08));
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 0.875rem 0.4375rem repeat-x,
+    linear-gradient(#000, #000) top / 100% calc(100% - 0.4375rem) no-repeat;
+  padding-bottom: 1.5rem;
+}
+
+.leader {
+  flex: 1;
+  margin: 0 0.5rem;
+  border-bottom: 2px dotted var(--color-rule);
+  transform: translateY(-0.3em);
+}
+
+.figures {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .awning-canvas,
+  .awning-shade {
+    transition: none;
+  }
 }
