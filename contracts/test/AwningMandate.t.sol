@@ -952,14 +952,25 @@ contract AwningMandateTest is Test {
         vm.stopPrank();
     }
 
+    function test_closeHedge_paidCanIncludeUnspentPremium() public {
+        _open(H1, 20e6); // premium 20, maxPayout 80
+        _venueFundsAndApproves(1_000e6);
+        uint256 before = mandate.balanceOf(owner);
+        vm.prank(venue);
+        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Paid, 80e6 + 20e6, bytes32(0));
+        assertEq(mandate.balanceOf(owner), before + 100e6);
+        assertEq(uint8(_status(H1)), uint8(AwningMandate.HedgeStatus.Paid));
+    }
+
     function test_closeHedge_revertsOnBadPayout() public {
         _open(H1, 20e6); // premium 20, maxPayout 80
         _venueFundsAndApproves(1_000e6);
         vm.startPrank(venue);
         vm.expectRevert(AwningMandate.InvalidPayout.selector);
         mandate.closeHedge(H1, AwningMandate.HedgeStatus.Paid, 0, bytes32(0));
+        // winnings are capped at maxPayout, and at most the whole premium can come back with them
         vm.expectRevert(AwningMandate.InvalidPayout.selector);
-        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Paid, 80e6 + 1, bytes32(0));
+        mandate.closeHedge(H1, AwningMandate.HedgeStatus.Paid, 80e6 + 20e6 + 1, bytes32(0));
         vm.expectRevert(AwningMandate.InvalidPayout.selector);
         mandate.closeHedge(H1, AwningMandate.HedgeStatus.Expired, 1, bytes32(0));
         vm.expectRevert(AwningMandate.InvalidPayout.selector);

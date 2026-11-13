@@ -21,7 +21,7 @@ export const triggerSchema = z.discriminatedUnion("family", [
 ]);
 
 export const exposureSchema = z.object({
-  summary: z.string().describe("One plain sentence restating the risk, in the user's terms"),
+  summary: z.string().describe("One plain sentence restating the risk back to the person, addressed to them as 'you' and 'your'"),
   trigger: triggerSchema,
   lossUsd: z.number().positive().describe("What the event costs the user, in US dollars"),
   on: z.string().nullable().describe("ISO date (YYYY-MM-DD) the risk applies to, or null for the next listed market"),

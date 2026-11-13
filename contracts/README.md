@@ -42,8 +42,8 @@ For any owner whose agent key is fully compromised:
 `closeHedge` is callable only by the hedge's venue, and the contract cannot check the venue's
 claim. A venue that reports `Expired` for a hedge that actually won, or never calls `closeHedge`,
 costs the owner the payout. `evidence` is only emitted, never verified. In exchange the venue
-cannot hurt the owner beyond what it already holds: `Paid` is bounded by `maxPayout`, `Refunded` by
-`premium`, the venue must have approved the mandate for `payout`, and the hedge can only be
+cannot hurt the owner beyond what it already holds: `Paid` is bounded by `maxPayout` plus the
+premium (winnings and any premium that went unspent), `Refunded` by `premium`, the venue must have approved the mandate for `payout`, and the hedge can only be
 closed once. The owner chooses which venues to allow, so the venue is a trusted counterparty, the
 same way a broker is. Venues should be allowlisted only if you accept that.
 

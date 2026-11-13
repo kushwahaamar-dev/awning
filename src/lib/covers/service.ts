@@ -3,16 +3,15 @@ import { keccak256, toHex, type Address, type Hex } from "viem";
 import { closeHedge, openHedge, readAllowance, venueAddress } from "../chain/server";
 import { covers, getDb, type Order } from "../db";
 import { getMarket, listMarkets } from "../gemini/client";
-import type { Market } from "../gemini/market";
 import type { Exposure } from "../hedge/exposure";
 import { planCover, type CoverPlan } from "../hedge/plan";
-import { contractFor, getVenue } from "../venue";
+import { getVenue } from "../venue";
+import { settlement } from "./settlement";
 
 /** A problem the person can do something about; shown to them as-is. */
 export class CoverError extends Error {}
 
 const APPROVAL_WINDOW_SECONDS = 15 * 60;
-const cents = (n: number) => Math.round(n * 100) / 100;
 
 /** Binds an onchain hedge to the exact Gemini contracts and sides it was priced on. */
 function marketRef(plan: CoverPlan): Hex {
@@ -110,29 +109,6 @@ export async function listCovers(owner: string) {
     .where(and(eq(covers.owner, owner.toLowerCase()), inArray(covers.status, ["open", "paid", "expired", "refunded", "blocked"])))
     .orderBy(desc(covers.createdAt))
     .limit(50);
-}
-
-type Settlement = { outcome: "Paid" | "Expired" | "Refunded"; payout: number };
-
-/**
- * What the venue owes the owner once every leg has resolved. A winning contract pays $1;
- * premium that never bought anything, because a resting order didn't fill, goes back.
- * Returns null while any leg is still unresolved.
- */
-export function settlement(orders: Order[], premium: number, market: Market): Settlement | null {
-  let winnings = 0;
-  let filled = 0;
-  let wanted = 0;
-  for (const order of orders) {
-    const resolvedYes = contractFor(order, market)?.resolvedYes;
-    if (resolvedYes == null) return null;
-    if ((order.side === "yes") === resolvedYes) winnings += order.filled;
-    filled += order.filled;
-    wanted += order.quantity;
-  }
-  const unspent = cents(premium * (1 - filled / wanted));
-  const payout = cents(winnings + unspent);
-  return { outcome: winnings > 0 ? "Paid" : unspent > 0 ? "Refunded" : "Expired", payout };
 }
 
 /** Checks every open cover against Gemini: updates fills, and pays out or closes the ones that have resolved. */

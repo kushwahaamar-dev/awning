@@ -173,7 +173,9 @@ contract MandateHandler is Test {
 
         uint256 pick = outcomeSeed % 3;
         AwningMandate.HedgeStatus outcome = AwningMandate.HedgeStatus(2 + pick);
-        uint256 payout = pick == 1 ? 0 : bound(payoutSeed, 1, pick == 0 ? maxPayout : premium);
+        uint256 payout = pick == 1
+            ? 0
+            : bound(payoutSeed, 1, pick == 0 ? uint256(maxPayout) + premium : premium);
 
         usdc.mint(venue, payout); // the venue is solvent in this model
         vm.prank(venue);

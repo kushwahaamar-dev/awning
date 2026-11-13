@@ -5,6 +5,7 @@ const chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID ?? anvil.id);
 
 export const chain = chainId === arcTestnet.id ? arcTestnet : anvil;
 export const isLocalChain = chain.id === anvil.id;
+export const chainLabel = isLocalChain ? "a local test chain" : chain.name;
 export const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL ?? chain.rpcUrls.default.http[0];
 export const mandateAddress = process.env.NEXT_PUBLIC_MANDATE_ADDRESS as Address;
 export const usdcAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS as Address;

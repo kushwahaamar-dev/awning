@@ -280,8 +280,9 @@ contract AwningMandate is EIP712, ReentrancyGuard {
     }
 
     /// @notice Venue only. Settle an open hedge and return funds to the owner's vault. `Paid`
-    /// pays 1..maxPayout, `Expired` pays nothing, `Refunded` returns 1..premium. The venue must
-    /// have approved this contract for `payout`. `evidence` is only emitted.
+    /// pays 1..maxPayout plus whatever premium went unspent, so at most maxPayout + premium;
+    /// `Expired` pays nothing; `Refunded` returns 1..premium. The venue must have approved
+    /// this contract for `payout`. `evidence` is only emitted.
     /// @dev Nothing onchain checks the venue's claim of an outcome; see the README trust notes.
     function closeHedge(bytes32 hedgeId, HedgeStatus outcome, uint256 payout, bytes32 evidence)
         external
@@ -292,7 +293,8 @@ contract AwningMandate is EIP712, ReentrancyGuard {
         if (h.status != HedgeStatus.Open) revert HedgeNotOpen();
 
         if (outcome == HedgeStatus.Paid) {
-            if (payout == 0 || payout > h.maxPayout) revert InvalidPayout();
+            // a basket whose winning leg filled while others didn't returns winnings and the unspent premium
+            if (payout == 0 || payout > uint256(h.maxPayout) + h.premium) revert InvalidPayout();
         } else if (outcome == HedgeStatus.Expired) {
             if (payout != 0) revert InvalidPayout();
         } else if (outcome == HedgeStatus.Refunded) {

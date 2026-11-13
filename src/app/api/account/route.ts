@@ -1,5 +1,5 @@
 import { address, fail } from "@/lib/api/respond";
-import { chain, explorerTx, mandateAddress, usdcAddress } from "@/lib/chain/config";
+import { chain, chainLabel, explorerTx, mandateAddress, usdcAddress } from "@/lib/chain/config";
 import { agentAddress, readAllowance, venueAddress } from "@/lib/chain/server";
 import { listCovers } from "@/lib/covers/service";
 import { pollChain, recentActivity } from "@/lib/ledger/ingest";
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
       allowance,
       covers,
       activity: activity.map((event) => ({ ...event, explorer: explorerTx(event.txHash) })),
-      setup: { chainId: chain.id, chainName: chain.name, mandate: mandateAddress, usdc: usdcAddress, agent: agentAddress(), venue: venueAddress() },
+      setup: { chainId: chain.id, chainName: chainLabel, mandate: mandateAddress, usdc: usdcAddress, agent: agentAddress(), venue: venueAddress() },
     });
   } catch (error) {
     return fail(error);
