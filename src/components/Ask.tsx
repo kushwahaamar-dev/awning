@@ -55,7 +55,7 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
   }
 
   return (
-    <div className="grid items-start gap-x-14 gap-y-10 pt-16 sm:pt-24 lg:grid-cols-[minmax(0,1fr)_26rem]">
+    <div className="grid items-start gap-x-14 gap-y-10 pt-16 sm:pt-24 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
       <section>
         <h1 className="heading rise">What could go wrong for your business?</h1>
         <p className="rise mt-4 text-lg text-muted" style={order(1)}>

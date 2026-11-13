@@ -23,7 +23,7 @@ export function Storefront() {
   const landing = path === "/";
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-bg/75 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 max-w-[75rem] items-center gap-8 px-5 sm:px-8">
+      <div className="wrap flex h-14 items-center gap-8">
         <Link href="/" aria-label="Awning, home" className="rounded-md">
           <Logo />
         </Link>

@@ -11,7 +11,11 @@ const FIELDS = [
   { key: "perCoverCap", label: "Most it can spend on one cover", hint: null },
   { key: "monthlyCap", label: "Most it can spend on cover in a month", hint: null },
   { key: "approvalThreshold", label: "Ask me first above", hint: "Anything larger needs your signature." },
-  { key: "dailyDataCap", label: "Daily allowance for buying data", hint: "What it pays per request for forecasts. This is the most a hijacked agent could take." },
+  {
+    key: "dailyDataCap",
+    label: "Daily allowance for buying data",
+    hint: "What it pays per request for forecasts. This is the most a hijacked agent could take.",
+  },
 ] as const;
 
 type Key = (typeof FIELDS)[number]["key"];
@@ -59,7 +63,6 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
 
   return (
     <form
-      className="max-w-xl"
       onSubmit={(e) => {
         e.preventDefault();
         save();

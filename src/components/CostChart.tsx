@@ -40,7 +40,7 @@ export function CostChart({ legs }: { legs: Leg[] }) {
   }
 
   return (
-    <figure className="mt-12">
+    <figure className="mt-12 xl:mt-0">
       <figcaption className="title">What $1 of this cover has cost to buy</figcaption>
       <p className="num mt-1 text-sm text-muted" aria-live="polite">
         {shown ? `${centsPerDollar(shown.cost)} at ${clock(shown.at)}, ${day(shown.at)}` : `Since ${clock(points[0].at)}, ${day(points[0].at)}`}

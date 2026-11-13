@@ -3,7 +3,7 @@ import { Mark } from "./Logo";
 export function Footer() {
   return (
     <footer className="border-t border-line">
-      <div className="mx-auto flex max-w-[75rem] flex-wrap items-center justify-between gap-x-10 gap-y-3 px-5 py-8 text-xs text-faint sm:px-8">
+      <div className="wrap flex flex-wrap items-center justify-between gap-x-10 gap-y-3 py-8 text-xs text-faint">
         <span className="flex items-center gap-2 text-muted">
           <Mark className="size-4" />
           Awning

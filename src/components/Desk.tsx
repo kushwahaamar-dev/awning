@@ -114,7 +114,7 @@ export function Desk() {
 
   if (plan) {
     return (
-      <div className="grid items-start gap-x-16 gap-y-12 pt-14 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+      <div className="grid items-start gap-x-16 gap-y-12 pt-14 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,29rem)]">
         <div className="rise lg:order-last" style={{ "--i": 1 } as CSSProperties}>
           <Receipt plan={plan} coverRatio={coverRatio} onCoverChange={changeCover} onBought={startOver} />
         </div>
@@ -126,7 +126,7 @@ export function Desk() {
             <Ascii {...sceneFor(plan)} className="w-full" />
           </div>
           <p className="mt-4 text-sm text-muted">You said</p>
-          <h1 className="mt-2 max-w-xl text-[1.75rem] leading-[1.2] font-[510] tracking-[-0.02em] text-balance">{plan.exposure.summary}</h1>
+          <h1 className="mt-2 max-w-3xl text-[1.75rem] leading-[1.2] font-[510] tracking-[-0.02em] text-balance">{plan.exposure.summary}</h1>
           <Fit plan={plan} />
         </div>
       </div>

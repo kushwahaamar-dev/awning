@@ -60,9 +60,7 @@ function Limits({ account }: { account: Account }) {
       <div className="panel p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
           <h2 className="title">Allowance</h2>
-          <span className={`status ${a.paused ? "status-bad" : "status-good"}`}>
-            {a.paused ? "Paused" : `In force on ${account.setup.chainName}`}
-          </span>
+          <span className={`status ${a.paused ? "status-bad" : "status-good"}`}>{a.paused ? "Paused" : `In force on ${account.setup.chainName}`}</span>
         </div>
         <dl className="rows mt-5 border-y border-line">
           {rows.map(({ label, value, left }) => (
@@ -113,7 +111,10 @@ const DECISIONS = {
 
 /** The numbers the agent had in front of it, so its reasoning can be checked against them. */
 function sawThen({ facts }: Decision) {
-  const odds = [facts.marketOdds !== null && `market ${percent(facts.marketOdds)}`, facts.forecastOdds !== null && `weather model ${percent(facts.forecastOdds)}`].filter(Boolean);
+  const odds = [
+    facts.marketOdds !== null && `market ${percent(facts.marketOdds)}`,
+    facts.forecastOdds !== null && `weather model ${percent(facts.forecastOdds)}`,
+  ].filter(Boolean);
   return `${cents(facts.premium)} to cover ${usd(facts.payout)}${odds.length ? `. Odds: ${odds.join(", ")}` : ""}.`;
 }
 
@@ -276,26 +277,29 @@ export function AgentPage() {
   return (
     <>
       <section className="pt-16 sm:pt-24">
-        <div className="mb-10 grid items-center gap-x-14 gap-y-8 lg:grid-cols-[minmax(0,1fr)_24rem]">
+        <div
+          className={`grid gap-x-14 gap-y-8 ${ready ? "items-center lg:grid-cols-[minmax(0,1fr)_24rem]" : "items-start lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"}`}
+        >
           <div>
             <h1 className="heading rise">{ready ? "What your agent is allowed to do" : "Give your agent an allowance"}</h1>
             <p className="rise mt-4 max-w-xl text-lg text-muted" style={order(1)}>
               A contract on {account.setup.chainName} enforces these limits, even if the agent is fooled or taken over.
             </p>
+            {!ready && (
+              <div className="rise panel mt-10 p-6 sm:p-8" style={order(2)}>
+                <AllowanceForm />
+              </div>
+            )}
           </div>
           <div className="rise max-lg:hidden" style={order(2)}>
             <Ascii scene="lighthouse" label="A lighthouse on a cliff sweeping its beam across a starry night" className="fade-soft" />
           </div>
         </div>
-        <div className="rise" style={order(2)}>
-          {ready ? (
+        {ready && (
+          <div className="rise mt-10" style={order(2)}>
             <Limits account={account} />
-          ) : (
-            <div className="panel max-w-2xl p-6 sm:p-8">
-              <AllowanceForm />
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </section>
       {ready && <StandingOrders account={account} />}
       {ready && <HijackTest />}

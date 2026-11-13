@@ -24,7 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${fonts} h-full antialiased`}>
       <body className="relative flex min-h-full flex-col">
         <Storefront />
-        <main className="mx-auto w-full max-w-[75rem] grow px-5 pb-32 sm:px-8">
+        <main className="wrap grow pb-32">
           <AccountProvider>{children}</AccountProvider>
         </main>
         <Footer />
