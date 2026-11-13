@@ -1,0 +1,3326 @@
+{
+ "active": [
+  {
+   "id": "452667",
+   "title": "Highest temperature in Austin on November 13, 2026?",
+   "slug": "highest-temperature-in-austin-on-november-13-2026",
+   "type": "categorical",
+   "category": "Weather",
+   "ticker": "WXHIGH-AUS-2611140459",
+   "status": "active",
+   "createdAt": "2026-11-12T13:59:26.929Z",
+   "contracts": [
+    {
+     "id": "452667-1111579",
+     "label": "79\u00b0F to 80\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Austin-Bergstrom International Airport, TX on November 13, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Austin-Bergstrom International Airport, TX.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Austin-Bergstrom International Airport on November 13, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.51",
+       "no": "0.6"
+      },
+      "sell": {
+       "yes": "0.4",
+       "no": "0.49"
+      },
+      "bestBid": "0.4",
+      "bestAsk": "0.51"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T13:59:26.929Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "79TO80",
+     "instrumentSymbol": "GEMI-WXHIGH-AUS-2611140459-79TO80",
+     "marketState": "open",
+     "abbreviatedName": "79\u00b0 to 80\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-14T04:59:59.000Z",
+     "effectiveDate": "2026-11-12T14:59:59.000Z",
+     "sortOrder": 4,
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "452667-1111581",
+     "label": "81\u00b0F to 82\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Austin-Bergstrom International Airport, TX on November 13, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Austin-Bergstrom International Airport, TX.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Austin-Bergstrom International Airport on November 13, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.42",
+       "no": "0.66"
+      },
+      "sell": {
+       "yes": "0.34",
+       "no": "0.58"
+      },
+      "bestBid": "0.34",
+      "bestAsk": "0.42"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T13:59:26.929Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "81TO82",
+     "instrumentSymbol": "GEMI-WXHIGH-AUS-2611140459-81TO82",
+     "marketState": "open",
+     "abbreviatedName": "81\u00b0 to 82\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-14T04:59:59.000Z",
+     "effectiveDate": "2026-11-12T14:59:59.000Z",
+     "sortOrder": 5,
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "452667-1111577",
+     "label": "77\u00b0F to 78\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Austin-Bergstrom International Airport, TX on November 13, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Austin-Bergstrom International Airport, TX.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Austin-Bergstrom International Airport on November 13, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.12",
+       "no": "0.94"
+      },
+      "sell": {
+       "yes": "0.06",
+       "no": "0.88"
+      },
+      "bestBid": "0.06",
+      "bestAsk": "0.12"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T13:59:26.929Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "77TO78",
+     "instrumentSymbol": "GEMI-WXHIGH-AUS-2611140459-77TO78",
+     "marketState": "open",
+     "abbreviatedName": "77\u00b0 to 78\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-14T04:59:59.000Z",
+     "effectiveDate": "2026-11-12T14:59:59.000Z",
+     "sortOrder": 3,
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "452667-1111583",
+     "label": "83\u00b0F or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Austin-Bergstrom International Airport, TX on November 13, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Austin-Bergstrom International Airport, TX.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Austin-Bergstrom International Airport on November 13, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.07",
+       "no": "0.98"
+      },
+      "sell": {
+       "yes": "0.02",
+       "no": "0.93"
+      },
+      "bestBid": "0.02",
+      "bestAsk": "0.07"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T13:59:26.929Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "HI83",
+     "instrumentSymbol": "GEMI-WXHIGH-AUS-2611140459-HI83",
+     "marketState": "open",
+     "abbreviatedName": "83\u00b0 or above",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-14T04:59:59.000Z",
+     "effectiveDate": "2026-11-12T14:59:59.000Z",
+     "sortOrder": 6,
+     "strike": {
+      "type": "above",
+      "value": "83"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "452667-1111576",
+     "label": "75\u00b0F to 76\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Austin-Bergstrom International Airport, TX on November 13, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Austin-Bergstrom International Airport, TX.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Austin-Bergstrom International Airport on November 13, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.05",
+       "no": "0.99"
+      },
+      "sell": {
+       "yes": "0.01",
+       "no": "0.95"
+      },
+      "bestBid": "0.01",
+      "bestAsk": "0.05"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T13:59:26.929Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "75TO76",
+     "instrumentSymbol": "GEMI-WXHIGH-AUS-2611140459-75TO76",
+     "marketState": "open",
+     "abbreviatedName": "75\u00b0 to 76\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-14T04:59:59.000Z",
+     "effectiveDate": "2026-11-12T14:59:59.000Z",
+     "sortOrder": 2,
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "452667-1111573",
+     "label": "74\u00b0F or below",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Austin-Bergstrom International Airport, TX on November 13, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Austin-Bergstrom International Airport, TX.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Austin-Bergstrom International Airport on November 13, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.01"
+      },
+      "sell": {
+       "no": "0.99"
+      },
+      "bestAsk": "0.01"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T13:59:26.929Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "LO74",
+     "instrumentSymbol": "GEMI-WXHIGH-AUS-2611140459-LO74",
+     "marketState": "open",
+     "abbreviatedName": "74\u00b0 or below",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-14T04:59:59.000Z",
+     "effectiveDate": "2026-11-12T14:59:59.000Z",
+     "sortOrder": 1,
+     "strike": {
+      "type": "below",
+      "value": "74"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    }
+   ],
+   "effectiveDate": "2026-11-12T13:59:26.929Z",
+   "isLive": false,
+   "participants": [],
+   "description": {
+    "nodeType": "document",
+    "data": {},
+    "content": [
+     {
+      "nodeType": "paragraph",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "text",
+        "value": "",
+        "marks": [],
+        "data": {}
+       }
+      ]
+     }
+    ]
+   },
+   "series": "WXHIGH",
+   "volume": "0",
+   "volume24h": "0",
+   "tags": [
+    "Daily Temperature"
+   ],
+   "expiryDate": "2026-11-14T04:59:59.000Z",
+   "termsLink": "",
+   "subcategory": {
+    "id": 153,
+    "slug": "weather_daily-temperature",
+    "name": "Daily Temperature",
+    "path": [
+     "Weather",
+     "Daily Temperature"
+    ]
+   },
+   "eventTags": [
+    {
+     "id": 7012,
+     "name": "Austin",
+     "slug": "austin"
+    }
+   ],
+   "volumeDelta24hPct": "0"
+  },
+  {
+   "id": "455389",
+   "title": "Oil (WTI) price on November 20?",
+   "slug": "oil-wti-price-on-november-20",
+   "type": "categorical",
+   "category": "Commodities",
+   "ticker": "WTI2611202200",
+   "status": "active",
+   "createdAt": "2026-11-13T04:55:17.238Z",
+   "contracts": [
+    {
+     "id": "455389-1126074",
+     "label": "$81 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Oil (WTI) is $81 or above on November 20, 2026 at 5pm ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the KK_RFR_WTIUSDC index. This index provides a 60 second average of the [WTIOIL-USDC](https://app.hyperliquid.xyz/trade/xyz:CL) price. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/wti_oil_bb9688a8-b518-47d3-b55b-ae6d83753268.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:17.238Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/wti_oil_bb9688a8-b518-47d3-b55b-ae6d83753268.pdf",
+     "ticker": "HI81",
+     "instrumentSymbol": "GEMI-WTI2611202200-HI81",
+     "marketState": "open",
+     "abbreviatedName": ">$81",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-20T22:00:00.000Z",
+     "effectiveDate": "2026-11-13T05:00:00.000Z",
+     "sortOrder": 0,
+     "strike": {
+      "type": "above",
+      "value": "81"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455389-1126076",
+     "label": "$84 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Oil (WTI) is $84 or above on November 20, 2026 at 5pm ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the KK_RFR_WTIUSDC index. This index provides a 60 second average of the [WTIOIL-USDC](https://app.hyperliquid.xyz/trade/xyz:CL) price. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/wti_oil_bb9688a8-b518-47d3-b55b-ae6d83753268.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:17.238Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/wti_oil_bb9688a8-b518-47d3-b55b-ae6d83753268.pdf",
+     "ticker": "HI84",
+     "instrumentSymbol": "GEMI-WTI2611202200-HI84",
+     "marketState": "open",
+     "abbreviatedName": ">$84",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-20T22:00:00.000Z",
+     "effectiveDate": "2026-11-13T05:00:00.000Z",
+     "sortOrder": 1,
+     "strike": {
+      "type": "above",
+      "value": "84"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455389-1126078",
+     "label": "$87 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Oil (WTI) is $87 or above on November 20, 2026 at 5pm ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the KK_RFR_WTIUSDC index. This index provides a 60 second average of the [WTIOIL-USDC](https://app.hyperliquid.xyz/trade/xyz:CL) price. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/wti_oil_bb9688a8-b518-47d3-b55b-ae6d83753268.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:17.238Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/wti_oil_bb9688a8-b518-47d3-b55b-ae6d83753268.pdf",
+     "ticker": "HI87",
+     "instrumentSymbol": "GEMI-WTI2611202200-HI87",
+     "marketState": "open",
+     "abbreviatedName": ">$87",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-20T22:00:00.000Z",
+     "effectiveDate": "2026-11-13T05:00:00.000Z",
+     "sortOrder": 2,
+     "strike": {
+      "type": "above",
+      "value": "87"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455389-1126080",
+     "label": "$90 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Oil (WTI) is $90 or above on November 20, 2026 at 5pm ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the KK_RFR_WTIUSDC index. This index provides a 60 second average of the [WTIOIL-USDC](https://app.hyperliquid.xyz/trade/xyz:CL) price. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/wti_oil_bb9688a8-b518-47d3-b55b-ae6d83753268.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:17.238Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/wti_oil_bb9688a8-b518-47d3-b55b-ae6d83753268.pdf",
+     "ticker": "HI90",
+     "instrumentSymbol": "GEMI-WTI2611202200-HI90",
+     "marketState": "open",
+     "abbreviatedName": ">$90",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-20T22:00:00.000Z",
+     "effectiveDate": "2026-11-13T05:00:00.000Z",
+     "sortOrder": 3,
+     "strike": {
+      "type": "above",
+      "value": "90"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455389-1126082",
+     "label": "$93 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Oil (WTI) is $93 or above on November 20, 2026 at 5pm ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the KK_RFR_WTIUSDC index. This index provides a 60 second average of the [WTIOIL-USDC](https://app.hyperliquid.xyz/trade/xyz:CL) price. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/wti_oil_bb9688a8-b518-47d3-b55b-ae6d83753268.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:17.238Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/wti_oil_bb9688a8-b518-47d3-b55b-ae6d83753268.pdf",
+     "ticker": "HI93",
+     "instrumentSymbol": "GEMI-WTI2611202200-HI93",
+     "marketState": "open",
+     "abbreviatedName": ">$93",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-20T22:00:00.000Z",
+     "effectiveDate": "2026-11-13T05:00:00.000Z",
+     "sortOrder": 4,
+     "strike": {
+      "type": "above",
+      "value": "93"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    }
+   ],
+   "effectiveDate": "2026-11-13T04:55:17.238Z",
+   "isLive": false,
+   "participants": [],
+   "description": {
+    "nodeType": "document",
+    "data": {},
+    "content": [
+     {
+      "nodeType": "paragraph",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "text",
+        "value": "",
+        "marks": [],
+        "data": {}
+       }
+      ]
+     }
+    ]
+   },
+   "series": "WTI",
+   "volume": "0",
+   "volume24h": "0",
+   "tags": [
+    "Oil (WTI)"
+   ],
+   "expiryDate": "2026-11-20T22:00:00.000Z",
+   "termsLink": "https://assets.gemini.com/predictions/terms_and_conditions/wti_oil_bb9688a8-b518-47d3-b55b-ae6d83753268.pdf",
+   "subcategory": {
+    "id": 121,
+    "slug": "commodities_oil-(wti)",
+    "name": "Oil (WTI)",
+    "path": [
+     "Commodities",
+     "Oil (WTI)"
+    ]
+   },
+   "template": "prices-ladder",
+   "eventTags": [
+    {
+     "id": 18,
+     "name": "Reference",
+     "slug": "reference"
+    }
+   ],
+   "sourceDetails": {
+    "agency": "kaiko-equities",
+    "index": "KK_RFR_WTIUSDC"
+   },
+   "volumeDelta24hPct": "0"
+  },
+  {
+   "id": "455395",
+   "title": "Natural Gas price on November 20?",
+   "slug": "natural-gas-price-on-november-20",
+   "type": "categorical",
+   "category": "Commodities",
+   "ticker": "NGAS2611202200",
+   "status": "active",
+   "createdAt": "2026-11-13T04:56:10.078Z",
+   "contracts": [
+    {
+     "id": "455395-1126102",
+     "label": "$3.6 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Natural Gas is $3.6 or above on November 20, 2026 at 5pm ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the KK_RFR_NATGASUSDC index. This index provides a 60 second average of the [NATGAS-USDC](https://app.hyperliquid.xyz/trade/xyz:NATGAS) price. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/NATGAS1_Terms_and_Conditions_74071889-27c7-4398-9fc7-203097d4d2c2.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:56:10.078Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/NATGAS1_Terms_and_Conditions_74071889-27c7-4398-9fc7-203097d4d2c2.pdf",
+     "ticker": "HI3D60",
+     "instrumentSymbol": "GEMI-NGAS2611202200-HI3D60",
+     "marketState": "open",
+     "abbreviatedName": ">$3.6",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-20T22:00:00.000Z",
+     "effectiveDate": "2026-11-13T05:00:00.000Z",
+     "sortOrder": 0,
+     "strike": {
+      "type": "above",
+      "value": "3.60"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455395-1126106",
+     "label": "$3.65 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Natural Gas is $3.65 or above on November 20, 2026 at 5pm ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the KK_RFR_NATGASUSDC index. This index provides a 60 second average of the [NATGAS-USDC](https://app.hyperliquid.xyz/trade/xyz:NATGAS) price. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/NATGAS1_Terms_and_Conditions_74071889-27c7-4398-9fc7-203097d4d2c2.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:56:10.078Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/NATGAS1_Terms_and_Conditions_74071889-27c7-4398-9fc7-203097d4d2c2.pdf",
+     "ticker": "HI3D65",
+     "instrumentSymbol": "GEMI-NGAS2611202200-HI3D65",
+     "marketState": "open",
+     "abbreviatedName": ">$3.65",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-20T22:00:00.000Z",
+     "effectiveDate": "2026-11-13T05:00:00.000Z",
+     "sortOrder": 1,
+     "strike": {
+      "type": "above",
+      "value": "3.65"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455395-1126108",
+     "label": "$3.7 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Natural Gas is $3.7 or above on November 20, 2026 at 5pm ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the KK_RFR_NATGASUSDC index. This index provides a 60 second average of the [NATGAS-USDC](https://app.hyperliquid.xyz/trade/xyz:NATGAS) price. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/NATGAS1_Terms_and_Conditions_74071889-27c7-4398-9fc7-203097d4d2c2.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:56:10.078Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/NATGAS1_Terms_and_Conditions_74071889-27c7-4398-9fc7-203097d4d2c2.pdf",
+     "ticker": "HI3D70",
+     "instrumentSymbol": "GEMI-NGAS2611202200-HI3D70",
+     "marketState": "open",
+     "abbreviatedName": ">$3.7",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-20T22:00:00.000Z",
+     "effectiveDate": "2026-11-13T05:00:00.000Z",
+     "sortOrder": 2,
+     "strike": {
+      "type": "above",
+      "value": "3.70"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455395-1126112",
+     "label": "$3.75 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Natural Gas is $3.75 or above on November 20, 2026 at 5pm ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the KK_RFR_NATGASUSDC index. This index provides a 60 second average of the [NATGAS-USDC](https://app.hyperliquid.xyz/trade/xyz:NATGAS) price. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/NATGAS1_Terms_and_Conditions_74071889-27c7-4398-9fc7-203097d4d2c2.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:56:10.078Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/NATGAS1_Terms_and_Conditions_74071889-27c7-4398-9fc7-203097d4d2c2.pdf",
+     "ticker": "HI3D75",
+     "instrumentSymbol": "GEMI-NGAS2611202200-HI3D75",
+     "marketState": "open",
+     "abbreviatedName": ">$3.75",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-20T22:00:00.000Z",
+     "effectiveDate": "2026-11-13T05:00:00.000Z",
+     "sortOrder": 3,
+     "strike": {
+      "type": "above",
+      "value": "3.75"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455395-1126114",
+     "label": "$3.8 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Natural Gas is $3.8 or above on November 20, 2026 at 5pm ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the KK_RFR_NATGASUSDC index. This index provides a 60 second average of the [NATGAS-USDC](https://app.hyperliquid.xyz/trade/xyz:NATGAS) price. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/NATGAS1_Terms_and_Conditions_74071889-27c7-4398-9fc7-203097d4d2c2.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:56:10.078Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/NATGAS1_Terms_and_Conditions_74071889-27c7-4398-9fc7-203097d4d2c2.pdf",
+     "ticker": "HI3D80",
+     "instrumentSymbol": "GEMI-NGAS2611202200-HI3D80",
+     "marketState": "open",
+     "abbreviatedName": ">$3.8",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-20T22:00:00.000Z",
+     "effectiveDate": "2026-11-13T05:00:00.000Z",
+     "sortOrder": 4,
+     "strike": {
+      "type": "above",
+      "value": "3.80"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    }
+   ],
+   "effectiveDate": "2026-11-13T04:56:10.078Z",
+   "isLive": false,
+   "participants": [],
+   "description": {
+    "nodeType": "document",
+    "data": {},
+    "content": [
+     {
+      "nodeType": "paragraph",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "text",
+        "value": "",
+        "marks": [],
+        "data": {}
+       }
+      ]
+     }
+    ]
+   },
+   "series": "NGAS",
+   "volume": "0",
+   "volume24h": "0",
+   "tags": [
+    "Natural Gas"
+   ],
+   "expiryDate": "2026-11-20T22:00:00.000Z",
+   "termsLink": "https://assets.gemini.com/predictions/terms_and_conditions/NATGAS1_Terms_and_Conditions_74071889-27c7-4398-9fc7-203097d4d2c2.pdf",
+   "subcategory": {
+    "id": 128,
+    "slug": "commodities_natural-gas",
+    "name": "Natural Gas",
+    "path": [
+     "Commodities",
+     "Natural Gas"
+    ]
+   },
+   "template": "prices-ladder",
+   "eventTags": [
+    {
+     "id": 18,
+     "name": "Reference",
+     "slug": "reference"
+    }
+   ],
+   "sourceDetails": {
+    "agency": "kaiko-equities",
+    "index": "KK_RFR_NATGASUSDC"
+   },
+   "volumeDelta24hPct": "0"
+  },
+  {
+   "id": "455393",
+   "title": "BTC price today at 2am EST",
+   "slug": "btc-price-today-at-2am-est",
+   "type": "categorical",
+   "category": "Crypto",
+   "ticker": "BTC2611130700",
+   "status": "active",
+   "createdAt": "2026-11-13T04:55:55.654Z",
+   "contracts": [
+    {
+     "id": "455393-1126714",
+     "label": "$67,700 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Bitcoin (BTC) is $67,700 or above on November 13, 2026 at 2am ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the LS-LRRR-XBTUSD index. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.99",
+       "no": "0.18"
+      },
+      "sell": {
+       "yes": "0.82",
+       "no": "0.01"
+      },
+      "bestBid": "0.82",
+      "bestAsk": "0.99",
+      "lastTradePrice": "0.79"
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:55.654Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf",
+     "ticker": "HI67700",
+     "instrumentSymbol": "GEMI-BTC2611130700-HI67700",
+     "marketState": "open",
+     "abbreviatedName": ">$67,700",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-13T07:00:00.000Z",
+     "effectiveDate": "2026-11-13T06:00:00.000Z",
+     "sortOrder": 11,
+     "strike": {
+      "type": "above",
+      "value": "67700"
+     },
+     "source": "LS-LRRR-XBTUSD",
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455393-1126711",
+     "label": "$67,800 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Bitcoin (BTC) is $67,800 or above on November 13, 2026 at 2am ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the LS-LRRR-XBTUSD index. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.83",
+       "no": "0.23"
+      },
+      "sell": {
+       "yes": "0.77",
+       "no": "0.17"
+      },
+      "bestBid": "0.77",
+      "bestAsk": "0.83"
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:55.654Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf",
+     "ticker": "HI67800",
+     "instrumentSymbol": "GEMI-BTC2611130700-HI67800",
+     "marketState": "open",
+     "abbreviatedName": ">$67,800",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-13T07:00:00.000Z",
+     "effectiveDate": "2026-11-13T06:00:00.000Z",
+     "sortOrder": 8,
+     "strike": {
+      "type": "above",
+      "value": "67800"
+     },
+     "source": "LS-LRRR-XBTUSD",
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455393-1126712",
+     "label": "$67,900 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Bitcoin (BTC) is $67,900 or above on November 13, 2026 at 2am ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the LS-LRRR-XBTUSD index. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.78",
+       "no": "0.28"
+      },
+      "sell": {
+       "yes": "0.72",
+       "no": "0.22"
+      },
+      "bestBid": "0.72",
+      "bestAsk": "0.78"
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:55.654Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf",
+     "ticker": "HI67900",
+     "instrumentSymbol": "GEMI-BTC2611130700-HI67900",
+     "marketState": "open",
+     "abbreviatedName": ">$67,900",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-13T07:00:00.000Z",
+     "effectiveDate": "2026-11-13T06:00:00.000Z",
+     "sortOrder": 9,
+     "strike": {
+      "type": "above",
+      "value": "67900"
+     },
+     "source": "LS-LRRR-XBTUSD",
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455393-1126715",
+     "label": "$68,000 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Bitcoin (BTC) is $68,000 or above on November 13, 2026 at 2am ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the LS-LRRR-XBTUSD index. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.71",
+       "no": "0.36"
+      },
+      "sell": {
+       "yes": "0.64",
+       "no": "0.29"
+      },
+      "bestBid": "0.64",
+      "bestAsk": "0.71"
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:55.654Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf",
+     "ticker": "HI68000",
+     "instrumentSymbol": "GEMI-BTC2611130700-HI68000",
+     "marketState": "open",
+     "abbreviatedName": ">$68,000",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-13T07:00:00.000Z",
+     "effectiveDate": "2026-11-13T06:00:00.000Z",
+     "sortOrder": 12,
+     "strike": {
+      "type": "above",
+      "value": "68000"
+     },
+     "source": "LS-LRRR-XBTUSD",
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455393-1126713",
+     "label": "$68,100 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Bitcoin (BTC) is $68,100 or above on November 13, 2026 at 2am ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the LS-LRRR-XBTUSD index. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.64",
+       "no": "0.43"
+      },
+      "sell": {
+       "yes": "0.57",
+       "no": "0.36"
+      },
+      "bestBid": "0.57",
+      "bestAsk": "0.64"
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:55.654Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf",
+     "ticker": "HI68100",
+     "instrumentSymbol": "GEMI-BTC2611130700-HI68100",
+     "marketState": "open",
+     "abbreviatedName": ">$68,100",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-13T07:00:00.000Z",
+     "effectiveDate": "2026-11-13T06:00:00.000Z",
+     "sortOrder": 10,
+     "strike": {
+      "type": "above",
+      "value": "68100"
+     },
+     "source": "LS-LRRR-XBTUSD",
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455393-1126093",
+     "label": "$68,200 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Bitcoin (BTC) is $68,200 or above on November 13, 2026 at 2am ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the LS-LRRR-XBTUSD index. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.55",
+       "no": "0.5"
+      },
+      "sell": {
+       "yes": "0.5",
+       "no": "0.45"
+      },
+      "bestBid": "0.5",
+      "bestAsk": "0.55",
+      "lastTradePrice": "0.31"
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:55.654Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf",
+     "ticker": "HI68200",
+     "instrumentSymbol": "GEMI-BTC2611130700-HI68200",
+     "marketState": "open",
+     "abbreviatedName": ">$68,200",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-13T07:00:00.000Z",
+     "effectiveDate": "2026-11-13T06:00:00.000Z",
+     "sortOrder": 0,
+     "strike": {
+      "type": "above",
+      "value": "68200"
+     },
+     "source": "LS-LRRR-XBTUSD",
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455393-1126095",
+     "label": "$68,300 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Bitcoin (BTC) is $68,300 or above on November 13, 2026 at 2am ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the LS-LRRR-XBTUSD index. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.45",
+       "no": "0.6"
+      },
+      "sell": {
+       "yes": "0.4",
+       "no": "0.55"
+      },
+      "bestBid": "0.4",
+      "bestAsk": "0.45",
+      "lastTradePrice": "0.25"
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:55.654Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf",
+     "ticker": "HI68300",
+     "instrumentSymbol": "GEMI-BTC2611130700-HI68300",
+     "marketState": "open",
+     "abbreviatedName": ">$68,300",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-13T07:00:00.000Z",
+     "effectiveDate": "2026-11-13T06:00:00.000Z",
+     "sortOrder": 1,
+     "strike": {
+      "type": "above",
+      "value": "68300"
+     },
+     "source": "LS-LRRR-XBTUSD",
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "455393-1126097",
+     "label": "$68,400 or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Bitcoin (BTC) is $68,400 or above on November 13, 2026 at 2am ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the LS-LRRR-XBTUSD index. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.38",
+       "no": "0.68"
+      },
+      "sell": {
+       "yes": "0.32",
+       "no": "0.62"
+      },
+      "bestBid": "0.32",
+      "bestAsk": "0.38",
+      "lastTradePrice": "0.2"
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T04:55:55.654Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf",
+     "ticker": "HI68400",
+     "instrumentSymbol": "GEMI-BTC2611130700-HI68400",
+     "marketState": "open",
+     "abbreviatedName": ">$68,400",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-13T07:00:00.000Z",
+     "effectiveDate": "2026-11-13T06:00:00.000Z",
+     "sortOrder": 2,
+     "strike": {
+      "type": "above",
+      "value": "68400"
+     },
+     "source": "LS-LRRR-XBTUSD",
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    }
+   ],
+   "effectiveDate": "2026-11-13T04:55:55.654Z",
+   "isLive": true,
+   "participants": [],
+   "description": {
+    "nodeType": "document",
+    "data": {},
+    "content": [
+     {
+      "nodeType": "paragraph",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "text",
+        "value": "",
+        "marks": [],
+        "data": {}
+       }
+      ]
+     }
+    ]
+   },
+   "series": "BTC1H",
+   "volume": "16450",
+   "volume24h": "16450",
+   "tags": [
+    "Bitcoin"
+   ],
+   "expiryDate": "2026-11-13T07:00:00.000Z",
+   "startTime": "2026-11-13T06:00:00.000Z",
+   "termsLink": "https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf",
+   "subcategory": {
+    "id": 32,
+    "slug": "crypto_bitcoin",
+    "name": "Bitcoin",
+    "path": [
+     "Crypto",
+     "Bitcoin"
+    ]
+   },
+   "template": "prices-ladder",
+   "eventTags": [
+    {
+     "id": 13,
+     "name": "Hourly",
+     "slug": "hourly"
+    },
+    {
+     "id": 18,
+     "name": "Reference",
+     "slug": "reference"
+    }
+   ],
+   "source": "LS-LRRR-XBTUSD",
+   "sourceDetails": {
+    "agency": "lukka",
+    "index": "LS-LRRR-XBTUSD"
+   },
+   "volumeDelta24hPct": "0"
+  },
+  {
+   "id": "455417",
+   "title": "BTC price today at 1:15am EST",
+   "slug": "btc-price-today-at-115am-est",
+   "type": "binary",
+   "category": "Crypto",
+   "ticker": "BTC05M2611130615",
+   "status": "active",
+   "createdAt": "2026-11-13T05:05:16.680Z",
+   "contracts": [
+    {
+     "id": "455417-1126190",
+     "label": "Up",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "If the price of Bitcoin (BTC) is greater than or equal to the price specified in the title on November 13, 2026 at 1:15am ET, this market will resolve to Yes. Otherwise, it will resolve to No. If no eligible trade occurs during the contract window, this contract will resolve based on the most recent traded price prior. Outcome verified against the LS-LRRR-XBTUSD index. View the [full rules](https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf).",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.8",
+       "no": "0.32"
+      },
+      "sell": {
+       "yes": "0.68",
+       "no": "0.2"
+      },
+      "bestBid": "0.68",
+      "bestAsk": "0.8"
+     },
+     "status": "active",
+     "createdAt": "2026-11-13T05:05:16.680Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf",
+     "ticker": "UP",
+     "instrumentSymbol": "GEMI-BTC05M2611130615-UP",
+     "marketState": "open",
+     "abbreviatedName": "Up",
+     "color": "#4CAF50",
+     "expiryDate": "2026-11-13T06:15:00.000Z",
+     "effectiveDate": "2026-11-13T06:10:00.000Z",
+     "sortOrder": 0,
+     "strike": {
+      "type": "reference",
+      "value": "68156.2",
+      "availableAt": "2026-11-13T06:10:00.000Z"
+     },
+     "source": "LS-LRRR-XBTUSD",
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    }
+   ],
+   "effectiveDate": "2026-11-13T05:05:16.680Z",
+   "isLive": true,
+   "participants": [],
+   "description": {
+    "nodeType": "document",
+    "data": {},
+    "content": [
+     {
+      "nodeType": "paragraph",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "text",
+        "value": "",
+        "marks": [],
+        "data": {}
+       }
+      ]
+     }
+    ]
+   },
+   "series": "BTC05M",
+   "volume": "0",
+   "volume24h": "0",
+   "tags": [
+    "Bitcoin"
+   ],
+   "expiryDate": "2026-11-13T06:15:00.000Z",
+   "startTime": "2026-11-13T06:10:00.000Z",
+   "termsLink": "https://assets.gemini.com/predictions/terms_and_conditions/btc_398860b3-ea2f-47a7-b167-a8c6ad03d6d7.pdf",
+   "subcategory": {
+    "id": 32,
+    "slug": "crypto_bitcoin",
+    "name": "Bitcoin",
+    "path": [
+     "Crypto",
+     "Bitcoin"
+    ]
+   },
+   "template": "crypto-up-down",
+   "eventTags": [
+    {
+     "id": 11,
+     "name": "Five Minute",
+     "slug": "five-minute"
+    },
+    {
+     "id": 19,
+     "name": "Up Down",
+     "slug": "up-down"
+    }
+   ],
+   "source": "LS-LRRR-XBTUSD",
+   "sourceDetails": {
+    "agency": "lukka",
+    "index": "LS-LRRR-XBTUSD"
+   },
+   "volumeDelta24hPct": "0"
+  },
+  {
+   "id": "453975",
+   "title": "Ball State vs Ohio: Point Spread",
+   "slug": "ball-state-vs-ohio-point-spread",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NCAAF-2611180000-BALL-OHI-S",
+   "status": "active",
+   "createdAt": "2026-11-12T23:58:06.642Z",
+   "contracts": [
+    {
+     "id": "453975-1116444",
+     "label": "Ohio wins by more than 1.5 points",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market resolves to Yes if the score differential recorded in favor of Ohio in the entire college football game between Ball State and Ohio scheduled for 2026-11-17 at 6:00 p.m. CT is above 1.5. Otherwise, it resolves to No. The Underlying is the score differential (Ohio's score minus Ball State's score) for the specified game. Source Agencies, in order, are the league governing the event (NCAAF), ESPN, Fox Sports, and the official broadcast partner of the event. If the Expiration Value cannot be determined on the Expiration Date (including because the event is cancelled or a team forfeits, withdraws, or is disqualified), the Exchange may determine payouts pursuant to the Market Outcome ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.91",
+       "no": "0.39"
+      },
+      "sell": {
+       "yes": "0.61",
+       "no": "0.09"
+      },
+      "bestBid": "0.61",
+      "bestAsk": "0.91"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T23:58:06.642Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/Terms_and_Conditions_NCAA_CFB_Spread_Class_941e2dcb-07e0-4ee4-9d21-bdd1a7612f13.pdf",
+     "ticker": "OHI1",
+     "instrumentSymbol": "GEMI-NCAAF-2611180000-BALL-OHI-S-OHI1",
+     "marketState": "open",
+     "abbreviatedName": "Ohio",
+     "color": "#0f9ee7",
+     "expiryDate": "2026-11-19T00:00:00.000Z",
+     "effectiveDate": "2026-11-11T00:00:11.000Z",
+     "sortOrder": 16,
+     "strike": {
+      "type": "spread",
+      "value": "1.5"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "453975-1116441",
+     "label": "Ohio wins by more than 2.5 points",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market resolves to Yes if the score differential recorded in favor of Ohio in the entire college football game between Ball State and Ohio scheduled for 2026-11-17 at 6:00 p.m. CT is above 2.5. Otherwise, it resolves to No. The Underlying is the score differential (Ohio's score minus Ball State's score) for the specified game. Source Agencies, in order, are the league governing the event (NCAAF), ESPN, Fox Sports, and the official broadcast partner of the event. If the Expiration Value cannot be determined on the Expiration Date (including because the event is cancelled or a team forfeits, withdraws, or is disqualified), the Exchange may determine payouts pursuant to the Market Outcome ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.85",
+       "no": "0.43"
+      },
+      "sell": {
+       "yes": "0.57",
+       "no": "0.15"
+      },
+      "bestBid": "0.57",
+      "bestAsk": "0.85"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T23:58:06.642Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/Terms_and_Conditions_NCAA_CFB_Spread_Class_941e2dcb-07e0-4ee4-9d21-bdd1a7612f13.pdf",
+     "ticker": "OHI2",
+     "instrumentSymbol": "GEMI-NCAAF-2611180000-BALL-OHI-S-OHI2",
+     "marketState": "open",
+     "abbreviatedName": "Ohio",
+     "color": "#0f9ee7",
+     "expiryDate": "2026-11-19T00:00:00.000Z",
+     "effectiveDate": "2026-11-11T00:00:11.000Z",
+     "sortOrder": 15,
+     "strike": {
+      "type": "spread",
+      "value": "2.5"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "453975-1116402",
+     "label": "Ohio wins by more than 4.5 points",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market resolves to Yes if the score differential recorded in favor of Ohio in the entire college football game between Ball State and Ohio scheduled for 2026-11-17 at 6:00 p.m. CT is above 4.5. Otherwise, it resolves to No. The Underlying is the score differential (Ohio's score minus Ball State's score) for the specified game. Source Agencies, in order, are the league governing the event (NCAAF), ESPN, Fox Sports, and the official broadcast partner of the event. If the Expiration Value cannot be determined on the Expiration Date (including because the event is cancelled or a team forfeits, withdraws, or is disqualified), the Exchange may determine payouts pursuant to the Market Outcome ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.79",
+       "no": "0.54"
+      },
+      "sell": {
+       "yes": "0.46",
+       "no": "0.21"
+      },
+      "bestBid": "0.46",
+      "bestAsk": "0.79"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T23:58:06.642Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/Terms_and_Conditions_NCAA_CFB_Spread_Class_941e2dcb-07e0-4ee4-9d21-bdd1a7612f13.pdf",
+     "ticker": "OHI4",
+     "instrumentSymbol": "GEMI-NCAAF-2611180000-BALL-OHI-S-OHI4",
+     "marketState": "open",
+     "abbreviatedName": "Ohio",
+     "color": "#0f9ee7",
+     "expiryDate": "2026-11-19T00:00:00.000Z",
+     "effectiveDate": "2026-11-11T00:00:11.000Z",
+     "sortOrder": 5,
+     "strike": {
+      "type": "spread",
+      "value": "4.5"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "453975-1116450",
+     "label": "Ohio wins by more than 5.5 points",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market resolves to Yes if the score differential recorded in favor of Ohio in the entire college football game between Ball State and Ohio scheduled for 2026-11-17 at 6:00 p.m. CT is above 5.5. Otherwise, it resolves to No. The Underlying is the score differential (Ohio's score minus Ball State's score) for the specified game. Source Agencies, in order, are the league governing the event (NCAAF), ESPN, Fox Sports, and the official broadcast partner of the event. If the Expiration Value cannot be determined on the Expiration Date (including because the event is cancelled or a team forfeits, withdraws, or is disqualified), the Exchange may determine payouts pursuant to the Market Outcome ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.79",
+       "no": "0.54"
+      },
+      "sell": {
+       "yes": "0.46",
+       "no": "0.21"
+      },
+      "bestBid": "0.46",
+      "bestAsk": "0.79"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T23:58:06.642Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/Terms_and_Conditions_NCAA_CFB_Spread_Class_941e2dcb-07e0-4ee4-9d21-bdd1a7612f13.pdf",
+     "ticker": "OHI5",
+     "instrumentSymbol": "GEMI-NCAAF-2611180000-BALL-OHI-S-OHI5",
+     "marketState": "open",
+     "abbreviatedName": "Ohio",
+     "color": "#0f9ee7",
+     "expiryDate": "2026-11-19T00:00:00.000Z",
+     "effectiveDate": "2026-11-11T00:00:11.000Z",
+     "sortOrder": 18,
+     "strike": {
+      "type": "spread",
+      "value": "5.5"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "453975-1116387",
+     "label": "Ohio wins by more than 3.5 points",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market resolves to Yes if the score differential recorded in favor of Ohio in the entire college football game between Ball State and Ohio scheduled for 2026-11-17 at 6:00 p.m. CT is above 3.5. Otherwise, it resolves to No. The Underlying is the score differential (Ohio's score minus Ball State's score) for the specified game. Source Agencies, in order, are the league governing the event (NCAAF), ESPN, Fox Sports, and the official broadcast partner of the event. If the Expiration Value cannot be determined on the Expiration Date (including because the event is cancelled or a team forfeits, withdraws, or is disqualified), the Exchange may determine payouts pursuant to the Market Outcome ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.78",
+       "no": "0.51"
+      },
+      "sell": {
+       "yes": "0.49",
+       "no": "0.22"
+      },
+      "bestBid": "0.49",
+      "bestAsk": "0.78"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T23:58:06.642Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/Terms_and_Conditions_NCAA_CFB_Spread_Class_941e2dcb-07e0-4ee4-9d21-bdd1a7612f13.pdf",
+     "ticker": "OHI3",
+     "instrumentSymbol": "GEMI-NCAAF-2611180000-BALL-OHI-S-OHI3",
+     "marketState": "open",
+     "abbreviatedName": "Ohio",
+     "color": "#0f9ee7",
+     "expiryDate": "2026-11-19T00:00:00.000Z",
+     "effectiveDate": "2026-11-11T00:00:11.000Z",
+     "sortOrder": 2,
+     "strike": {
+      "type": "spread",
+      "value": "3.5"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "453975-1116470",
+     "label": "Ohio wins by more than 6.5 points",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market resolves to Yes if the score differential recorded in favor of Ohio in the entire college football game between Ball State and Ohio scheduled for 2026-11-17 at 6:00 p.m. CT is above 6.5. Otherwise, it resolves to No. The Underlying is the score differential (Ohio's score minus Ball State's score) for the specified game. Source Agencies, in order, are the league governing the event (NCAAF), ESPN, Fox Sports, and the official broadcast partner of the event. If the Expiration Value cannot be determined on the Expiration Date (including because the event is cancelled or a team forfeits, withdraws, or is disqualified), the Exchange may determine payouts pursuant to the Market Outcome ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.71",
+       "no": "0.58"
+      },
+      "sell": {
+       "yes": "0.42",
+       "no": "0.29"
+      },
+      "bestBid": "0.42",
+      "bestAsk": "0.71"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T23:58:06.642Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/Terms_and_Conditions_NCAA_CFB_Spread_Class_941e2dcb-07e0-4ee4-9d21-bdd1a7612f13.pdf",
+     "ticker": "OHI6",
+     "instrumentSymbol": "GEMI-NCAAF-2611180000-BALL-OHI-S-OHI6",
+     "marketState": "open",
+     "abbreviatedName": "Ohio",
+     "color": "#0f9ee7",
+     "expiryDate": "2026-11-19T00:00:00.000Z",
+     "effectiveDate": "2026-11-11T00:00:11.000Z",
+     "sortOrder": 25,
+     "strike": {
+      "type": "spread",
+      "value": "6.5"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "453975-1116453",
+     "label": "Ohio wins by more than 7.5 points",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market resolves to Yes if the score differential recorded in favor of Ohio in the entire college football game between Ball State and Ohio scheduled for 2026-11-17 at 6:00 p.m. CT is above 7.5. Otherwise, it resolves to No. The Underlying is the score differential (Ohio's score minus Ball State's score) for the specified game. Source Agencies, in order, are the league governing the event (NCAAF), ESPN, Fox Sports, and the official broadcast partner of the event. If the Expiration Value cannot be determined on the Expiration Date (including because the event is cancelled or a team forfeits, withdraws, or is disqualified), the Exchange may determine payouts pursuant to the Market Outcome ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.69",
+       "no": "0.61"
+      },
+      "sell": {
+       "yes": "0.39",
+       "no": "0.31"
+      },
+      "bestBid": "0.39",
+      "bestAsk": "0.69"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T23:58:06.642Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/Terms_and_Conditions_NCAA_CFB_Spread_Class_941e2dcb-07e0-4ee4-9d21-bdd1a7612f13.pdf",
+     "ticker": "OHI7",
+     "instrumentSymbol": "GEMI-NCAAF-2611180000-BALL-OHI-S-OHI7",
+     "marketState": "open",
+     "abbreviatedName": "Ohio",
+     "color": "#0f9ee7",
+     "expiryDate": "2026-11-19T00:00:00.000Z",
+     "effectiveDate": "2026-11-11T00:00:11.000Z",
+     "sortOrder": 19,
+     "strike": {
+      "type": "spread",
+      "value": "7.5"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "453975-1116392",
+     "label": "Ohio wins by more than 9.5 points",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market resolves to Yes if the score differential recorded in favor of Ohio in the entire college football game between Ball State and Ohio scheduled for 2026-11-17 at 6:00 p.m. CT is above 9.5. Otherwise, it resolves to No. The Underlying is the score differential (Ohio's score minus Ball State's score) for the specified game. Source Agencies, in order, are the league governing the event (NCAAF), ESPN, Fox Sports, and the official broadcast partner of the event. If the Expiration Value cannot be determined on the Expiration Date (including because the event is cancelled or a team forfeits, withdraws, or is disqualified), the Exchange may determine payouts pursuant to the Market Outcome ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.61",
+       "no": "0.65"
+      },
+      "sell": {
+       "yes": "0.35",
+       "no": "0.39"
+      },
+      "bestBid": "0.35",
+      "bestAsk": "0.61"
+     },
+     "status": "active",
+     "createdAt": "2026-11-12T23:58:06.642Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/Terms_and_Conditions_NCAA_CFB_Spread_Class_941e2dcb-07e0-4ee4-9d21-bdd1a7612f13.pdf",
+     "ticker": "OHI9",
+     "instrumentSymbol": "GEMI-NCAAF-2611180000-BALL-OHI-S-OHI9",
+     "marketState": "open",
+     "abbreviatedName": "Ohio",
+     "color": "#0f9ee7",
+     "expiryDate": "2026-11-19T00:00:00.000Z",
+     "effectiveDate": "2026-11-11T00:00:11.000Z",
+     "sortOrder": 3,
+     "strike": {
+      "type": "spread",
+      "value": "9.5"
+     },
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    }
+   ],
+   "effectiveDate": "2026-11-12T23:58:06.642Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "1168",
+     "name": "Ohio Bobcats",
+     "abbreviation": "OHI",
+     "side": "home"
+    },
+    {
+     "id": "1171",
+     "name": "Ball State Cardinals",
+     "abbreviation": "BALL",
+     "side": "away"
+    }
+   ],
+   "description": {
+    "nodeType": "document",
+    "data": {},
+    "content": [
+     {
+      "nodeType": "paragraph",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "text",
+        "value": "",
+        "marks": [],
+        "data": {}
+       }
+      ]
+     }
+    ]
+   },
+   "volume": "0",
+   "volume24h": "0",
+   "tags": [
+    "College Football"
+   ],
+   "expiryDate": "2026-11-19T00:00:00.000Z",
+   "startTime": "2026-11-18T00:00:00.000Z",
+   "termsLink": "https://assets.gemini.com/predictions/terms_and_conditions/Terms_and_Conditions_NCAA_CFB_Spread_Class_941e2dcb-07e0-4ee4-9d21-bdd1a7612f13.pdf",
+   "subcategory": {
+    "id": 13,
+    "slug": "sports_college-football",
+    "name": "College Football",
+    "path": [
+     "Sports",
+     "College Football"
+    ]
+   },
+   "template": "sports-spread",
+   "gameId": "395cc62a-371f-42f7-9518-c6c253cb3ab0",
+   "sourceDetails": {
+    "agency": "statscore-rest-api",
+    "index": "Am. football"
+   },
+   "volumeDelta24hPct": "0",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "spread",
+    "subject": "team",
+    "scope": {
+     "type": "full_contest"
+    },
+    "metric": "points"
+   }
+  },
+  {
+   "id": "440297",
+   "title": "Texas vs LSU",
+   "slug": "texas-vs-lsu",
+   "type": "categorical",
+   "category": "Sports",
+   "ticker": "NCAAF-2611150030-TEX-LSU-M",
+   "status": "active",
+   "createdAt": "2026-11-09T00:01:44.576Z",
+   "contracts": [
+    {
+     "id": "440297-1063005",
+     "label": "LSU",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market resolves to Yes if LSU wins the College Football game\n between LSU and Texas originally scheduled for November 14, 2026 at 7:30 PM. Otherwise, it resolves to No. The Underlying is the official result of the specified sporting event. Source Agencies, in order, are the league governing the event, ESPN, Fox Sports, and the broadcast partner of the event\n. If the Expiration Value cannot be determined on the Expiration Date (including because the event is cancelled or a team forfeits, withdraws, or is disqualified), the Exchange may determine payouts pursuant to the Market Outcome Review Process. View the  [full rules](https://assets.gemini.com/predictions/terms_and_conditions/NCAA_FB",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.63",
+       "no": "0.39"
+      },
+      "sell": {
+       "yes": "0.61",
+       "no": "0.37"
+      },
+      "bestBid": "0.61",
+      "bestAsk": "0.63",
+      "lastTradePrice": "0.65"
+     },
+     "status": "active",
+     "createdAt": "2026-11-09T00:01:44.576Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/NCAA_FBS_Win-Loss_23ef351f-7ee0-4503-a740-5da5c95d4b2c.pdf",
+     "ticker": "LSU",
+     "instrumentSymbol": "GEMI-NCAAF-2611150030-TEX-LSU-M-LSU",
+     "marketState": "open",
+     "abbreviatedName": "LSU",
+     "color": "#461D7C",
+     "expiryDate": "2026-11-16T00:30:00.000Z",
+     "effectiveDate": "2026-11-09T00:00:16.000Z",
+     "sortOrder": 2,
+     "sportsSide": "home",
+     "teamId": "ffca4209-dbfa-4597-b25a-ed19bb351037",
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    },
+    {
+     "id": "440297-1062986",
+     "label": "Texas",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market resolves to Yes if Texas wins the College Football game\n between Texas and LSU originally scheduled for November 14, 2026 at 7:30 PM. Otherwise, it resolves to No. The Underlying is the official result of the specified sporting event. Source Agencies, in order, are the league governing the event, ESPN, Fox Sports, and the broadcast partner of the event\n. If the Expiration Value cannot be determined on the Expiration Date (including because the event is cancelled or a team forfeits, withdraws, or is disqualified), the Exchange may determine payouts pursuant to the Market Outcome Review Process. View the  [full rules](https://assets.gemini.com/predictions/terms_and_conditions/NCAA_",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {
+       "yes": "0.39",
+       "no": "0.63"
+      },
+      "sell": {
+       "yes": "0.37",
+       "no": "0.61"
+      },
+      "bestBid": "0.37",
+      "bestAsk": "0.39",
+      "lastTradePrice": "0.39"
+     },
+     "status": "active",
+     "createdAt": "2026-11-09T00:01:44.576Z",
+     "termsAndConditionsUrl": "https://assets.gemini.com/predictions/terms_and_conditions/NCAA_FBS_Win-Loss_23ef351f-7ee0-4503-a740-5da5c95d4b2c.pdf",
+     "ticker": "TEX",
+     "instrumentSymbol": "GEMI-NCAAF-2611150030-TEX-LSU-M-TEX",
+     "marketState": "open",
+     "abbreviatedName": "TEX",
+     "color": "#BF5700",
+     "expiryDate": "2026-11-16T00:30:00.000Z",
+     "effectiveDate": "2026-11-09T00:00:16.000Z",
+     "sortOrder": 1,
+     "sportsSide": "away",
+     "teamId": "ae68bc50-4135-47b5-b2f1-03d0669e54c8",
+     "isCombo": false,
+     "quantityIncrement": "0.01",
+     "quantityMinimum": "0.01",
+     "priceIncrement": "0.01",
+     "quoteAssetPrecision": 2,
+     "priceMinimum": "0.01"
+    }
+   ],
+   "effectiveDate": "2026-11-09T00:01:44.576Z",
+   "isLive": false,
+   "participants": [
+    {
+     "id": "1132",
+     "name": "LSU Tigers",
+     "abbreviation": "LSU",
+     "side": "home"
+    },
+    {
+     "id": "1140",
+     "name": "Texas Longhorns",
+     "abbreviation": "TEX",
+     "side": "away"
+    }
+   ],
+   "description": {
+    "nodeType": "document",
+    "data": {},
+    "content": [
+     {
+      "nodeType": "paragraph",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "text",
+        "value": "",
+        "marks": [],
+        "data": {}
+       }
+      ]
+     }
+    ]
+   },
+   "volume": "1682.72",
+   "volume24h": "1502.66",
+   "tags": [
+    "College Football"
+   ],
+   "expiryDate": "2026-11-16T00:30:00.000Z",
+   "startTime": "2026-11-15T00:30:00.000Z",
+   "termsLink": "https://assets.gemini.com/predictions/terms_and_conditions/NCAA_FBS_Win-Loss_23ef351f-7ee0-4503-a740-5da5c95d4b2c.pdf",
+   "subcategory": {
+    "id": 13,
+    "slug": "sports_college-football",
+    "name": "College Football",
+    "path": [
+     "Sports",
+     "College Football"
+    ]
+   },
+   "template": "sports-game",
+   "gameId": "75c3fb70-7cb7-4049-90d2-51ab93a51fff",
+   "eventTags": [
+    {
+     "id": 2,
+     "name": "Games",
+     "slug": "games"
+    },
+    {
+     "id": 6943,
+     "name": "Longhorns",
+     "slug": "longhorns"
+    },
+    {
+     "id": 5855,
+     "name": "MM Collegiate Ranked Team",
+     "slug": "mm-collegiate-ranked-team"
+    },
+    {
+     "id": 7355,
+     "name": "SEC",
+     "slug": "sec"
+    },
+    {
+     "id": 127,
+     "name": "Tigers",
+     "slug": "tigers"
+    }
+   ],
+   "sourceDetails": {
+    "agency": "statscore-rest-api",
+    "index": "Am. football"
+   },
+   "volumeDelta24hPct": "1646.47",
+   "sportsMarket": {
+    "sport": "american_football",
+    "type": "moneyline",
+    "subject": "contest",
+    "scope": {
+     "type": "full_contest"
+    },
+    "team": {
+     "symbol": "TEX",
+     "name": "Texas Longhorns",
+     "externalIds": {
+      "sportradarId": "ae68bc50-4135-47b5-b2f1-03d0669e54c8"
+     }
+    }
+   }
+  }
+ ],
+ "settled": [
+  {
+   "id": "370691",
+   "title": "Highest temperature in Albuquerque on October 22, 2026?",
+   "slug": "highest-temperature-in-albuquerque-on-october-22-2026",
+   "type": "categorical",
+   "category": "Weather",
+   "ticker": "WXHIGH-ABQ-2610230359",
+   "status": "settled",
+   "createdAt": "2026-10-21T13:00:30.565Z",
+   "contracts": [
+    {
+     "id": "370691-868853",
+     "label": "69\u00b0F or below",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Albuquerque, NM on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Albuquerque, NM.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Albuquerque on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be de",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T13:00:30.565Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "LO69",
+     "instrumentSymbol": "GEMI-WXHIGH-ABQ-2610230359-LO69",
+     "marketState": "closed",
+     "abbreviatedName": "69\u00b0 or below",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:27.850Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 1,
+     "strike": {
+      "type": "below",
+      "value": "69"
+     },
+     "isCombo": false
+    },
+    {
+     "id": "370691-868855",
+     "label": "70\u00b0F to 71\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Albuquerque, NM on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Albuquerque, NM.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Albuquerque on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be de",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T13:00:30.565Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "70TO71",
+     "instrumentSymbol": "GEMI-WXHIGH-ABQ-2610230359-70TO71",
+     "marketState": "closed",
+     "abbreviatedName": "70\u00b0 to 71\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:27.245Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 2,
+     "isCombo": false
+    },
+    {
+     "id": "370691-868857",
+     "label": "72\u00b0F to 73\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Albuquerque, NM on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Albuquerque, NM.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Albuquerque on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be de",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T13:00:30.565Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "72TO73",
+     "instrumentSymbol": "GEMI-WXHIGH-ABQ-2610230359-72TO73",
+     "marketState": "closed",
+     "abbreviatedName": "72\u00b0 to 73\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:27.466Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 3,
+     "isCombo": false
+    },
+    {
+     "id": "370691-868860",
+     "label": "74\u00b0F to 75\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Albuquerque, NM on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Albuquerque, NM.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Albuquerque on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be de",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T13:00:30.565Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "74TO75",
+     "instrumentSymbol": "GEMI-WXHIGH-ABQ-2610230359-74TO75",
+     "marketState": "closed",
+     "abbreviatedName": "74\u00b0 to 75\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:27.287Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 4,
+     "isCombo": false
+    },
+    {
+     "id": "370691-868861",
+     "label": "76\u00b0F to 77\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Albuquerque, NM on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Albuquerque, NM.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Albuquerque on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be de",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T13:00:30.565Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "76TO77",
+     "instrumentSymbol": "GEMI-WXHIGH-ABQ-2610230359-76TO77",
+     "marketState": "closed",
+     "abbreviatedName": "76\u00b0 to 77\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:27.697Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 5,
+     "isCombo": false
+    },
+    {
+     "id": "370691-868862",
+     "label": "78\u00b0F to 79\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Albuquerque, NM on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Albuquerque, NM.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Albuquerque on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be de",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T13:00:30.565Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "78TO79",
+     "instrumentSymbol": "GEMI-WXHIGH-ABQ-2610230359-78TO79",
+     "marketState": "closed",
+     "abbreviatedName": "78\u00b0 to 79\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:27.663Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 6,
+     "isCombo": false
+    },
+    {
+     "id": "370691-868863",
+     "label": "80\u00b0F or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Albuquerque, NM on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Albuquerque, NM.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Albuquerque on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be de",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T13:00:30.565Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "HI80",
+     "instrumentSymbol": "GEMI-WXHIGH-ABQ-2610230359-HI80",
+     "marketState": "closed",
+     "abbreviatedName": "80\u00b0 or above",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "yes",
+     "resolvedAt": "2026-10-23T10:01:27.452Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 7,
+     "strike": {
+      "type": "above",
+      "value": "80"
+     },
+     "isCombo": false
+    }
+   ],
+   "effectiveDate": "2026-10-21T13:00:30.565Z",
+   "isLive": false,
+   "participants": [],
+   "description": {
+    "nodeType": "document",
+    "data": {},
+    "content": [
+     {
+      "nodeType": "paragraph",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "text",
+        "value": "",
+        "marks": [],
+        "data": {}
+       }
+      ]
+     }
+    ]
+   },
+   "series": "WXHIGH",
+   "resolvedAt": "2026-10-23T10:01:27.850Z",
+   "volume": "0",
+   "volume24h": "0",
+   "tags": [
+    "Daily Temperature"
+   ],
+   "expiryDate": "2026-10-23T03:59:59.000Z",
+   "termsLink": "",
+   "subcategory": {
+    "id": 153,
+    "slug": "weather_daily-temperature",
+    "name": "Daily Temperature",
+    "path": [
+     "Weather",
+     "Daily Temperature"
+    ]
+   },
+   "featuredImageUrl": "https://assets.gemini.com/predictions/images/Weather_b98521c9-9755-4b0c-a829-b566265441e1.avif",
+   "eventTags": [
+    {
+     "id": 7624,
+     "name": "Albuquerque",
+     "slug": "albuquerque"
+    }
+   ],
+   "settlement": {},
+   "volumeDelta24hPct": "0"
+  },
+  {
+   "id": "370677",
+   "title": "Highest temperature in Atlanta on October 22, 2026?",
+   "slug": "highest-temperature-in-atlanta-on-october-22-2026",
+   "type": "categorical",
+   "category": "Weather",
+   "ticker": "WXHIGH-ATL-2610230359",
+   "status": "settled",
+   "createdAt": "2026-10-21T12:59:09.606Z",
+   "contracts": [
+    {
+     "id": "370677-868774",
+     "label": "71\u00b0F or below",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Atlanta, GA on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Atlanta, GA.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Atlanta on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be determined by ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T12:59:09.606Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "LO71",
+     "instrumentSymbol": "GEMI-WXHIGH-ATL-2610230359-LO71",
+     "marketState": "closed",
+     "abbreviatedName": "71\u00b0 or below",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:00:59.966Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 1,
+     "strike": {
+      "type": "below",
+      "value": "71"
+     },
+     "isCombo": false
+    },
+    {
+     "id": "370677-868776",
+     "label": "72\u00b0F to 73\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Atlanta, GA on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Atlanta, GA.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Atlanta on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be determined by ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T12:59:09.606Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "72TO73",
+     "instrumentSymbol": "GEMI-WXHIGH-ATL-2610230359-72TO73",
+     "marketState": "closed",
+     "abbreviatedName": "72\u00b0 to 73\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:00:59.763Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 2,
+     "isCombo": false
+    },
+    {
+     "id": "370677-868778",
+     "label": "74\u00b0F to 75\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Atlanta, GA on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Atlanta, GA.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Atlanta on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be determined by ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T12:59:09.606Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "74TO75",
+     "instrumentSymbol": "GEMI-WXHIGH-ATL-2610230359-74TO75",
+     "marketState": "closed",
+     "abbreviatedName": "74\u00b0 to 75\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:00.550Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 3,
+     "isCombo": false
+    },
+    {
+     "id": "370677-868780",
+     "label": "76\u00b0F to 77\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Atlanta, GA on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Atlanta, GA.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Atlanta on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be determined by ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T12:59:09.606Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "76TO77",
+     "instrumentSymbol": "GEMI-WXHIGH-ATL-2610230359-76TO77",
+     "marketState": "closed",
+     "abbreviatedName": "76\u00b0 to 77\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "yes",
+     "resolvedAt": "2026-10-23T10:01:00.268Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 4,
+     "isCombo": false
+    },
+    {
+     "id": "370677-868782",
+     "label": "78\u00b0F to 79\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Atlanta, GA on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Atlanta, GA.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Atlanta on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be determined by ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T12:59:09.606Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "78TO79",
+     "instrumentSymbol": "GEMI-WXHIGH-ATL-2610230359-78TO79",
+     "marketState": "closed",
+     "abbreviatedName": "78\u00b0 to 79\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:00.758Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 5,
+     "isCombo": false
+    },
+    {
+     "id": "370677-868784",
+     "label": "80\u00b0F or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Atlanta, GA on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Atlanta, GA.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Atlanta on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature for October 22, 2026 as documented by the NWS. If the Expiration Value cannot be determined by ",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T12:59:09.606Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "HI80",
+     "instrumentSymbol": "GEMI-WXHIGH-ATL-2610230359-HI80",
+     "marketState": "closed",
+     "abbreviatedName": "80\u00b0 or above",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:00.972Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 6,
+     "strike": {
+      "type": "above",
+      "value": "80"
+     },
+     "isCombo": false
+    }
+   ],
+   "effectiveDate": "2026-10-21T12:59:09.606Z",
+   "isLive": false,
+   "participants": [],
+   "description": {
+    "nodeType": "document",
+    "data": {},
+    "content": [
+     {
+      "nodeType": "paragraph",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "text",
+        "value": "",
+        "marks": [],
+        "data": {}
+       }
+      ]
+     }
+    ]
+   },
+   "series": "WXHIGH",
+   "resolvedAt": "2026-10-23T10:01:00.972Z",
+   "volume": "0",
+   "volume24h": "0",
+   "tags": [
+    "Daily Temperature"
+   ],
+   "expiryDate": "2026-10-23T03:59:59.000Z",
+   "termsLink": "",
+   "subcategory": {
+    "id": 153,
+    "slug": "weather_daily-temperature",
+    "name": "Daily Temperature",
+    "path": [
+     "Weather",
+     "Daily Temperature"
+    ]
+   },
+   "featuredImageUrl": "https://assets.gemini.com/predictions/images/Atlanta_43ac989d-f549-448c-b8c1-645c0f9823a8.png",
+   "eventTags": [
+    {
+     "id": 7011,
+     "name": "Atlanta",
+     "slug": "atlanta"
+    }
+   ],
+   "settlement": {},
+   "volumeDelta24hPct": "0"
+  },
+  {
+   "id": "370679",
+   "title": "Highest temperature in Austin on October 22, 2026?",
+   "slug": "highest-temperature-in-austin-on-october-22-2026",
+   "type": "categorical",
+   "category": "Weather",
+   "ticker": "WXHIGH-AUS-2610230359",
+   "status": "settled",
+   "createdAt": "2026-10-21T12:59:29.419Z",
+   "contracts": [
+    {
+     "id": "370679-868792",
+     "label": "83\u00b0F or below",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Austin-Bergstrom International Airport, TX on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Austin-Bergstrom International Airport, TX.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Austin-Bergstrom International Airport on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature fo",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T12:59:29.419Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "LO83",
+     "instrumentSymbol": "GEMI-WXHIGH-AUS-2610230359-LO83",
+     "marketState": "closed",
+     "abbreviatedName": "83\u00b0 or below",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:27.120Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 1,
+     "strike": {
+      "type": "below",
+      "value": "83"
+     },
+     "isCombo": false
+    },
+    {
+     "id": "370679-868794",
+     "label": "84\u00b0F to 85\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Austin-Bergstrom International Airport, TX on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Austin-Bergstrom International Airport, TX.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Austin-Bergstrom International Airport on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature fo",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T12:59:29.419Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "84TO85",
+     "instrumentSymbol": "GEMI-WXHIGH-AUS-2610230359-84TO85",
+     "marketState": "closed",
+     "abbreviatedName": "84\u00b0 to 85\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:26.407Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 2,
+     "isCombo": false
+    },
+    {
+     "id": "370679-868796",
+     "label": "86\u00b0F to 87\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Austin-Bergstrom International Airport, TX on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Austin-Bergstrom International Airport, TX.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Austin-Bergstrom International Airport on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature fo",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T12:59:29.419Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "86TO87",
+     "instrumentSymbol": "GEMI-WXHIGH-AUS-2610230359-86TO87",
+     "marketState": "closed",
+     "abbreviatedName": "86\u00b0 to 87\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "yes",
+     "resolvedAt": "2026-10-23T10:01:26.083Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 3,
+     "isCombo": false
+    },
+    {
+     "id": "370679-868798",
+     "label": "88\u00b0F to 89\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Austin-Bergstrom International Airport, TX on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Austin-Bergstrom International Airport, TX.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Austin-Bergstrom International Airport on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature fo",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T12:59:29.419Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "88TO89",
+     "instrumentSymbol": "GEMI-WXHIGH-AUS-2610230359-88TO89",
+     "marketState": "closed",
+     "abbreviatedName": "88\u00b0 to 89\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:26.643Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 4,
+     "isCombo": false
+    },
+    {
+     "id": "370679-868800",
+     "label": "90\u00b0F to 91\u00b0F",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Austin-Bergstrom International Airport, TX on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Austin-Bergstrom International Airport, TX.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Austin-Bergstrom International Airport on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature fo",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T12:59:29.419Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "90TO91",
+     "instrumentSymbol": "GEMI-WXHIGH-AUS-2610230359-90TO91",
+     "marketState": "closed",
+     "abbreviatedName": "90\u00b0 to 91\u00b0",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:26.255Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 5,
+     "isCombo": false
+    },
+    {
+     "id": "370679-868802",
+     "label": "92\u00b0F or above",
+     "description": {
+      "nodeType": "document",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "paragraph",
+        "data": {},
+        "content": [
+         {
+          "nodeType": "text",
+          "value": "This market will resolve based on the highest temperature recorded at Austin-Bergstrom International Airport, TX on October 22, 2026. The resolution source for this market will be the National Weather Service (\"NWS\") Climatological Report (Daily) for Austin-Bergstrom International Airport, TX.\n\nSpecifically, this contract will resolve to Yes if the highest temperature recorded at Austin-Bergstrom International Airport on October 22, 2026, as reported in the first published version of the applicable NWS Climatological Report (Daily), satisfies the temperature range specified in this contract. Otherwise, this contract will resolve to No. The Expiration Value shall be the maximum temperature fo",
+          "marks": [],
+          "data": {}
+         }
+        ]
+       }
+      ]
+     },
+     "prices": {
+      "buy": {},
+      "sell": {}
+     },
+     "status": "settled",
+     "createdAt": "2026-10-21T12:59:29.419Z",
+     "termsAndConditionsUrl": "",
+     "ticker": "HI92",
+     "instrumentSymbol": "GEMI-WXHIGH-AUS-2610230359-HI92",
+     "marketState": "closed",
+     "abbreviatedName": "92\u00b0 or above",
+     "color": "#4CAF50",
+     "expiryDate": "2026-10-23T03:59:59.000Z",
+     "resolutionSide": "no",
+     "resolvedAt": "2026-10-23T10:01:26.881Z",
+     "effectiveDate": "2026-10-21T13:59:59.000Z",
+     "sortOrder": 6,
+     "strike": {
+      "type": "above",
+      "value": "92"
+     },
+     "isCombo": false
+    }
+   ],
+   "effectiveDate": "2026-10-21T12:59:29.419Z",
+   "isLive": false,
+   "participants": [],
+   "description": {
+    "nodeType": "document",
+    "data": {},
+    "content": [
+     {
+      "nodeType": "paragraph",
+      "data": {},
+      "content": [
+       {
+        "nodeType": "text",
+        "value": "",
+        "marks": [],
+        "data": {}
+       }
+      ]
+     }
+    ]
+   },
+   "series": "WXHIGH",
+   "resolvedAt": "2026-10-23T10:01:27.120Z",
+   "volume": "14.28",
+   "volume24h": "0",
+   "tags": [
+    "Daily Temperature"
+   ],
+   "expiryDate": "2026-10-23T03:59:59.000Z",
+   "termsLink": "",
+   "subcategory": {
+    "id": 153,
+    "slug": "weather_daily-temperature",
+    "name": "Daily Temperature",
+    "path": [
+     "Weather",
+     "Daily Temperature"
+    ]
+   },
+   "featuredImageUrl": "https://assets.gemini.com/predictions/images/Austin_f4bdacdf-845d-48b0-96cc-b9768dfbcc2c.png",
+   "eventTags": [
+    {
+     "id": 7012,
+     "name": "Austin",
+     "slug": "austin"
+    }
+   ],
+   "settlement": {},
+   "volumeDelta24hPct": "0"
+  }
+ ]
+}
