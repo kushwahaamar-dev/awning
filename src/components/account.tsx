@@ -5,7 +5,7 @@ import useSWR from "swr";
 import type { Address } from "viem";
 import { SESSION_HEADER } from "@/lib/api/session-message";
 import { deviceAddress, sessionToken } from "@/lib/chain/device";
-import type { Allowance } from "@/lib/chain/server";
+import type { Allowance, PoolState } from "@/lib/chain/server";
 import type { CoverStatus, Order } from "@/lib/db/schema";
 import type { CoverPlan } from "@/lib/hedge/plan";
 
@@ -19,6 +19,7 @@ export type Cover = {
   maxPayout: number;
   payout: number | null;
   orders: Order[];
+  openTx: string | null;
   note: string | null;
   expiresAt: string;
   createdAt: string;
@@ -36,6 +37,8 @@ export type Activity = {
 export type Account = {
   allowance: Allowance;
   covers: Cover[];
+  /** The pool that backs every cover. */
+  pool: PoolState;
   activity: Activity[];
   setup: { chainId: number; chainName: string; mandate: Address; usdc: Address; agent: Address; venue: Address };
 };
@@ -81,7 +84,7 @@ export function useAccount() {
 }
 
 export const hasAllowance = (account: Account) =>
-  account.allowance.agent.toLowerCase() === account.setup.agent.toLowerCase() && account.allowance.balance > 0;
+  account.allowance.agent.toLowerCase() === account.setup.agent.toLowerCase() && account.allowance.balance > 0 && account.allowance.poolApproved;
 
 export async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(path, {

@@ -8,7 +8,6 @@ const bodySchema = z.object({
   owner: address,
   exposure: exposureSchema,
   coverRatio: z.number().min(0.1).max(1),
-  mode: z.enum(["now", "resting"]),
 });
 
 export async function POST(request: Request) {

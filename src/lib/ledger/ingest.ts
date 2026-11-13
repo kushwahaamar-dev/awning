@@ -1,6 +1,6 @@
 import { parseEventLogs, type Hex, type Log } from "viem";
-import { awningMandateAbi } from "../chain/abi";
-import { BLOCK_REASONS, deployBlock, fromUnits, mandateAddress } from "../chain/config";
+import { awningMandateAbi, awningPoolAbi } from "../chain/abi";
+import { BLOCK_REASONS, deployBlock, fromUnits, mandateAddress, poolAddress } from "../chain/config";
 import { publicClient } from "../chain/server";
 import { getDb, ledger } from "../db";
 import { desc, sql } from "drizzle-orm";
@@ -9,7 +9,10 @@ export type RawLog = Pick<Log<bigint, number, false>, "address" | "topics" | "da
 
 const ACTIONS = ["DrawFloat", "OpenHedge"] as const;
 const OUTCOMES = ["None", "Open", "Paid", "Expired", "Refunded"] as const;
-const DOLLAR_FIELDS = new Set(["amount", "premium", "maxPayout", "payout", "drawnToday", "floatDailyCap", "premiumPerHedgeCap", "premiumPeriodCap", "approvalThreshold"]);
+const DOLLAR_FIELDS = new Set(["amount", "premium", "maxPayout", "payout", "refunded", "drawnToday", "floatDailyCap", "premiumPerHedgeCap", "premiumPeriodCap", "approvalThreshold"]);
+
+// The pool is also a share token, so it emits plenty that isn't about cover. These are the events that are.
+const POOL_EVENTS = awningPoolAbi.filter((item) => item.type === "event" && ["Offered", "Rejected", "ClaimedUnresolved"].includes(item.name));
 
 /** Turns event arguments into plain JSON: dollars instead of token units, names instead of enum numbers. */
 function readable(name: string, args: Record<string, unknown>) {
@@ -26,12 +29,12 @@ function readable(name: string, args: Record<string, unknown>) {
 }
 
 /**
- * Stores mandate events. Safe to call with logs it has seen before, which matters because
+ * Stores mandate and pool events. Safe to call with logs it has seen before, which matters because
  * QuickNode Streams redelivers on retry and the local poller overlaps on restart.
  */
 export async function ingest(logs: RawLog[], timestamps: Map<bigint, number>) {
-  // Every mandate event is about one owner; anything else (EIP-712 housekeeping) isn't ledger material.
-  const events = parseEventLogs({ abi: awningMandateAbi, logs: logs as Log[] }).flatMap((event) => {
+  // Every event kept here is about one owner; anything else (EIP-712 housekeeping) isn't ledger material.
+  const events = parseEventLogs({ abi: [...awningMandateAbi, ...POOL_EVENTS], logs: logs as Log[] }).flatMap((event) => {
     const args = event.args as Record<string, unknown>;
     return typeof args.owner === "string" ? [{ ...event, args }] : [];
   });
@@ -53,18 +56,20 @@ export async function ingest(logs: RawLog[], timestamps: Map<bigint, number>) {
 
 const CHUNK = 5_000n;
 
-/** Local stand-in for QuickNode Streams: reads the mandate's logs since the last block stored. */
+/** Local stand-in for QuickNode Streams: reads the two contracts' logs since the last block stored. */
 export async function pollChain() {
   const db = await getDb();
   const [last] = await db.select({ block: sql<number>`max(${ledger.blockNumber})` }).from(ledger);
-  const latest = await publicClient.getBlockNumber();
+  // Uncached: this runs straight after the agent's own transactions, and viem would otherwise answer
+  // from a block number a few seconds old and miss them.
+  const latest = await publicClient.getBlockNumber({ cacheTime: 0 });
   let from = last?.block != null ? BigInt(last.block) : deployBlock;
   // A local chain restarts from block zero while the database remembers the old one.
   if (from > latest) from = 0n;
 
   for (; from <= latest; from += CHUNK) {
     const to = from + CHUNK - 1n < latest ? from + CHUNK - 1n : latest;
-    const logs = await publicClient.getLogs({ address: mandateAddress, fromBlock: from, toBlock: to });
+    const logs = await publicClient.getLogs({ address: [mandateAddress, poolAddress], fromBlock: from, toBlock: to });
     const timestamps = new Map<bigint, number>();
     for (const number of new Set(logs.map((l) => l.blockNumber))) {
       timestamps.set(number, Number((await publicClient.getBlock({ blockNumber: number })).timestamp));

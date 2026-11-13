@@ -5,25 +5,23 @@ import type { BlockReason } from "@/lib/chain/config";
 import { signApproval } from "@/lib/chain/device";
 import type { CoverTerms } from "@/lib/covers/service";
 import { cents, usd } from "@/lib/format";
+import { offerPrice } from "@/lib/hedge/quote";
 import type { CoverPlan } from "@/lib/hedge/plan";
 import { REFUSAL } from "@/lib/words";
 import { AllowanceForm } from "./AllowanceForm";
 import { hasAllowance, post, useAccount } from "./account";
 
 type Opened = { status: "open"; txHash: string } | { status: "blocked"; reason: BlockReason; txHash: string };
-type Mode = "now" | "resting";
 
-/** The two ways to buy, the approval step for large premiums, and what the mandate said. */
+/** The buy button, the approval step for large premiums, and what the mandate said. */
 export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRatio: number; onBought: () => void }) {
   const { owner, account, refresh } = useAccount();
-  const [busy, setBusy] = useState<Mode | null>(null);
+  const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<CoverTerms | null>(null);
   const [refused, setRefused] = useState<BlockReason | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { quote } = plan;
-  // A price at or above the payout can't help anyone; the server refuses it too.
-  const resting = quote.resting && quote.resting.total < quote.payout ? quote.resting : null;
-  const now = quote.now && quote.now.total < quote.payout ? quote.now : null;
+  const price = offerPrice(quote)?.pricing ?? null;
 
   if (!owner || !account) return null;
 
@@ -45,32 +43,33 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
     else onBought();
   }
 
-  async function start(mode: Mode) {
-    setBusy(mode);
+  async function start() {
+    setBusy(true);
     setError(null);
     setRefused(null);
     try {
-      const terms = await post<CoverTerms>("/api/covers/quote", { owner, exposure: plan.exposure, coverRatio, mode });
+      // Asking for terms has the pool lock the payout, so the money is there before any premium moves.
+      const terms = await post<CoverTerms>("/api/covers/quote", { owner, exposure: plan.exposure, coverRatio });
       // Within the allowance the agent just acts. Above the owner's line it has to come back and ask.
       if (terms.needsApproval) setPending(terms);
       else await open(terms, null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
-      setBusy(null);
+      setBusy(false);
     }
   }
 
   async function approve() {
     if (!pending) return;
-    setBusy("now");
+    setBusy(true);
     setError(null);
     try {
       await open(pending, await signApproval(pending));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
-      setBusy(null);
+      setBusy(false);
     }
   }
 
@@ -81,10 +80,10 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
           {cents(pending.premium)} is above your {usd(account.allowance.approvalThreshold)} line, so the agent needs your go-ahead.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-4">
-          <button type="button" onClick={approve} disabled={busy !== null} className="btn btn-primary">
+          <button type="button" onClick={approve} disabled={busy} className="btn btn-primary">
             {busy ? "Placing cover…" : `Approve ${cents(pending.premium)}`}
           </button>
-          <button type="button" onClick={() => setPending(null)} disabled={busy !== null} className="link">
+          <button type="button" onClick={() => setPending(null)} disabled={busy} className="link">
             Not now
           </button>
         </div>
@@ -93,8 +92,8 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
     );
   }
 
-  const cheapest = Math.min(quote.resting?.total ?? Infinity, quote.now?.total ?? Infinity);
-  const overLimit = cheapest > account.allowance.perCoverCap;
+  if (!price) return null;
+  const overLimit = price.total > account.allowance.perCoverCap;
 
   return (
     <div className="tear mt-6 pt-5">
@@ -104,21 +103,13 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
           the loss, or raise the limit under Your agent.
         </p>
       )}
-      <div className="flex flex-col gap-3">
-        {resting && (
-          <button type="button" onClick={() => start("resting")} disabled={busy !== null} className="btn btn-primary">
-            {busy === "resting" ? "Placing order…" : `Leave an order at ${cents(resting.total)}`}
-          </button>
-        )}
-        {now && (
-          <button type="button" onClick={() => start("now")} disabled={busy !== null} className="btn btn-outline">
-            {busy === "now" ? "Buying…" : `Buy now for ${cents(now.total)}`}
-          </button>
-        )}
-      </div>
-      {resting && (
-        <p className="mt-3 text-sm text-mute">An order waits for a seller at your price. If nobody takes it, your money comes back.</p>
-      )}
+      <button type="button" onClick={start} disabled={busy} className="btn btn-primary w-full">
+        {busy ? "Locking your payout…" : `Buy cover for ${cents(price.total)}`}
+      </button>
+      <p className="mt-3 text-sm text-mute">
+        The pool holds {usd(account.pool.free)} that isn&rsquo;t promised to anyone. It locks your {usd(quote.payout)} in a contract on{" "}
+        {account.setup.chainName} before your premium moves.
+      </p>
       {refused && (
         <p className="note note-refused mt-4">
           <span className="font-bold">Your allowance refused this.</span> The agent asked for the premium, but {REFUSAL[refused]}. Nothing was spent.

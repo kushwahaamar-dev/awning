@@ -1,10 +1,10 @@
-import { chain, chainLabel, mandateAddress } from "@/lib/chain/config";
+import { chainLabel, explorerAddress, mandateAddress } from "@/lib/chain/config";
 import { shortAddress } from "@/lib/format";
 import { Logo } from "./Logo";
 
 /** What is real behind the page, and where to check it. */
 export function Footer() {
-  const explorer = chain.blockExplorers?.default.url;
+  const contractPage = mandateAddress && explorerAddress(mandateAddress);
   return (
     <footer className="overflow-hidden bg-ink">
       <div className="mx-auto max-w-7xl px-5 pt-16 sm:px-10">
@@ -21,8 +21,8 @@ export function Footer() {
                 <>
                   {" "}
                   at{" "}
-                  {explorer ? (
-                    <a href={`${explorer}/address/${mandateAddress}`} target="_blank" rel="noreferrer" className="link till text-cream">
+                  {contractPage ? (
+                    <a href={contractPage} target="_blank" rel="noreferrer" className="link till text-cream">
                       {shortAddress(mandateAddress)}
                     </a>
                   ) : (

@@ -10,7 +10,7 @@ import {MockUSDC} from "../src/mocks/MockUSDC.sol";
 
 /// Deploys AwningMandate and AwningPool against `USDC_ADDRESS` if set, otherwise against a fresh
 /// MockUSDC, then records the addresses in deployments/<chainId>.json. `MANDATE_ADDRESS` reuses a
-/// mandate that is already deployed. `DESK_ADDRESS` is the key that offers and resolves cover.
+/// mandate that is already deployed. `UNDERWRITER_ADDRESS` is the key that offers and resolves cover.
 contract Deploy is Script {
     // Half the pool at most on any one market.
     uint16 constant MAX_MARKET_SHARE_BPS = 5_000;
@@ -18,13 +18,13 @@ contract Deploy is Script {
     function run() external returns (AwningMandate mandate, AwningPool pool, address usdc) {
         address configured = vm.envOr("USDC_ADDRESS", address(0));
         address existing = vm.envOr("MANDATE_ADDRESS", address(0));
-        address desk = vm.envAddress("DESK_ADDRESS");
+        address underwriter = vm.envAddress("UNDERWRITER_ADDRESS");
         bool mock = configured == address(0);
 
         vm.startBroadcast();
         usdc = mock ? address(new MockUSDC()) : configured;
         mandate = existing == address(0) ? new AwningMandate(IERC20(usdc)) : AwningMandate(existing);
-        pool = new AwningPool(mandate, desk, desk, MAX_MARKET_SHARE_BPS);
+        pool = new AwningPool(mandate, underwriter, underwriter, MAX_MARKET_SHARE_BPS);
         vm.stopBroadcast();
 
         console.log("AwningMandate:", address(mandate));

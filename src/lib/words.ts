@@ -34,11 +34,17 @@ export function describeEvent(kind: string, a: Args): { text: string; refused?: 
       return { text: a.paused ? "You paused the agent." : "You let the agent resume." };
     case "FloatDrawn":
       return { text: `The agent drew ${money("amount")} for data, ${money("drawnToday")} so far today.` };
+    case "Offered":
+      return { text: `The pool locked ${money("payout")} to back cover it offered you for ${money("premium")}.` };
     case "HedgeOpened":
       return { text: `The agent paid a ${money("premium")} premium for cover worth up to ${money("maxPayout")}, ${a.ownerApproved ? "with your approval" : "within its allowance"}.` };
+    case "Rejected":
+      return { text: `The pool sent back ${money("refunded")} it was paid for cover it never offered.` };
+    case "ClaimedUnresolved":
+      return { text: `No result was reported in time, so the pool paid ${money("payout")} into your vault.` };
     case "HedgeClosed":
       if (a.outcome === "Paid") return { text: `Cover paid ${money("payout")} into your vault.` };
-      if (a.outcome === "Refunded") return { text: `${money("payout")} of unused premium came back to your vault.` };
+      if (a.outcome === "Refunded") return { text: `${money("payout")} of premium came back to your vault.` };
       return { text: "A cover ended without paying out." };
     case "Blocked": {
       const tried = a.action === "DrawFloat" ? `draw ${money("amount")} for data` : `pay ${money("amount")} to ${shortAddress(a.counterparty as string)}`;

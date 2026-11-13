@@ -1,9 +1,10 @@
 import {
+  BaseError,
+  ContractFunctionRevertedError,
   createPublicClient,
   createTestClient,
   createWalletClient,
   http,
-  maxUint256,
   nonceManager,
   parseEther,
   parseEventLogs,
@@ -11,19 +12,18 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { awningMandateAbi, usdcAbi } from "./abi";
+import { awningMandateAbi, awningPoolAbi, usdcAbi } from "./abi";
 import {
   BLOCK_REASONS,
-  HEDGE_OUTCOME,
   chain,
   fromUnits,
   isLocalChain,
   mandateAddress,
+  poolAddress,
   rpcUrl,
   toUnits,
   usdcAddress,
   type BlockReason,
-  type HedgeOutcome,
 } from "./config";
 
 const transport = http(rpcUrl);
@@ -42,9 +42,9 @@ const signers = () => (globals.awningSigners ??= { agent: signer("AGENT_PRIVATE_
 
 export const agentAccount = () => signers().agent.account;
 export const agentAddress = () => agentAccount().address;
-export const venueAddress = () => signers().venue.account.address;
 
 const mandate = { address: mandateAddress, abi: awningMandateAbi } as const;
+const pool = { address: poolAddress, abi: awningPoolAbi } as const;
 
 export type Attempt = { txHash: Hex; ok: true } | { txHash: Hex; ok: false; reason: BlockReason };
 
@@ -86,23 +86,62 @@ export async function drawFloat(owner: Address, usd: number, purpose: Hex): Prom
   return outcome(txHash);
 }
 
-export async function closeHedge(hedgeId: Hex, result: HedgeOutcome, payoutUsd: number, evidence: Hex): Promise<Hex> {
+/** The pool can't lock a payout this size: it is short of free money, or too much already rides on this market. */
+export class PoolFull extends Error {}
+
+export type Offer = { hedgeId: Hex; owner: Address; premium: number; payout: number; marketRef: Hex; takeBy: number; resolveBy: number };
+
+/**
+ * The underwriter offers cover, which locks the whole payout in the pool before the owner pays anything.
+ * The underwriter and resolver are one key here (VENUE_PRIVATE_KEY); the pool keeps the two roles apart.
+ */
+export async function offerCover(o: Offer): Promise<Hex> {
   const { venue } = signers();
-  const payout = toUnits(payoutUsd);
-  if (payout > 0n) {
-    const allowance = await publicClient.readContract({
-      address: usdcAddress,
-      abi: usdcAbi,
-      functionName: "allowance",
-      args: [venue.account.address, mandateAddress],
-    });
-    if (allowance < payout) {
-      await mined(await venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "approve", args: [mandateAddress, maxUint256] }));
-    }
+  const request = {
+    ...pool,
+    functionName: "offer",
+    args: [o.hedgeId, o.owner, toUnits(o.premium), toUnits(o.payout), o.marketRef, BigInt(o.takeBy), BigInt(o.resolveBy)],
+  } as const;
+  try {
+    await publicClient.simulateContract({ ...request, account: venue.account });
+  } catch (error) {
+    const revert = error instanceof BaseError ? error.walk((e) => e instanceof ContractFunctionRevertedError) : null;
+    const name = revert instanceof ContractFunctionRevertedError ? revert.data?.errorName : null;
+    if (name === "NotEnoughFree" || name === "TooMuchOnOneMarket") throw new PoolFull();
+    throw error;
   }
-  const txHash = await venue.writeContract({ ...mandate, functionName: "closeHedge", args: [hedgeId, HEDGE_OUTCOME[result], payout, evidence] });
+  return sent(await venue.writeContract(request));
+}
+
+async function sent(txHash: Hex) {
   await mined(txHash);
   return txHash;
+}
+
+/** As resolver: reports whether the event happened. The pool pays the owner's vault, or keeps the premium. */
+export const settleCover = async (hedgeId: Hex, happened: boolean, evidence: Hex) =>
+  sent(await signers().venue.writeContract({ ...pool, functionName: "settle", args: [hedgeId, happened, evidence] }));
+
+// Anyone may call the next two. The server does, as housekeeping.
+
+/** Unlocks an offer nobody took in time. */
+export const lapseOffer = async (hedgeId: Hex) => sent(await signers().venue.writeContract({ ...pool, functionName: "lapse", args: [hedgeId] }));
+
+/** Sends back a premium that reached the pool without a matching offer. */
+export const rejectPremium = async (hedgeId: Hex) => sent(await signers().venue.writeContract({ ...pool, functionName: "reject", args: [hedgeId] }));
+
+/** Whether the premium was paid on exactly the terms the pool offered, which is what makes the cover real. */
+export const coverTaken = (hedgeId: Hex) => publicClient.readContract({ ...pool, functionName: "taken", args: [hedgeId] });
+
+export type PoolState = { assets: number; locked: number; free: number };
+
+export async function readPool(): Promise<PoolState> {
+  const [assets, locked, free] = await Promise.all([
+    publicClient.readContract({ ...pool, functionName: "totalAssets" }),
+    publicClient.readContract({ ...pool, functionName: "locked" }),
+    publicClient.readContract({ ...pool, functionName: "freeAssets" }),
+  ]);
+  return { assets: fromUnits(assets), locked: fromUnits(locked), free: fromUnits(free) };
 }
 
 const HEDGE_STATES = ["none", "open", "paid", "expired", "refunded"] as const;
@@ -125,13 +164,16 @@ export type Allowance = {
   /** What a fully hijacked agent could move to itself right now. */
   dataLeftToday: number;
   premiumLeftThisMonth: number;
+  /** The owner has allowed premiums to go to the pool. */
+  poolApproved: boolean;
 };
 
 export async function readAllowance(owner: Address): Promise<Allowance> {
-  const [policy, balance, limits] = await Promise.all([
+  const [policy, balance, limits, poolApproved] = await Promise.all([
     publicClient.readContract({ ...mandate, functionName: "policies", args: [owner] }),
     publicClient.readContract({ ...mandate, functionName: "balanceOf", args: [owner] }),
     publicClient.readContract({ ...mandate, functionName: "limits", args: [owner] }),
+    publicClient.readContract({ ...mandate, functionName: "venueAllowed", args: [owner, poolAddress] }),
   ]);
   const [agent, expiresAt, paused, floatDailyCap, premiumPerHedgeCap, premiumPeriodCap, approvalThreshold] = policy;
   return {
@@ -145,17 +187,15 @@ export async function readAllowance(owner: Address): Promise<Allowance> {
     approvalThreshold: fromUnits(approvalThreshold),
     dataLeftToday: fromUnits(limits[0]),
     premiumLeftThisMonth: fromUnits(limits[1]),
+    poolApproved,
   };
 }
 
-/** Local chains only: gives a fresh device key gas and test dollars, and keeps the venue able to pay out. */
+/** Local chains only: gives a fresh device key gas and test dollars. */
 export async function fundLocally(owner: Address, usd: number) {
   if (!isLocalChain) throw new Error("The built-in faucet only works on a local chain. On Arc testnet use faucet.circle.com.");
   const test = createTestClient({ chain, transport, mode: "anvil" });
   await test.setBalance({ address: owner, value: parseEther("10") });
 
-  const { venue } = signers();
-  for (const [to, amount] of [[owner, usd], [venue.account.address, 100_000]] as const) {
-    await mined(await venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "mint", args: [to, toUnits(amount)] }));
-  }
+  await mined(await signers().venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "mint", args: [owner, toUnits(usd)] }));
 }

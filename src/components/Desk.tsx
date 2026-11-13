@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Interpretation, Turn } from "@/lib/hedge/interpret";
 import type { CoverPlan } from "@/lib/hedge/plan";
 import { cents, usd } from "@/lib/format";
+import { offerPrice } from "@/lib/hedge/quote";
 import { hasAllowance, post, useAccount } from "./account";
 import { Ask } from "./Ask";
 import { Fit } from "./Fit";
@@ -14,11 +15,8 @@ type Unlisted = { wanted: string | null };
 
 /** The quote as one sentence, for reading aloud. */
 function spokenQuote({ quote, coverage, basis }: CoverPlan) {
-  const price = quote.resting
-    ? `costs ${cents(quote.resting.total)} if you leave an order${quote.now ? `, or ${cents(quote.now.total)} to buy right now` : ""}`
-    : quote.now
-      ? `costs ${cents(quote.now.total)}`
-      : "has no price right now, because nobody is quoting that market";
+  const offer = offerPrice(quote);
+  const price = offer ? `costs ${cents(offer.pricing.total)}` : "has no price right now, because nobody is quoting that market";
   const caveat = basis.level === "loose" ? " It only loosely tracks your risk, so read the notes before you buy." : "";
   return `Cover that pays ${usd(quote.payout)} if ${coverage.pays} ${price}.${caveat}`;
 }

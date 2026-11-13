@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react";
 import type { CoverPlan } from "@/lib/hedge/plan";
 import { cents, day, percent, usd } from "@/lib/format";
+import { offerPrice } from "@/lib/hedge/quote";
 import { Buy } from "./Buy";
 import { Logo } from "./Logo";
 
@@ -27,9 +28,9 @@ function Line({ label, value, strong }: { label: string; value: string; strong?:
 
 export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
   const { quote, coverage, market, exposure, forecast } = plan;
-  const cheapest = quote.resting ?? quote.now;
+  const price = offerPrice(quote)?.pricing ?? null;
   // When the market sees the event as near-certain, cover costs what it pays and isn't worth buying.
-  const worthIt = cheapest !== null && cheapest.total < quote.payout;
+  const worthIt = price !== null && price.total < quote.payout;
   const cover = Math.round(coverRatio * 100);
 
   return (
@@ -49,18 +50,17 @@ export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
           <div className="tear mt-6 space-y-2.5 pt-5 text-lg">
             {quote.marketOdds !== null && <Line label="The market's odds it happens" value={percent(quote.marketOdds)} />}
             {forecast && <Line label="A weather model's odds" value={percent(forecast.odds)} />}
-            {quote.resting && <Line label="Cost if you leave an order" value={cents(quote.resting.total)} strong />}
-            {quote.now && <Line label="Cost if you buy right now" value={cents(quote.now.total)} strong={!quote.resting} />}
-            {cheapest && (
+            {price && (
               <>
-                <Line label="If it happens, you're up" value={cents(quote.payout - cheapest.total)} />
-                <Line label="If it doesn't, you're out" value={cents(cheapest.total)} />
+                <Line label="What this cover costs" value={cents(price.total)} strong />
+                <Line label="If it happens, you're up" value={cents(quote.payout - price.total)} />
+                <Line label="If it doesn't, you're out" value={cents(price.total)} />
               </>
             )}
           </div>
-          {cheapest ? (
+          {price ? (
             <p className="mt-3 text-sm text-mute">
-              Costs include an estimated {cents(cheapest.fees)} in Gemini fees.
+              The cost is Gemini&rsquo;s price for this, including an estimated {cents(price.fees)} in exchange fees.
               {forecast && ` Your agent paid ${cents(forecast.paid)} for a ${forecast.members}-run forecast to check the price against.`}
             </p>
           ) : (
@@ -92,7 +92,7 @@ export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
           {worthIt ? (
             <Buy plan={plan} coverRatio={coverRatio} onBought={onBought} />
           ) : (
-            cheapest && (
+            price && (
               <p className="note mt-6">
                 The market treats this as all but certain, so cover would cost as much as it pays. Try a threshold that is less likely to be hit.
               </p>
@@ -100,7 +100,7 @@ export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
           )}
 
           <div className="tear mt-6 pt-5 text-sm text-mute">
-            <p>What gets bought on Gemini, {quote.contracts.toLocaleString("en-US")} contracts of each:</p>
+            <p>What the pool buys on Gemini to cover itself, {quote.contracts.toLocaleString("en-US")} contracts of each:</p>
             <ul className="till mt-2 space-y-0.5 text-xs">
               {coverage.legs.map((leg) => (
                 <li key={leg.symbol}>

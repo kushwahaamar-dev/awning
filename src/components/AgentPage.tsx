@@ -134,9 +134,10 @@ function HijackTest() {
                         {step.tried} <span className="till text-haze">{cents(step.amount)}</span>
                       </p>
                       {!step.ok && <p className="text-haze">{sentence(REFUSAL[step.reason])}</p>}
+                      {step.returned && <p className="text-haze">Your limits allowed it, but the pool never offered that cover.</p>}
                     </div>
                     <span className={`stamp shrink-0 ${step.ok ? "text-sun" : "text-persimmon"}`} style={{ "--i": i } as CSSProperties}>
-                      {step.ok ? "Went through" : "Refused"}
+                      {!step.ok ? "Refused" : step.returned ? "Sent back" : "Went through"}
                     </span>
                   </li>
                 ))}

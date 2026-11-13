@@ -8,13 +8,14 @@ export const isLocalChain = chain.id === anvil.id;
 export const chainLabel = isLocalChain ? "a local test chain" : chain.name;
 export const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL ?? chain.rpcUrls.default.http[0];
 export const mandateAddress = process.env.NEXT_PUBLIC_MANDATE_ADDRESS as Address;
+/** The pool that writes cover, and the only venue the app asks owners to allow. */
+export const poolAddress = process.env.NEXT_PUBLIC_POOL_ADDRESS as Address;
 export const usdcAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS as Address;
 export const deployBlock = BigInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK ?? 0);
 
-export function explorerTx(hash: string) {
-  const base = chain.blockExplorers?.default.url;
-  return base ? `${base}/tx/${hash}` : null;
-}
+const explorer = chain.blockExplorers?.default.url;
+export const explorerTx = (hash: string) => (explorer ? `${explorer}/tx/${hash}` : null);
+export const explorerAddress = (address: string) => (explorer ? `${explorer}/address/${address}` : null);
 
 // USDC has six decimals. Everything above the chain boundary works in dollars.
 export const toUnits = (usd: number) => BigInt(Math.round(usd * 1e6));
@@ -32,9 +33,6 @@ export const BLOCK_REASONS = [
   "InsufficientBalance",
 ] as const;
 export type BlockReason = (typeof BLOCK_REASONS)[number];
-
-export const HEDGE_OUTCOME = { Paid: 2, Expired: 3, Refunded: 4 } as const;
-export type HedgeOutcome = keyof typeof HEDGE_OUTCOME;
 
 export const hedgeApprovalTypes = {
   HedgeApproval: [

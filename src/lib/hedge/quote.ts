@@ -24,6 +24,15 @@ export type Quote = {
   marketOdds: number | null;
 };
 
+/**
+ * What the pool charges for a cover. It sells at what Gemini is asking, so it can lay the risk off
+ * at once. When nobody is asking it prices off the middle of the book and carries the risk itself.
+ */
+export function offerPrice(quote: Quote): { pricing: Pricing; mode: "now" | "resting" } | null {
+  if (quote.now) return { pricing: quote.now, mode: "now" };
+  return quote.resting && { pricing: quote.resting, mode: "resting" };
+}
+
 const cents = (n: number) => Math.round(n * 100) / 100;
 const toTick = (price: number, tick: number) => Math.floor(price / tick + 1e-9) * tick;
 
