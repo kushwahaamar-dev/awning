@@ -144,6 +144,9 @@ free assets. All three are fixed and have tests.
 - `src/lib/ledger` stores contract events, fed by QuickNode Streams in production and by reading
   logs directly on a local chain.
 - `src/lib/chain/cctp.ts` and `/api/cashout` send vault money to other chains through Circle's CCTP.
+- `src/components/Ascii.tsx` plays the animated scenes on the landing page and inside the app. They
+  come from [ascii-magic-art](https://www.ascii-magic.com/ascii) (MIT), bundled from the npm package
+  so nothing is loaded from a third party at run time.
 - `src/lib/venue` places the pool's hedge: through Gemini's trading API when keys are set, on paper otherwise.
 
 ## The agent's decision loop
@@ -287,7 +290,9 @@ npm run chain          # local chain with the mandate and a funded pool; writes 
 npm run dev            # in a second terminal
 ```
 
-Open http://localhost:3000, go to **Your agent**, press **Get test dollars**, then **Set allowance**.
+Open http://localhost:3000 for the landing page, which tells the story: the problem, how it works,
+how it is built and what was checked. **Open the app** takes you to the product. There, go to
+**Your agent**, press **Get test dollars**, then **Set allowance**.
 
 Set `ANTHROPIC_API_KEY` to describe risks in your own words. Everything else is optional; see
 `.env.example`. With no Gemini trading keys the pool's own hedge fills on paper against Gemini's live

@@ -1,141 +1,99 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-sky: var(--sky);
-  --color-cobalt: #2743f5;
-  --color-night: #080b2e;
-  --color-ink: #0d1454;
-  --color-shutter: #121a63;
-  --color-cream: #fff6e6;
-  --color-paper: #fffdf8;
-  --color-thermal: #fffefa;
-  --color-persimmon: #ff5a2b;
-  --color-ember: #ff9473;
-  --color-sun: #ffd23f;
-  --color-pink: #ffb8d2;
-  --color-haze: #d3daff;
-  --color-mute: #5b6193;
-  --color-rule: #e1e4f4;
-  --color-tint: #eceffc;
-  --color-brick: #c7281b;
+  --color-bg: #08090a;
+  --color-panel: #0f1011;
+  --color-raised: #17181b;
+  /* Hairlines. Both carry their own transparency, so they sit right on any surface. */
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-edge: rgb(255 255 255 / 0.14);
+  --color-fg: #f7f8f8;
+  --color-soft: #d0d6e0;
+  --color-muted: #8a8f98;
+  --color-faint: #62666d;
+  /* The one colour: the light under an awning. Used for what matters on a screen, never for decoration. */
+  --color-accent: #f2b54a;
+  --color-good: #4cb782;
+  --color-bad: #f0635d;
 
-  --font-sans: var(--font-hanken), system-ui, sans-serif;
-  --font-display: var(--font-fraunces), Georgia, serif;
-  --font-receipt: var(--font-martian), ui-monospace, monospace;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.3125rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.25rem;
   --text-2xl: 1.5rem;
-  --text-3xl: 2.25rem;
-  --text-4xl: 3rem;
-  --text-5xl: 3.75rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.5rem;
+  --text-5xl: 3rem;
 }
 
-/* How far the awning is rolled out: the share of the loss under cover, 0–1. Registered so it can animate. */
-@property --cover {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 0.3;
-}
-
-/* The colour of the sky behind everything. Registered so day can turn to night smoothly. */
-@property --sky {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: #2743f5;
-}
-
-:root {
-  --cover: 0.3;
-  --sky: #2743f5;
-  --stripe: 5rem;
-  --focus: var(--color-sun);
-  transition:
-    --cover 600ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    --sky 900ms ease;
-  animation: unroll 1200ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
-}
-
-/* A page that marks itself as night turns the whole sky, wherever in the tree it sits. */
-:root:has([data-sky="night"]) {
-  --sky: #080b2e;
-}
-
-@keyframes unroll {
-  from {
-    --cover: 0;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--sky);
-  color: var(--color-cream);
-  font-family: var(--font-hanken), system-ui, sans-serif;
-  font-size: 1.0625rem;
-  line-height: 1.55;
-}
-
-/* Print grain over everything, so flat colour reads as ink on stock rather than pixels. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  opacity: 0.1;
-  mix-blend-mode: soft-light;
-  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  font-feature-settings: "cv01", "ss03";
 }
 
 :focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 3px;
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 ::selection {
-  background: var(--color-sun);
-  color: var(--color-ink);
+  background: rgb(242 181 74 / 0.3);
 }
 
 @layer components {
-  /* Sign lettering: a soft, heavy serif, like a name painted over a shop door. */
+  /* Type. One family, medium weight, tight: the sizes do the talking. */
   .display {
-    font-family: var(--font-fraunces), Georgia, serif;
-    font-variation-settings: "SOFT" 100;
-    font-weight: 800;
+    font-size: clamp(2.5rem, 5.4vw, 4.25rem);
+    font-weight: 510;
+    line-height: 1.02;
     letter-spacing: -0.03em;
-    line-height: 0.94;
     text-wrap: balance;
   }
-  .display-xl {
-    font-size: clamp(2.875rem, 7.2vw, 6.5rem);
-    line-height: 0.9;
-    letter-spacing: -0.038em;
+  .heading {
+    font-size: clamp(1.75rem, 3.2vw, 2.625rem);
+    font-weight: 510;
+    line-height: 1.08;
+    letter-spacing: -0.024em;
+    text-wrap: balance;
   }
-  .display-lg {
-    font-size: clamp(2.125rem, 4.4vw, 3.75rem);
+  .title {
+    font-size: 1.25rem;
+    font-weight: 510;
+    line-height: 1.25;
+    letter-spacing: -0.018em;
   }
-  .display-md {
-    font-size: clamp(1.5rem, 2.2vw, 2rem);
-    letter-spacing: -0.02em;
-    line-height: 1.05;
-  }
-
-  .till {
-    font-family: var(--font-martian), ui-monospace, monospace;
-    font-stretch: 85%;
+  /* Money, odds, addresses, times: anything that is read as a value. */
+  .num {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
   }
 
-  /* Anything made of paper: dark ink on it, and a focus ring that shows against white. */
-  .surface {
-    --focus: var(--color-cobalt);
-    background: var(--color-paper);
-    color: var(--color-ink);
+  /* A surface raised one step off the page. */
+  .panel {
+    background: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: 0.875rem;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.03),
+      0 24px 48px -28px rgb(0 0 0 / 0.8);
+  }
+  /* Rows separated by hairlines. */
+  .rows > * + * {
+    border-top: 1px solid var(--color-line);
   }
 
   .btn {
@@ -143,483 +101,272 @@ body::before {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border-radius: 999px;
-    padding: 0.85rem 1.7rem;
-    font-size: 1.0625rem;
-    font-weight: 700;
-    line-height: 1.2;
+    height: 2.5rem;
+    padding: 0 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    font-size: 0.9375rem;
+    font-weight: 510;
+    white-space: nowrap;
     transition:
-      background-color 150ms,
-      color 150ms,
-      box-shadow 150ms,
-      scale 120ms;
+      background-color 120ms,
+      border-color 120ms,
+      color 120ms,
+      opacity 120ms,
+      scale 100ms;
   }
   .btn:active:not(:disabled) {
-    scale: 0.97;
+    scale: 0.98;
   }
   .btn:disabled {
     opacity: 0.45;
     cursor: not-allowed;
   }
+  .btn-lg {
+    height: 2.875rem;
+    padding: 0 1.25rem;
+    border-radius: 0.625rem;
+  }
   .btn-primary {
-    background: var(--color-cobalt);
-    color: var(--color-cream);
+    background: var(--color-fg);
+    color: var(--color-bg);
   }
   .btn-primary:hover:not(:disabled) {
-    background: var(--color-ink);
+    background: #fff;
   }
-  .btn-outline {
-    color: var(--color-ink);
-    box-shadow: inset 0 0 0 2px currentColor;
+  .btn-secondary {
+    background: var(--color-raised);
+    border-color: var(--color-edge);
+    color: var(--color-fg);
   }
-  .btn-outline:hover:not(:disabled) {
-    background: var(--color-ink);
-    color: var(--color-cream);
+  .btn-secondary:hover:not(:disabled) {
+    background: #1f2023;
   }
   .btn-danger,
   .btn-recording {
-    --focus: var(--color-sun);
-    background: var(--color-persimmon);
-    color: var(--color-ink);
+    background: rgb(240 99 93 / 0.12);
+    border-color: rgb(240 99 93 / 0.32);
+    color: #ff8a84;
   }
   .btn-danger:hover:not(:disabled) {
-    background: var(--color-ember);
-  }
-  .btn-cream {
-    background: var(--color-cream);
-    color: var(--color-ink);
-  }
-  .btn-cream:hover:not(:disabled) {
-    background: var(--color-sun);
+    background: rgb(240 99 93 / 0.2);
   }
   .btn-recording {
     animation: pulse 1400ms ease-in-out infinite;
   }
   .link {
+    color: var(--color-soft);
     text-decoration: underline;
-    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-edge);
     text-underline-offset: 0.25em;
+    transition:
+      color 120ms,
+      text-decoration-color 120ms;
   }
   .link:hover {
-    text-decoration-color: var(--color-persimmon);
+    color: var(--color-fg);
+    text-decoration-color: var(--color-muted);
   }
 
-  /* A remark in the margin of a paper surface. */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.5rem;
+    padding: 0 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-line);
+    background: rgb(255 255 255 / 0.03);
+    color: var(--color-soft);
+    font-size: 0.75rem;
+    font-weight: 510;
+    white-space: nowrap;
+  }
+  .badge-accent {
+    border-color: rgb(242 181 74 / 0.3);
+    background: rgb(242 181 74 / 0.1);
+    color: var(--color-accent);
+  }
+  .badge-good {
+    border-color: rgb(76 183 130 / 0.3);
+    background: rgb(76 183 130 / 0.1);
+    color: #6fd3a0;
+  }
+  .badge-bad {
+    border-color: rgb(240 99 93 / 0.32);
+    background: rgb(240 99 93 / 0.1);
+    color: #ff8a84;
+  }
+  .dot {
+    flex: none;
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* Something the person should read before acting. */
   .note {
-    border-left: 4px solid var(--color-sun);
-    padding-left: 1rem;
+    border-left: 2px solid var(--color-accent);
+    padding-left: 0.875rem;
+    color: var(--color-soft);
   }
-  .note-refused {
-    border-left-color: var(--color-persimmon);
-  }
-
-  /* The painted board above the shop. */
-  .fascia {
-    position: relative;
-    z-index: 2;
-    background: var(--color-ink);
-    color: var(--color-cream);
+  .note-bad {
+    border-left-color: var(--color-bad);
   }
 
-  /* Sun by day, moon by night, and the weather around it. It sits behind the awning and the page. */
-  .sky {
-    position: absolute;
-    inset: 0 0 auto;
-    z-index: -1;
-    height: 60rem;
-    overflow: hidden;
-    pointer-events: none;
+  /* A value typed straight into a line of settings. */
+  .field {
+    border-bottom: 1px solid var(--color-edge);
+    background: transparent;
+    padding: 0.25rem 0;
+    transition: border-color 120ms;
   }
-  .sun {
-    --halo: 255 210 63;
-    position: absolute;
-    top: 0.75rem;
-    right: max(1.25rem, calc(50vw - 37.5rem));
-    width: clamp(7rem, 17vw, 15rem);
-    aspect-ratio: 1;
-    overflow: hidden;
-    border-radius: 50%;
-    background: var(--color-sun);
-    box-shadow:
-      0 0 0 clamp(0.9rem, 2.3vw, 2.1rem) rgb(var(--halo) / 0.16),
-      0 0 0 clamp(2rem, 5.2vw, 4.75rem) rgb(var(--halo) / 0.08);
-    transition:
-      background-color 900ms ease,
-      box-shadow 900ms ease;
-    animation: sunrise 1500ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  .field:hover {
+    border-color: var(--color-muted);
   }
-  /* The earth's shadow, parked off the disc by day and slid across it by night to leave a crescent. */
-  .sun::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: var(--sky);
-    translate: 105% -75%;
-    transition: translate 900ms cubic-bezier(0.3, 0.7, 0.2, 1);
-  }
-  :root:has([data-sky="night"]) .sun {
-    --halo: 255 241 196;
-    background: #fff1c4;
-    box-shadow:
-      0 0 0 clamp(0.9rem, 2.3vw, 2.1rem) rgb(var(--halo) / 0.05),
-      0 0 0 clamp(2rem, 5.2vw, 4.75rem) rgb(var(--halo) / 0.03);
-  }
-  :root:has([data-sky="night"]) .sun::after {
-    translate: 30% -20%;
-  }
-  .cloud {
-    position: absolute;
-    fill: color-mix(in oklab, var(--sky), white 11%);
-    animation: drift 46s ease-in-out infinite alternate;
-  }
-  .star {
-    position: absolute;
-    width: var(--s, 0.6rem);
-    aspect-ratio: 1;
-    background: var(--color-cream);
-    clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
-    opacity: 0;
-    scale: 0.4;
-    transition:
-      opacity 900ms ease,
-      scale 900ms ease;
-    transition-delay: calc(var(--i, 0) * 60ms);
-  }
-  :root:has([data-sky="night"]) .star {
-    opacity: 0.85;
-    scale: 1;
-  }
-
-  /* The awning: canvas that rolls out as cover increases, with a scalloped valance. */
-  .awning {
-    position: relative;
-    height: 9.25rem;
-  }
-  .awning-cloth {
-    filter: drop-shadow(0 0.6rem 0.5rem rgb(8 11 46 / 0.4));
-    transition: filter 900ms ease;
-  }
-  :root:has([data-sky="night"]) .awning-cloth {
-    filter: drop-shadow(0 0.6rem 0.5rem rgb(8 11 46 / 0.4)) brightness(0.86) saturate(0.92);
-  }
-  .awning-canvas,
-  .awning-valance {
-    --stripes: repeating-linear-gradient(
-      90deg,
-      var(--color-persimmon) 0 calc(var(--stripe) / 2),
-      var(--color-cream) calc(var(--stripe) / 2) var(--stripe)
-    );
-  }
-  .awning-canvas {
-    height: calc(1rem + var(--cover) * 5.5rem);
-    /* Light falls off toward the wall, so the canvas reads as sloping away from it. */
-    background:
-      linear-gradient(180deg, rgb(13 20 84 / 0.2), rgb(13 20 84 / 0) 1.75rem),
-      var(--stripes);
-  }
-  .awning-valance {
-    height: calc(var(--stripe) / 4 + 0.5rem);
-    background:
-      linear-gradient(rgb(13 20 84 / 0.28), rgb(13 20 84 / 0.28)) 0 0 / 100% 2px no-repeat,
-      linear-gradient(rgb(13 20 84 / 0.09), rgb(13 20 84 / 0.09)),
-      var(--stripes);
-    mask:
-      radial-gradient(circle at 50% 0, #000 calc(var(--stripe) / 4), #0000 calc(var(--stripe) / 4 + 0.5px)) 0 0.5rem /
-        calc(var(--stripe) / 2) 100% repeat-x,
-      linear-gradient(#000, #000) 0 0 / 100% 0.5rem no-repeat;
-    transform-origin: top;
-    animation: settle 1100ms cubic-bezier(0.3, 0.7, 0.3, 1) 900ms backwards;
-  }
-  .awning-shade {
-    height: calc(var(--cover) * 9rem);
-    background: linear-gradient(rgb(8 11 46 / 0.22), rgb(8 11 46 / 0));
-  }
-
-  /* A panel whose lower edge hangs in scallops, like the valance. */
-  .scallop-bottom {
-    --r: 1.25rem;
-    padding-bottom: calc(var(--r) + 3.5rem);
-    mask:
-      radial-gradient(circle at 50% 0, #000 var(--r), #0000 calc(var(--r) + 0.5px)) 50% 100% / calc(var(--r) * 2) var(--r) repeat-x,
-      linear-gradient(#000, #000) top / 100% calc(100% - var(--r)) no-repeat;
+  .field:focus {
+    outline: none;
+    border-color: var(--color-accent);
   }
 
   /* Where the risk gets typed or spoken. */
   .composer {
-    --focus: var(--color-cobalt);
     position: relative;
     overflow: hidden;
-    background: var(--color-paper);
-    color: var(--color-ink);
-    border-radius: 2rem;
-    box-shadow: 0 1.75rem 3rem -1.5rem rgb(8 11 46 / 0.65);
-    transition: box-shadow 150ms;
+    background: var(--color-panel);
+    border: 1px solid var(--color-edge);
+    border-radius: 1rem;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.04),
+      0 32px 64px -32px rgb(0 0 0 / 0.9);
+    transition:
+      border-color 150ms,
+      box-shadow 150ms;
   }
   .composer:focus-within {
+    border-color: rgb(242 181 74 / 0.55);
     box-shadow:
-      0 0 0 5px var(--color-sun),
-      0 1.75rem 3rem -1.5rem rgb(8 11 46 / 0.65);
+      0 0 0 4px rgb(242 181 74 / 0.12),
+      0 32px 64px -32px rgb(0 0 0 / 0.9);
   }
   .composer[data-busy="true"]::after {
     content: "";
     position: absolute;
     inset: 0 0 auto;
-    height: 0.5rem;
-    background: repeating-linear-gradient(90deg, var(--color-persimmon) 0 1rem, var(--color-cream) 1rem 2rem);
-    background-size: 2rem 100%;
-    animation: slide 500ms linear infinite;
-  }
-
-  /* An example risk, on a card propped in the window. */
-  .ticket {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    gap: 1rem;
-    text-align: left;
-    background: var(--color-paper);
-    color: var(--color-ink);
-    border-radius: 1.5rem;
-    padding: 0.75rem 1.25rem 0.75rem 0.75rem;
-    box-shadow: 0 1rem 1.5rem -1rem rgb(8 11 46 / 0.6);
-    rotate: var(--tilt, 0deg);
-    transition:
-      rotate 220ms cubic-bezier(0.3, 1.4, 0.5, 1),
-      translate 220ms cubic-bezier(0.3, 1.4, 0.5, 1),
-      box-shadow 220ms;
-  }
-  .ticket:hover:not(:disabled),
-  .ticket:focus-visible {
-    rotate: 0deg;
-    translate: 0 -4px;
-    box-shadow:
-      0 0 0 4px var(--color-sun),
-      0 1.5rem 2rem -1rem rgb(8 11 46 / 0.7);
-  }
-  .ticket:disabled {
-    opacity: 0.55;
-  }
-  .ticket-art {
-    flex: none;
-    width: 5.25rem;
-    border-radius: 1rem;
-    transition: scale 220ms cubic-bezier(0.3, 1.4, 0.5, 1);
-  }
-  .ticket:hover:not(:disabled) .ticket-art {
-    scale: 1.06;
-  }
-
-  /* A till receipt, fed out of the slot above it in steps. */
-  .printer-slot {
-    position: relative;
-    z-index: 1;
-    height: 0.875rem;
-    margin: 0 -0.75rem;
-    border-radius: 999px;
-    background: var(--color-ink);
-    box-shadow:
-      inset 0 3px 4px rgb(0 0 0 / 0.6),
-      0 1px 0 rgb(255 255 255 / 0.22);
-  }
-  .receipt-feed {
-    margin-top: -0.4375rem;
-    animation: feed 1000ms steps(20, end) both;
-  }
-  .receipt {
-    --focus: var(--color-cobalt);
-    background: var(--color-thermal);
-    color: var(--color-ink);
-    filter: drop-shadow(0 1.5rem 1.5rem rgb(8 11 46 / 0.4));
-    mask:
-      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 0.875rem 0.4375rem repeat-x,
-      linear-gradient(#000, #000) top / 100% calc(100% - 0.4375rem) no-repeat;
-    padding-bottom: 1.75rem;
-  }
-  .tear {
-    border-top: 2px dashed var(--color-rule);
-  }
-  .leader {
-    flex: 1;
-    margin: 0 0.5rem;
-    border-bottom: 2px dotted #c3c8e6;
-    transform: translateY(-0.3em);
-  }
-  /* The line a shopkeeper would run a highlighter over. */
-  .highlighted {
-    background: linear-gradient(transparent 45%, rgb(255 210 63 / 0.75) 45%);
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-accent), transparent) no-repeat;
+    background-size: 40% 100%;
+    animation: sweep 1100ms ease-in-out infinite;
   }
 
   .range {
     appearance: none;
     width: 100%;
-    height: 1.75rem;
+    height: 1.5rem;
     background: transparent;
     cursor: pointer;
   }
   .range::-webkit-slider-runnable-track {
-    height: 0.5rem;
+    height: 0.25rem;
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--color-cobalt) var(--fill), var(--color-rule) var(--fill));
+    background: linear-gradient(90deg, var(--color-fg) var(--fill), var(--color-edge) var(--fill));
   }
   .range::-moz-range-track {
-    height: 0.5rem;
+    height: 0.25rem;
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--color-cobalt) var(--fill), var(--color-rule) var(--fill));
+    background: linear-gradient(90deg, var(--color-fg) var(--fill), var(--color-edge) var(--fill));
   }
   .range::-webkit-slider-thumb {
     appearance: none;
-    width: 1.625rem;
-    height: 1.625rem;
-    margin-top: -0.5625rem;
+    width: 1rem;
+    height: 1rem;
+    margin-top: -0.375rem;
     border-radius: 50%;
-    background: var(--color-sun);
-    border: 3px solid var(--color-ink);
+    background: var(--color-fg);
+    box-shadow: 0 0 0 4px rgb(255 255 255 / 0.1);
   }
   .range::-moz-range-thumb {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1rem;
+    height: 1rem;
+    border: 0;
     border-radius: 50%;
-    background: var(--color-sun);
-    border: 3px solid var(--color-ink);
+    background: var(--color-fg);
+    box-shadow: 0 0 0 4px rgb(255 255 255 / 0.1);
   }
 
-  /* The allowance, as a licence card with its own little awning along the top. */
-  .permit {
-    --focus: var(--color-cobalt);
-    --s: 2rem;
-    position: relative;
-    overflow: hidden;
-    background: var(--color-paper);
-    color: var(--color-ink);
-    border-radius: 1.75rem;
-    box-shadow: 0 2rem 3rem -1.75rem rgb(0 0 0 / 0.7);
-  }
-  .permit::before {
-    content: "";
+  /* Light from above the page and a faint grid that fades out. Kept very quiet. */
+  .backdrop {
     position: absolute;
     inset: 0 0 auto;
-    height: calc(var(--s) / 4 + 0.625rem);
-    background: repeating-linear-gradient(90deg, var(--color-persimmon) 0 calc(var(--s) / 2), var(--color-cream) calc(var(--s) / 2) var(--s));
-    mask:
-      radial-gradient(circle at 50% 0, #000 calc(var(--s) / 4), #0000 calc(var(--s) / 4 + 0.5px)) 0 0.625rem / calc(var(--s) / 2) 100% repeat-x,
-      linear-gradient(#000, #000) 0 0 / 100% 0.625rem no-repeat;
+    z-index: -1;
+    height: 46rem;
+    pointer-events: none;
+    background:
+      radial-gradient(52rem 26rem at 50% -8rem, rgb(242 181 74 / 0.13), transparent 70%),
+      radial-gradient(40rem 22rem at 88% 2rem, rgb(94 106 210 / 0.1), transparent 70%);
+  }
+  .backdrop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgb(255 255 255 / 0.11) 1px, transparent 1px);
+    background-size: 1.5rem 1.5rem;
+    mask-image: radial-gradient(60rem 30rem at 50% 0, #000, transparent 75%);
   }
 
-  /* A roller shutter, pulled down over the shop for the night. */
-  .shutter {
-    background: repeating-linear-gradient(180deg, var(--color-shutter) 0 1.625rem, #0c1250 1.625rem 1.75rem);
-    box-shadow:
-      inset 0 0.75rem 0 #0c1250,
-      0 2rem 3rem -1.75rem rgb(0 0 0 / 0.7);
-  }
-
-  .stamp {
-    display: inline-block;
-    border: 2.5px solid currentColor;
-    border-radius: 0.5rem;
-    padding: 0.1rem 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    rotate: -5deg;
-    animation: stamp 320ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
-    animation-delay: calc(var(--i, 0) * 220ms);
-  }
-
-  /* Page-load sequence: content rises into place after the awning starts to unroll. */
+  /* Content settles into place on load, in order. */
   .rise {
-    animation: rise 800ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    animation-delay: calc(var(--i, 0) * 90ms + 200ms);
+    animation: rise 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 60ms);
   }
-}
-
-@keyframes sunrise {
-  from {
-    translate: 0 -70%;
-  }
-}
-
-@keyframes drift {
-  to {
-    translate: 3.5rem 0;
-  }
-}
-
-@keyframes settle {
-  0% {
-    transform: scaleY(0.6);
-  }
-  45% {
-    transform: scaleY(1.22);
-  }
-  75% {
-    transform: scaleY(0.94);
-  }
-  100% {
-    transform: scaleY(1);
+  /* A verdict landing on a row. */
+  .land {
+    animation: land 260ms cubic-bezier(0.2, 1.2, 0.4, 1) both;
+    animation-delay: calc(var(--i, 0) * 180ms);
   }
 }
 
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(1.25rem);
+    transform: translateY(0.625rem);
   }
 }
 
-@keyframes feed {
-  from {
-    clip-path: inset(0 -2rem 100% -2rem);
-    transform: translateY(-1.5rem);
-  }
-  to {
-    clip-path: inset(0 -2rem -3rem -2rem);
-    transform: none;
-  }
-}
-
-@keyframes stamp {
+@keyframes land {
   from {
     opacity: 0;
-    scale: 1.9;
-    rotate: -14deg;
+    scale: 0.85;
   }
 }
 
-@keyframes slide {
+@keyframes sweep {
+  from {
+    background-position: -70% 0;
+  }
   to {
-    background-position: 2rem 0;
+    background-position: 170% 0;
   }
 }
 
 @keyframes pulse {
   50% {
-    box-shadow: 0 0 0 0.5rem rgb(255 90 43 / 0.25);
+    box-shadow: 0 0 0 0.375rem rgb(240 99 93 / 0.14);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root {
-    transition: none;
-    animation: none;
-  }
-  .awning-valance,
-  .sun,
-  .cloud,
   .rise,
-  .receipt-feed,
-  .stamp,
+  .land,
   .btn-recording,
   .composer[data-busy="true"]::after {
     animation: none;
   }
-  .sun,
-  .sun::after,
-  .star,
-  .awning-cloth,
-  .ticket,
-  .ticket-art,
-  .btn {
+  .btn,
+  .link,
+  .field,
+  .composer {
     transition: none;
   }
 }

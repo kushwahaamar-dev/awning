@@ -40,14 +40,14 @@ export function CostChart({ legs }: { legs: Leg[] }) {
   }
 
   return (
-    <figure className="mt-10">
-      <figcaption className="text-xl font-bold">What $1 of this cover has cost to buy</figcaption>
-      <p className="till text-sm text-haze" aria-live="polite">
+    <figure className="mt-12">
+      <figcaption className="title">What $1 of this cover has cost to buy</figcaption>
+      <p className="num mt-1 text-sm text-muted" aria-live="polite">
         {shown ? `${centsPerDollar(shown.cost)} at ${clock(shown.at)}, ${day(shown.at)}` : `Since ${clock(points[0].at)}, ${day(points[0].at)}`}
       </p>
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        className="mt-1 w-full touch-none"
+        className="mt-4 w-full touch-none"
         role="img"
         aria-label={`Cost per dollar of cover, from ${centsPerDollar(points[0].cost)} to ${centsPerDollar(last.cost)} now`}
         onPointerMove={track}
@@ -55,26 +55,26 @@ export function CostChart({ legs }: { legs: Leg[] }) {
       >
         {[0, top / 2, top].map((tick) => (
           <g key={tick}>
-            <line x1={PAD.left} x2={W - PAD.right} y1={y(tick)} y2={y(tick)} className="stroke-cream/20" strokeWidth={1} />
-            <text x={W - PAD.right + 6} y={y(tick) + 4} className="till fill-haze text-[10px]">
+            <line x1={PAD.left} x2={W - PAD.right} y1={y(tick)} y2={y(tick)} className="stroke-line" strokeWidth={1} />
+            <text x={W - PAD.right + 6} y={y(tick) + 4} className="num fill-faint text-[10px]">
               {centsPerDollar(tick)}
             </text>
           </g>
         ))}
-        <path d={`${path} L${x(t1).toFixed(1)},${y(0)} L${x(t0).toFixed(1)},${y(0)} Z`} className="fill-sun/15" />
-        <path d={path} fill="none" className="stroke-sun" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+        <path d={`${path} L${x(t1).toFixed(1)},${y(0)} L${x(t0).toFixed(1)},${y(0)} Z`} className="fill-accent/10" />
+        <path d={path} fill="none" className="stroke-accent" strokeWidth={1.75} strokeLinejoin="round" strokeLinecap="round" />
         {shown ? (
           <>
-            <line x1={x(times[hover!])} x2={x(times[hover!])} y1={PAD.top} y2={H - PAD.bottom} className="stroke-cream/60" strokeWidth={1} />
-            <circle cx={x(times[hover!])} cy={y(shown.cost)} r={4.5} className="fill-sun stroke-sky" strokeWidth={2} />
+            <line x1={x(times[hover!])} x2={x(times[hover!])} y1={PAD.top} y2={H - PAD.bottom} className="stroke-edge" strokeWidth={1} />
+            <circle cx={x(times[hover!])} cy={y(shown.cost)} r={3.5} className="fill-accent stroke-bg" strokeWidth={2} />
           </>
         ) : (
-          <circle cx={x(t1)} cy={y(last.cost)} r={4.5} className="fill-sun stroke-sky" strokeWidth={2} />
+          <circle cx={x(t1)} cy={y(last.cost)} r={3.5} className="fill-accent stroke-bg" strokeWidth={2} />
         )}
-        <text x={PAD.left} y={H - 4} className="till fill-haze text-[10px]">
+        <text x={PAD.left} y={H - 4} className="num fill-faint text-[10px]">
           {clock(points[0].at)}
         </text>
-        <text x={W - PAD.right} y={H - 4} textAnchor="end" className="till fill-haze text-[10px]">
+        <text x={W - PAD.right} y={H - 4} textAnchor="end" className="num fill-faint text-[10px]">
           now
         </text>
       </svg>

@@ -9,6 +9,7 @@ import { offerPrice } from "@/lib/hedge/quote";
 import type { CoverPlan } from "@/lib/hedge/plan";
 import { REFUSAL } from "@/lib/words";
 import { AllowanceForm } from "./AllowanceForm";
+import { Lock } from "./icons";
 import { Standing } from "./Standing";
 import { hasAllowance, post, useAccount } from "./account";
 
@@ -28,9 +29,9 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
 
   if (!hasAllowance(account)) {
     return (
-      <div className="tear mt-6 pt-5">
-        <p className="text-lg font-bold">Before Awning can buy this, give your agent an allowance.</p>
-        <p className="mt-1 mb-5 text-mute">You set the limits. They are enforced by a contract, not by the agent.</p>
+      <div className="mt-6 border-t border-line pt-5">
+        <p className="font-[510]">Before Awning can buy this, give your agent an allowance.</p>
+        <p className="mt-1 mb-5 text-sm text-muted">You set the limits. They are enforced by a contract, not by the agent.</p>
         <AllowanceForm />
       </div>
     );
@@ -76,19 +77,19 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
 
   if (pending) {
     return (
-      <div className="tear mt-6 pt-5">
-        <p className="text-lg font-bold">
+      <div className="mt-6 border-t border-line pt-5">
+        <p className="font-[510]">
           {cents(pending.premium)} is above your {usd(account.allowance.approvalThreshold)} line, so the agent needs your go-ahead.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-4">
-          <button type="button" onClick={approve} disabled={busy} className="btn btn-primary">
+          <button type="button" onClick={approve} disabled={busy} className="btn btn-lg btn-primary">
             {busy ? "Placing cover…" : `Approve ${cents(pending.premium)}`}
           </button>
           <button type="button" onClick={() => setPending(null)} disabled={busy} className="link">
             Not now
           </button>
         </div>
-        {error && <p className="mt-3 text-brick">{error}</p>}
+        {error && <p className="note note-bad mt-4 text-sm">{error}</p>}
       </div>
     );
   }
@@ -97,26 +98,30 @@ export function Buy({ plan, coverRatio, onBought }: { plan: CoverPlan; coverRati
   const overLimit = price.total > account.allowance.perCoverCap;
 
   return (
-    <div className="tear mt-6 pt-5">
+    <div className="mt-5">
       {overLimit && (
-        <p className="note mb-4">
+        <p className="note mb-4 text-sm">
           This costs more than the {usd(account.allowance.perCoverCap)} you allow for one cover, so your allowance will refuse it. Cover less of
           the loss, or raise the limit under Your agent.
         </p>
       )}
-      <button type="button" onClick={start} disabled={busy} className="btn btn-primary w-full">
+      <button type="button" onClick={start} disabled={busy} className="btn btn-lg btn-primary w-full">
         {busy ? "Locking your payout…" : `Buy cover for ${cents(price.total)}`}
       </button>
-      <p className="mt-3 text-sm text-mute">
-        The pool holds {usd(account.pool.free)} that isn&rsquo;t promised to anyone. It locks your {usd(quote.payout)} in a contract on{" "}
-        {account.setup.chainName} before your premium moves.
+      <p className="mt-3 flex gap-2 text-xs text-muted">
+        <Lock className="mt-0.5 size-3.5 flex-none text-accent" />
+        <span>
+          The pool holds {usd(account.pool.free)} that isn&rsquo;t promised to anyone. It locks your {usd(quote.payout)} in a contract on{" "}
+          {account.setup.chainName} before your premium moves.
+        </span>
       </p>
       {refused && (
-        <p className="note note-refused mt-4">
-          <span className="font-bold">Your allowance refused this.</span> The agent asked for the premium, but {REFUSAL[refused]}. Nothing was spent.
+        <p className="note note-bad mt-4 text-sm">
+          <span className="font-[510] text-fg">Your allowance refused this.</span> The agent asked for the premium, but {REFUSAL[refused]}. Nothing
+          was spent.
         </p>
       )}
-      {error && <p className="mt-3 text-brick">{error}</p>}
+      {error && <p className="note note-bad mt-4 text-sm">{error}</p>}
       <Standing plan={plan} coverRatio={coverRatio} price={price.total} />
     </div>
   );

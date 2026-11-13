@@ -50,10 +50,10 @@ export function CashOut({ onClose }: { onClose: () => void }) {
 
   if (sent) {
     return (
-      <div className="tear mt-6 pt-5" aria-live="polite">
+      <div className="mt-5 border-t border-line pt-5" aria-live="polite">
         {delivered ? (
-          <p className="text-lg">
-            <span className="font-bold">
+          <p>
+            <span className="font-[510]">
               {cents(sent.arrives)} arrived on {sent.to.name}.
             </span>{" "}
             <a href={sent.to.explorer + delivered} target="_blank" rel="noreferrer" className="link">
@@ -61,11 +61,12 @@ export function CashOut({ onClose }: { onClose: () => void }) {
             </a>
           </p>
         ) : (
-          <p className="text-lg">
-            <span className="font-bold">On its way to {sent.to.name}.</span> Circle is delivering {cents(sent.arrives)}; this takes a few seconds.
+          <p className="text-soft">
+            <span className="font-[510] text-fg">On its way to {sent.to.name}.</span> Circle is delivering {cents(sent.arrives)}; this takes a few
+            seconds.
           </p>
         )}
-        <button type="button" onClick={onClose} className="link mt-4">
+        <button type="button" onClick={onClose} className="link mt-4 text-sm">
           Done
         </button>
       </div>
@@ -74,19 +75,19 @@ export function CashOut({ onClose }: { onClose: () => void }) {
 
   return (
     <form
-      className="tear mt-6 pt-5"
+      className="mt-5 border-t border-line pt-5"
       onSubmit={(e) => {
         e.preventDefault();
         send();
       }}
     >
-      <p className="text-lg font-bold">Send money out to another chain</p>
-      <p className="mt-1 text-mute">Circle moves the dollars and delivers them. You need nothing on the other chain to receive them.</p>
+      <p className="font-[510]">Send money out to another chain</p>
+      <p className="mt-1 text-sm text-muted">Circle moves the dollars and delivers them. You need nothing on the other chain to receive them.</p>
 
-      <label htmlFor="cashAmount" className="mt-5 flex items-baseline justify-between gap-4 text-lg">
+      <label htmlFor="cashAmount" className="mt-5 flex items-baseline justify-between gap-4">
         <span>How much</span>
         <span className="flex items-baseline gap-1">
-          <span className="till text-mute">$</span>
+          <span className="num text-muted">$</span>
           <input
             id="cashAmount"
             type="number"
@@ -96,18 +97,18 @@ export function CashOut({ onClose }: { onClose: () => void }) {
             required
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
-            className="till w-28 border-b-2 border-ink bg-transparent py-1 text-right text-xl font-bold focus:border-cobalt focus:outline-none"
+            className="field num w-24 text-right text-lg"
           />
         </span>
       </label>
 
-      <label htmlFor="cashChain" className="mt-4 flex items-baseline justify-between gap-4 text-lg">
+      <label htmlFor="cashChain" className="mt-4 flex items-baseline justify-between gap-4">
         <span>To</span>
         <select
           id="cashChain"
           value={destination.domain}
           onChange={(e) => setDestination(DESTINATIONS.find((d) => d.domain === Number(e.target.value))!)}
-          className="border-b-2 border-ink bg-transparent py-1 font-bold focus:border-cobalt focus:outline-none"
+          className="field"
         >
           {DESTINATIONS.map((d) => (
             <option key={d.domain} value={d.domain}>
@@ -117,7 +118,7 @@ export function CashOut({ onClose }: { onClose: () => void }) {
         </select>
       </label>
 
-      <label htmlFor="cashAddress" className="mt-4 block text-lg">
+      <label htmlFor="cashAddress" className="mt-4 block">
         Address there
       </label>
       <input
@@ -126,10 +127,10 @@ export function CashOut({ onClose }: { onClose: () => void }) {
         value={address}
         onChange={(e) => setAddress(e.target.value.trim())}
         spellCheck={false}
-        className="till mt-1 block w-full border-b-2 border-ink bg-transparent py-1 text-sm focus:border-cobalt focus:outline-none"
+        className="field num mt-1 block w-full text-sm"
       />
 
-      <p className="mt-4 text-mute">
+      <p className="mt-4 text-sm text-muted">
         {feeError
           ? "Circle isn't quoting a delivery fee right now."
           : fee === undefined
@@ -149,7 +150,7 @@ export function CashOut({ onClose }: { onClose: () => void }) {
           </button>
         )}
       </div>
-      {error && <p className="mt-3 text-brick">{error}</p>}
+      {error && <p className="note note-bad mt-4 text-sm">{error}</p>}
     </form>
   );
 }

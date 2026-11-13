@@ -36,7 +36,7 @@ export function Standing({ plan, coverRatio, price }: { plan: CoverPlan; coverRa
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="link mt-5 font-bold">
+      <button type="button" onClick={() => setOpen(true)} className="btn btn-secondary mt-3 w-full">
         Or have your agent cover this every day
       </button>
     );
@@ -44,19 +44,19 @@ export function Standing({ plan, coverRatio, price }: { plan: CoverPlan; coverRa
 
   return (
     <form
-      className="tear mt-6 pt-5"
+      className="mt-6 border-t border-line pt-5"
       onSubmit={(e) => {
         e.preventDefault();
         start();
       }}
     >
-      <p className="text-lg font-bold">Leave this with your agent</p>
-      <p className="mt-1 text-mute">Each day it checks the price against a forecast, buys when the cover is worth it, leaves it when it isn&rsquo;t, and tells you why.</p>
+      <p className="font-[510]">Leave this with your agent</p>
+      <p className="mt-1 text-sm text-muted">Each day it checks the price against a forecast, buys when the cover is worth it, leaves it when it isn&rsquo;t, and tells you why.</p>
 
-      <label htmlFor="dailyCap" className="mt-5 flex items-baseline justify-between gap-4 text-lg">
+      <label htmlFor="dailyCap" className="mt-5 flex items-baseline justify-between gap-4">
         <span>Most to pay for one day</span>
         <span className="flex items-baseline gap-1">
-          <span className="till text-mute">$</span>
+          <span className="num text-muted">$</span>
           <input
             id="dailyCap"
             type="number"
@@ -66,13 +66,13 @@ export function Standing({ plan, coverRatio, price }: { plan: CoverPlan; coverRa
             required
             value={dailyCap}
             onChange={(e) => setDailyCap(Number(e.target.value))}
-            className="till w-24 border-b-2 border-ink bg-transparent py-1 text-right text-xl font-bold focus:border-cobalt focus:outline-none"
+            className="field num w-20 text-right text-lg"
           />
         </span>
       </label>
-      <p className="mt-1 text-sm text-mute">It can act alone up to the {usd(askFirst)} you set as your ask-first line.</p>
+      <p className="mt-1 text-xs text-faint">It can act alone up to the {usd(askFirst)} you set as your ask-first line.</p>
 
-      <label htmlFor="instruction" className="mt-5 block text-lg">
+      <label htmlFor="instruction" className="mt-5 block">
         Anything it should know
       </label>
       <textarea
@@ -82,7 +82,7 @@ export function Standing({ plan, coverRatio, price }: { plan: CoverPlan; coverRa
         value={instruction}
         onChange={(e) => setInstruction(e.target.value)}
         placeholder="Leave it on days the forecast says we're safe."
-        className="mt-2 block w-full resize-none rounded-xl bg-tint px-4 py-3 placeholder:text-mute/70 focus:outline-none focus-visible:outline-[3px] focus-visible:outline-cobalt"
+        className="mt-2 block w-full resize-none rounded-lg border border-edge bg-bg px-3.5 py-2.5 placeholder:text-faint focus:border-accent focus:outline-none"
       />
 
       <div className="mt-5 flex flex-wrap items-center gap-4">
@@ -95,7 +95,7 @@ export function Standing({ plan, coverRatio, price }: { plan: CoverPlan; coverRa
           </button>
         )}
       </div>
-      {error && <p className="mt-3 text-brick">{error}</p>}
+      {error && <p className="note note-bad mt-4 text-sm">{error}</p>}
     </form>
   );
 }

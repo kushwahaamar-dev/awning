@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import type { Interpretation, Turn } from "@/lib/hedge/interpret";
 import type { CoverPlan } from "@/lib/hedge/plan";
 import { cents, usd } from "@/lib/format";
 import { offerPrice } from "@/lib/hedge/quote";
 import { hasAllowance, post, useAccount } from "./account";
+import { Ascii, type Scene } from "./Ascii";
 import { Ask } from "./Ask";
 import { Fit } from "./Fit";
 import { Receipt } from "./Receipt";
@@ -21,6 +22,14 @@ function spokenQuote({ quote, coverage, basis }: CoverPlan) {
   return `Cover that pays ${usd(quote.payout)} if ${coverage.pays} ${price}.${caveat}`;
 }
 
+/** A picture of the thing being covered: cold, heat, a price, or a night on the high street. */
+function sceneFor({ exposure }: CoverPlan): { scene: Scene; label: string } {
+  const { trigger } = exposure;
+  if (trigger.family === "price") return { scene: "prices", label: "A price chart, candle by candle" };
+  if (trigger.family === "game") return { scene: "street", label: "A rainy night on a street of small shops" };
+  return trigger.direction === "below" ? { scene: "snow", label: "Snow falling over a pine valley at night" } : { scene: "sunrise", label: "The sun climbing over the sea" };
+}
+
 export function Desk() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
@@ -34,11 +43,6 @@ export function Desk() {
   // Only an owner who has set an allowance has a data budget for the agent to spend on a forecast.
   const payer = account && hasAllowance(account) ? owner : undefined;
   const voice = useVoice((heard) => say(heard));
-
-  // The awning in the header rolls out to match the share of the loss under cover.
-  useEffect(() => {
-    document.documentElement.style.setProperty("--cover", String(plan ? coverRatio : 0.3));
-  }, [plan, coverRatio]);
 
   async function say(text: string) {
     const next: Turn[] = [...turns, { role: "user", text }];
@@ -95,17 +99,20 @@ export function Desk() {
 
   if (plan) {
     return (
-      <div className="grid items-start gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,27rem)]">
-        <div className="lg:order-last">
+      <div className="grid items-start gap-x-16 gap-y-12 pt-14 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+        <div className="rise lg:order-last" style={{ "--i": 1 } as CSSProperties}>
           <Receipt plan={plan} coverRatio={coverRatio} onCoverChange={changeCover} onBought={startOver} />
         </div>
         <div className="rise">
-          <p className="text-lg text-haze">You said</p>
-          <h1 className="display mt-2 max-w-2xl text-[clamp(2rem,3.6vw,3.25rem)] leading-[0.98]">{plan.exposure.summary}</h1>
-          <Fit plan={plan} />
-          <button type="button" onClick={startOver} className="link mt-10">
+          <button type="button" onClick={startOver} className="link text-sm">
             Describe a different risk
           </button>
+          <div className="panel mt-6 flex h-36 items-center overflow-hidden">
+            <Ascii {...sceneFor(plan)} className="w-full bg-[#060708]" />
+          </div>
+          <p className="mt-8 text-sm text-muted">You said</p>
+          <h1 className="heading mt-2 max-w-2xl">{plan.exposure.summary}</h1>
+          <Fit plan={plan} />
         </div>
       </div>
     );
@@ -116,7 +123,6 @@ export function Desk() {
       turns={turns}
       busy={busy}
       pricing={pricing}
-      newcomer={!account?.covers.length}
       error={error ?? voice.error}
       unlisted={unlisted}
       onSay={say}

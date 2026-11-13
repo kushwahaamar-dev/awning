@@ -65,13 +65,13 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
         save();
       }}
     >
-      <div className="space-y-5">
+      <div className="rows border-y border-line">
         {FIELDS.map(({ key, label, hint }) => (
-          <div key={key}>
-            <label htmlFor={key} className="flex items-baseline justify-between gap-4 text-lg">
+          <div key={key} className="py-3.5">
+            <label htmlFor={key} className="flex items-baseline justify-between gap-4">
               <span>{label}</span>
               <span className="flex items-baseline gap-1">
-                <span className="till text-mute">$</span>
+                <span className="num text-muted">$</span>
                 <input
                   id={key}
                   type="number"
@@ -80,36 +80,34 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
                   required
                   value={values[key]}
                   onChange={(e) => setValues({ ...values, [key]: Number(e.target.value) })}
-                  className="till w-28 border-b-2 border-ink bg-transparent py-1 text-right text-xl font-bold focus:border-cobalt focus:outline-none"
+                  className="field num w-24 text-right text-lg"
                 />
               </span>
             </label>
-            {hint && <p className="mt-1 text-sm text-mute">{hint}</p>}
+            {hint && <p className="mt-1 max-w-md text-xs text-faint">{hint}</p>}
           </div>
         ))}
       </div>
 
       {short && (
-        <p className="note mt-6">
+        <p className="note mt-6 text-sm">
           This device&rsquo;s wallet holds {usd(wallet)}.{" "}
           {isLocalChain ? (
-            <button type="button" onClick={getTestDollars} disabled={step !== null} className="link font-bold">
+            <button type="button" onClick={getTestDollars} disabled={step !== null} className="link text-fg">
               Get test dollars
             </button>
           ) : (
             <>
-              Send {setup.chainName} USDC to <span className="font-bold break-all">{owner}</span> from faucet.circle.com, then come back.
+              Send {setup.chainName} USDC to <span className="num break-all text-fg">{owner}</span> from faucet.circle.com, then come back.
             </>
           )}
         </p>
       )}
 
-      <div className="mt-7 flex flex-wrap items-center gap-4">
-        <button type="submit" disabled={step !== null || short} className="btn btn-primary">
-          {step ?? "Set allowance"}
-        </button>
-        {error && <p className="text-brick">{error}</p>}
-      </div>
+      <button type="submit" disabled={step !== null || short} className="btn btn-lg btn-primary mt-6">
+        {step ?? "Set allowance"}
+      </button>
+      {error && <p className="note note-bad mt-4 text-sm">{error}</p>}
     </form>
   );
 }

@@ -1,11 +1,5 @@
-import { Covers } from "@/components/Covers";
-import { Desk } from "@/components/Desk";
+import { Landing } from "@/components/Landing";
 
 export default function Home() {
-  return (
-    <>
-      <Desk />
-      <Covers />
-    </>
-  );
+  return <Landing />;
 }
