@@ -58,30 +58,40 @@ export const geminiVenue: Venue = {
     }
 
     const placed: Order[] = [];
-    for (const order of orders) {
-      const result = await signed<GeminiOrder>("POST", "/v1/prediction-markets/order", {
-        symbol: order.symbol,
-        orderType: "limit",
-        side: "buy",
-        outcome: order.side,
-        quantity: String(order.quantity),
-        price: order.price.toFixed(2),
-        // Buying now takes what is on offer and cancels the rest; a resting order must not take at all.
-        timeInForce: mode === "now" ? "immediate-or-cancel" : "good-til-cancel",
-        makerOrCancel: mode === "resting",
-      });
-      placed.push({ ...order, id: String(result.orderId), filled: Number(result.filledQuantity) });
+    try {
+      for (const order of orders) placed.push(await placeOne(order, mode));
+    } catch (error) {
+      // The caller refunds the whole premium on failure, so no leg may be left working on the book.
+      for (const order of placed) {
+        await signed("POST", "/v1/prediction-markets/order/cancel", { orderId: Number(order.id) }).catch(() => {});
+      }
+      throw error;
     }
     return placed;
   },
 
   async refresh(orders) {
-    return Promise.all(
-      orders.map(async (order) => {
-        if (order.id === null || order.filled >= order.quantity) return order;
-        const current = await find(order);
-        return current ? { ...order, filled: Number(current.filledQuantity) } : order;
-      }),
-    );
+    const refreshed: Order[] = [];
+    // One at a time: the signed requests carry a time-based nonce.
+    for (const order of orders) {
+      const current = order.id === null || order.filled >= order.quantity ? undefined : await find(order);
+      refreshed.push(current ? { ...order, filled: Number(current.filledQuantity) } : order);
+    }
+    return refreshed;
   },
 };
+
+async function placeOne(order: Order, mode: "now" | "resting"): Promise<Order> {
+  const result = await signed<GeminiOrder>("POST", "/v1/prediction-markets/order", {
+    symbol: order.symbol,
+    orderType: "limit",
+    side: "buy",
+    outcome: order.side,
+    quantity: String(order.quantity),
+    price: order.price.toFixed(2),
+    // Buying now takes what is on offer and cancels the rest; a resting order must not take at all.
+    timeInForce: mode === "now" ? "immediate-or-cancel" : "good-til-cancel",
+    makerOrCancel: mode === "resting",
+  });
+  return { ...order, id: String(result.orderId), filled: Number(result.filledQuantity) };
+}

@@ -16,6 +16,8 @@ For any owner whose agent key is fully compromised:
 - Premiums are bounded per hedge (`premiumPerHedgeCap`) and per 30-day period
   (`premiumPeriodCap`), signature or not. An owner signature only lifts the approval threshold; it
   never lifts a cap.
+- Days and 30-day periods are fixed windows counted from the Unix epoch, not rolling ones. An agent
+  can use a full cap at the end of one window and again at the start of the next.
 - Premiums above `approvalThreshold` need an EIP-712 `HedgeApproval` signature from the owner,
   bound to hedge id, venue, premium, max payout, market and deadline. A signature cannot be
   replayed for a different amount, venue or hedge.

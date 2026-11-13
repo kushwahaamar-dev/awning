@@ -8,6 +8,8 @@ import { useAccount, type Cover } from "./account";
 function state(cover: Cover): { label: string; tone: "live" | "good" | "quiet" | "bad" } {
   const filled = cover.orders.every((o) => o.filled >= o.quantity);
   switch (cover.status) {
+    case "opening":
+      return { label: "Being placed", tone: "quiet" };
     case "open":
       return filled ? { label: `In force until ${day(cover.expiresAt)}`, tone: "live" } : { label: "Order waiting for a seller", tone: "quiet" };
     case "paid":

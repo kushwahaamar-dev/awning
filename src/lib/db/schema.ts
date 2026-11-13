@@ -11,8 +11,11 @@ export type Order = {
   filled: number;
 };
 
-/** quoted: priced and waiting for the owner. blocked: the mandate refused the premium. */
-export type CoverStatus = "quoted" | "open" | "paid" | "expired" | "refunded" | "blocked";
+/**
+ * quoted: priced and waiting for the owner. opening: claimed by one request, premium being paid.
+ * blocked: the mandate refused the premium.
+ */
+export type CoverStatus = "quoted" | "opening" | "open" | "paid" | "expired" | "refunded" | "blocked";
 
 export const covers = pgTable(
   "covers",

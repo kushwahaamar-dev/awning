@@ -85,7 +85,8 @@ function toContract(raw: RawContract, event: RawEvent): Contract {
     tick: raw.priceIncrement ?? 0.01,
     minQuantity: raw.quantityMinimum ?? 0.01,
     rules: plainText(raw.description).trim(),
-    resolvedYes: raw.resolutionSide ? raw.resolutionSide === "yes" : null,
+    // Anything other than a plain yes or no (a voided market, say) is left unresolved rather than read as No.
+    resolvedYes: raw.resolutionSide === "yes" ? true : raw.resolutionSide === "no" ? false : null,
   };
 }
 

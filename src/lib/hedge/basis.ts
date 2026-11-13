@@ -1,6 +1,7 @@
 import type { Market } from "../gemini/market";
 import type { Exposure } from "./exposure";
 import type { Coverage } from "./legs";
+import { marketDay } from "./match";
 
 export type Basis = {
   /** 0–100. How closely a payout from this cover tracks the user's actual loss. A heuristic, not a statistic. */
@@ -43,8 +44,9 @@ export function assessBasis(exposure: Exposure, market: Market, coverage: Covera
     fit -= Math.min(20, 5 + Math.round(gap * 200));
   }
 
-  if (market.subject.family === "temperature" && exposure.on && market.subject.day && market.subject.day !== exposure.on) {
-    notes.push(`The nearest listed market is for ${market.subject.day}, not ${exposure.on}.`);
+  const day = marketDay(market);
+  if (exposure.on && day !== exposure.on) {
+    notes.push(`The nearest listed market is for ${day}, not ${exposure.on}.`);
     fit -= 15;
   }
 

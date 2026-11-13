@@ -7,7 +7,7 @@ import { buy } from "./x402";
 export type SecondOpinion = { forecast: BucketForecast; paid: number; txHash: string };
 
 const KEEP_MS = 15 * 60 * 1000;
-const bought = new Map<string, { at: number; opinion: SecondOpinion }>();
+const bought = new Map<string, { at: number; opinion: SecondOpinion | null }>();
 
 /**
  * Has the agent buy a forecast for a temperature market out of the owner's data allowance.
@@ -25,6 +25,9 @@ export async function secondOpinion(owner: Address, market: Market, origin: stri
   if (allowance.agent.toLowerCase() !== agentAddress().toLowerCase() || allowance.dataLeftToday <= 0) return null;
 
   const deskUrl = process.env.AWNING_DESK_URL ?? origin;
+  // The allowance is drawn before the desk delivers, so a failure is remembered too: a desk that is
+  // down costs the owner one request, not one per quote.
+  bought.set(key, { at: Date.now(), opinion: null });
   const purchase = await buy<BucketForecast>(owner, `${deskUrl}/api/desk/forecast?ticker=${encodeURIComponent(market.ticker)}`);
   if (!purchase.ok) return null;
 

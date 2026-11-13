@@ -24,10 +24,14 @@ function Line({ label, value, strong }: { label: string; value: string; strong?:
 export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
   const { quote, coverage, market, exposure, forecast } = plan;
   const cheapest = quote.resting ?? quote.now;
+  // When the market sees the event as near-certain, cover costs what it pays and isn't worth buying.
+  const worthIt = cheapest !== null && cheapest.total < quote.payout;
 
   return (
     <section aria-label="Cover" className="receipt px-6 pt-6">
-      <p className="text-mute">Cover for {day(market.startsAt ?? market.expiresAt)}</p>
+      <p className="text-mute">
+        Cover for {day(market.startsAt ?? market.expiresAt)}, on Gemini&rsquo;s &ldquo;{market.title.replace(/\?$/, "")}&rdquo;
+      </p>
       <p className="mt-1 font-display text-3xl leading-tight font-bold tracking-tight [font-stretch:85%]">
         Pays {usd(quote.payout)} if {coverage.pays}
       </p>
@@ -74,7 +78,15 @@ export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
         />
       </div>
 
-      {cheapest && <Buy plan={plan} coverRatio={coverRatio} onBought={onBought} />}
+      {worthIt ? (
+        <Buy plan={plan} coverRatio={coverRatio} onBought={onBought} />
+      ) : (
+        cheapest && (
+          <p className="mt-6 border-l-4 border-marigold pl-4">
+            The market treats this as all but certain, so cover would cost as much as it pays. Try a threshold that is less likely to be hit.
+          </p>
+        )
+      )}
 
       <div className="mt-6 border-t-2 border-dashed border-rule pt-5 text-sm text-mute">
         <p>What gets bought on Gemini, {quote.contracts.toLocaleString("en-US")} contracts of each:</p>

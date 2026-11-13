@@ -158,6 +158,21 @@ describe("findMarket", () => {
     expect((await findMarket(texas, list))?.ticker).toBe(game.ticker);
   });
 
+  it("treats an evening game as that evening's, not the next UTC day's", async () => {
+    // Texas vs LSU kicks off at 00:30 UTC on the 15th, which is Saturday the 14th in the US
+    const saturday: Exposure = { ...coldDay, on: "2026-11-14", trigger: { family: "game", team: "Texas", outcome: "loses" } };
+    const market = (await findMarket(saturday, list))!;
+    expect(market.ticker).toBe(game.ticker);
+    expect(assessBasis(saturday, market, buildCoverage(market, saturday.trigger)!).notes.some((n) => n.includes("nearest listed market"))).toBe(false);
+  });
+
+  it("says so when the only market is for a different day than the one asked about", async () => {
+    const nextMonth: Exposure = { ...coldDay, on: "2026-12-20", trigger: { family: "price", asset: "WTI", direction: "above", threshold: 87 } };
+    const market = (await findMarket(nextMonth, list))!;
+    const basis = assessBasis(nextMonth, market, buildCoverage(market, nextMonth.trigger)!);
+    expect(basis.notes).toContain("The nearest listed market is for 2026-11-20, not 2026-12-20.");
+  });
+
   it("returns null when nothing is listed", async () => {
     const tulsa: Exposure = { ...coldDay, trigger: { family: "temperature", city: "Reykjavik", direction: "below", threshold: 40 } };
     expect(await findMarket(tulsa, list)).toBeNull();

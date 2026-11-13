@@ -49,7 +49,7 @@ prompt is a suggestion.
 | --- | --- |
 | Daily allowance for buying data | `drawFloat` moves at most this much per UTC day to the agent's own address |
 | Most for one cover | `openHedge` refuses a larger premium |
-| Most for cover in 30 days | `openHedge` refuses once the period total is reached |
+| Most for cover per 30-day period | `openHedge` refuses once the period total is reached. Periods are fixed windows, so spending can bunch on either side of a boundary |
 | Where premiums may go | `openHedge` only pays venues the owner has allowlisted |
 | Ask me first above | Larger premiums need the owner's EIP-712 signature over the exact terms |
 | Pause | `setPaused` stops everything the agent can do |
@@ -142,6 +142,8 @@ chooses which transaction to send.
   A proxy (diesel hedged with crude) is flagged and scored down. The fit score is a heuristic.
 - **Liquidity is thin.** Many contracts have no offer, or only accept resting orders. Awning quotes
   resting orders by default, shows when nothing can be priced, and refunds premium that never filled.
+- **A quote lasts five minutes.** After that it has to be asked for again, so a price can't be held
+  as a free option on where the market goes. Cover that would cost as much as it pays is not offered.
 - **The forecast is a second opinion, not truth.** It is a raw 31-member GFS ensemble with half a
   member of smoothing per bucket and no bias correction. It can lower a bid and cannot raise one.
 - **The venue is trusted.** Gemini is a centrally cleared, dollar-funded exchange with nothing

@@ -13,16 +13,17 @@ type Settlement = { outcome: "Paid" | "Expired" | "Refunded"; payout: number };
  */
 export function settlement(orders: Order[], premium: number, market: Market): Settlement | null {
   let winnings = 0;
-  let filled = 0;
-  let wanted = 0;
+  let spent = 0;
+  let budget = 0;
   for (const order of orders) {
     const resolvedYes = contractFor(order, market)?.resolvedYes;
     if (resolvedYes == null) return null;
     if ((order.side === "yes") === resolvedYes) winnings += order.filled;
-    filled += order.filled;
-    wanted += order.quantity;
+    spent += order.filled * order.price;
+    budget += order.quantity * order.price;
   }
-  const unspent = cents(premium * (1 - filled / wanted));
+  // Legs in a basket are priced very differently, so the share left over is measured in dollars.
+  const unspent = cents(premium * (1 - spent / budget));
   const payout = cents(winnings + unspent);
   return { outcome: winnings > 0 ? "Paid" : unspent > 0 ? "Refunded" : "Expired", payout };
 }

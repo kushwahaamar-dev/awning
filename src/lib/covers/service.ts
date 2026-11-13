@@ -1,6 +1,6 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, lt } from "drizzle-orm";
 import { keccak256, toHex, type Address, type Hex } from "viem";
-import { closeHedge, openHedge, readAllowance, venueAddress } from "../chain/server";
+import { closeHedge, hedgeState, openHedge, readAllowance, venueAddress } from "../chain/server";
 import { covers, getDb, type Order } from "../db";
 import { secondOpinion } from "../desk/second-opinion";
 import { getMarket, listMarkets } from "../gemini/client";
@@ -12,7 +12,11 @@ import { settlement } from "./settlement";
 /** A problem the person can do something about; shown to them as-is. */
 export class CoverError extends Error {}
 
-const APPROVAL_WINDOW_SECONDS = 15 * 60;
+// A quote is a price at a moment. Past this it has to be asked for again, or it becomes a free
+// option on wherever the market went.
+const QUOTE_LIFETIME_SECONDS = 5 * 60;
+// How long a cover may sit half-opened before the background pass decides a request died mid-way.
+const STALLED_AFTER_MS = 2 * 60 * 1000;
 
 /** Binds an onchain hedge to the exact Gemini contracts and sides it was priced on. */
 function marketRef(plan: CoverPlan): Hex {
@@ -51,6 +55,9 @@ export async function quoteCover(input: {
 
   const pricing = input.mode === "now" ? plan.quote.now : plan.quote.resting;
   if (!pricing) throw new CoverError(input.mode === "now" ? "Nobody is selling this right now. Leave an order instead." : "There is no price to anchor an order on yet.");
+  if (pricing.total >= plan.quote.payout) {
+    throw new CoverError("The market treats this as all but certain, so cover would cost as much as it pays. Try a threshold that is less likely to be hit.");
+  }
 
   const allowance = await readAllowance(input.owner);
   const id = toHex(crypto.getRandomValues(new Uint8Array(32)));
@@ -84,7 +91,7 @@ export async function quoteCover(input: {
     premium: pricing.total,
     maxPayout: plan.quote.payout,
     marketRef: marketRef(plan),
-    deadline: Math.floor(Date.now() / 1000) + APPROVAL_WINDOW_SECONDS,
+    deadline: Math.floor(Date.now() / 1000) + QUOTE_LIFETIME_SECONDS,
     needsApproval: pricing.total > allowance.approvalThreshold,
   };
 }
@@ -99,9 +106,15 @@ export async function coverOwner(id: Hex): Promise<Address> {
 /** The agent asks the mandate for the premium, and only places orders if the mandate paid it. */
 export async function openCover(id: Hex, approval: { deadline: number; signature: Hex | null }) {
   const db = await getDb();
-  const [cover] = await db.select().from(covers).where(eq(covers.id, id));
-  if (!cover) throw new CoverError("That quote doesn't exist.");
-  if (cover.status !== "quoted") throw new CoverError("That quote has already been used.");
+  // Claiming the quote in one statement means a double click, or two tabs, can only open it once.
+  const [cover] = await db.update(covers).set({ status: "opening" }).where(and(eq(covers.id, id), eq(covers.status, "quoted"))).returning();
+  if (!cover) throw new CoverError("That quote has already been used.");
+
+  const age = Date.now() - cover.createdAt.getTime();
+  if (age > QUOTE_LIFETIME_SECONDS * 1000 || cover.expiresAt.getTime() <= Date.now()) {
+    await db.delete(covers).where(eq(covers.id, id));
+    throw new CoverError("That price has expired. Ask for a fresh quote.");
+  }
 
   const attempt = await openHedge({
     owner: cover.owner as Address,
@@ -112,6 +125,10 @@ export async function openCover(id: Hex, approval: { deadline: number; signature
     marketRef: marketRef(cover.plan),
     deadline: approval.deadline,
     ownerSignature: approval.signature ?? "0x",
+  }).catch(async (error) => {
+    // A revert moved nothing, so the quote is simply dead. Anything less certain is left for reconcile().
+    if ((await hedgeState(id)) === "none") await db.delete(covers).where(eq(covers.id, id));
+    throw error;
   });
 
   if (!attempt.ok) {
@@ -141,13 +158,41 @@ export async function listCovers(owner: string) {
   return db
     .select()
     .from(covers)
-    .where(and(eq(covers.owner, owner.toLowerCase()), inArray(covers.status, ["open", "paid", "expired", "refunded", "blocked"])))
+    .where(and(eq(covers.owner, owner.toLowerCase()), inArray(covers.status, ["opening", "open", "paid", "expired", "refunded", "blocked"])))
     .orderBy(desc(covers.createdAt))
     .limit(50);
 }
 
+/**
+ * Finishes what an interrupted request left behind: a cover claimed for opening whose request never
+ * completed. If the premium reached the venue it is sent back; if it never left, the quote is dropped.
+ */
+async function reconcile() {
+  const db = await getDb();
+  const stalled = await db
+    .select()
+    .from(covers)
+    .where(and(eq(covers.status, "opening"), lt(covers.createdAt, new Date(Date.now() - QUOTE_LIFETIME_SECONDS * 1000 - STALLED_AFTER_MS))));
+
+  // Quotes nobody took are just clutter after a while.
+  await db.delete(covers).where(and(eq(covers.status, "quoted"), lt(covers.createdAt, new Date(Date.now() - 3600_000))));
+
+  for (const cover of stalled) {
+    const id = cover.id as Hex;
+    const state = await hedgeState(id);
+    if (state === "none") {
+      await db.delete(covers).where(eq(covers.id, id));
+      continue;
+    }
+    const note = "The request was interrupted before an order was placed, so the premium was returned.";
+    const closeTx = state === "open" ? await closeHedge(id, "Refunded", cover.premium, keccak256(toHex(note))) : null;
+    await db.update(covers).set({ status: "refunded", payout: cover.premium, note, closeTx, closedAt: new Date() }).where(eq(covers.id, id));
+  }
+}
+
 /** Checks every open cover against Gemini: updates fills, and pays out or closes the ones that have resolved. */
 export async function settleOpenCovers() {
+  await reconcile().catch((error) => console.error("could not reconcile stalled covers", error));
   const db = await getDb();
   const open = await db.select().from(covers).where(eq(covers.status, "open"));
 
@@ -166,6 +211,13 @@ async function settle(cover: typeof covers.$inferSelect) {
   const result = settlement(orders, cover.premium, market);
   if (!result) {
     await db.update(covers).set({ orders }).where(eq(covers.id, cover.id));
+    return;
+  }
+
+  // If an earlier pass closed the hedge but died before recording it, the chain is the record to follow.
+  const state = await hedgeState(cover.id as Hex);
+  if (state !== "open") {
+    if (state !== "none") await db.update(covers).set({ status: state, orders, payout: result.payout, closedAt: new Date() }).where(eq(covers.id, cover.id));
     return;
   }
 

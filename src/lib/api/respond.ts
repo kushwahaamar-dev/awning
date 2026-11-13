@@ -16,5 +16,4 @@ export function fail(error: unknown) {
   return Response.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
 }
 
-export const address = z.string().regex(/^0x[0-9a-fA-F]{40}$/) as unknown as z.ZodType<`0x${string}`>;
-export const hex = z.string().regex(/^0x[0-9a-fA-F]*$/) as unknown as z.ZodType<`0x${string}`>;
+export { address, hex } from "./schemas";

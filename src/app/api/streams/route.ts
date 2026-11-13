@@ -38,9 +38,15 @@ export async function POST(request: Request) {
 
   // The signature covers the JSON text, so a gzipped delivery has to be inflated before checking it.
   const raw = Buffer.from(await request.arrayBuffer());
-  const body = (request.headers.get("content-encoding") === "gzip" ? gunzipSync(raw) : raw).toString("utf8");
+  let body: string;
+  try {
+    body = (request.headers.get("content-encoding") === "gzip" ? gunzipSync(raw) : raw).toString("utf8");
+  } catch {
+    return Response.json({ error: "body could not be inflated" }, { status: 400 });
+  }
   if (!signedByQuickNode(request, body, token)) return Response.json({ error: "bad signature" }, { status: 401 });
 
+  // The signature has been checked, so this is QuickNode's own payload; still, parse defensively.
   const parsed = bodySchema.safeParse(JSON.parse(body));
   if (!parsed.success) return Response.json({ error: z.prettifyError(parsed.error) }, { status: 400 });
 

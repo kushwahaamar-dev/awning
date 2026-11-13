@@ -39,16 +39,18 @@ describe("settlement", () => {
     expect(settlement([order("80°F or above", "yes", 0.3, 0)], 30.5, settled)).toEqual({ outcome: "Refunded", payout: 30.5 });
   });
 
-  it("returns the unspent share when only some legs filled and none of them won", () => {
+  it("returns the dollars that went unspent when only the cheap leg filled and it lost", () => {
+    // $5 of a $15 basket was spent, so two thirds of the $15.40 premium comes back
     const orders = [order("69°F or below", "yes", 0.05, 100), order("70°F to 71°F", "yes", 0.1, 0)];
-    expect(settlement(orders, 15.4, settled)).toEqual({ outcome: "Refunded", payout: 7.7 });
+    expect(settlement(orders, 15.4, settled)).toEqual({ outcome: "Refunded", payout: 10.27 });
   });
 
   // The mandate allows a Paid close up to maxPayout + premium for exactly this case.
   it("adds unspent premium to the winnings when the winning leg filled and another didn't", () => {
     const orders = [order("78°F to 79°F", "yes", 0.2, 0), order("80°F or above", "yes", 0.3, 100)];
     const result = settlement(orders, 51, settled)!;
-    expect(result).toEqual({ outcome: "Paid", payout: 125.5 });
+    // $30 of a $50 basket was spent: 40% of the premium returns alongside the $100 won
+    expect(result).toEqual({ outcome: "Paid", payout: 120.4 });
   });
 
   it("waits while any leg is unresolved", () => {

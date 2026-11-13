@@ -48,8 +48,14 @@ const mandate = { address: mandateAddress, abi: awningMandateAbi } as const;
 
 export type Attempt = { txHash: Hex; ok: true } | { txHash: Hex; ok: false; reason: BlockReason };
 
-async function outcome(txHash: Hex): Promise<Attempt> {
+async function mined(txHash: Hex) {
   const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+  if (receipt.status !== "success") throw new Error(`Transaction ${txHash} reverted`);
+  return receipt;
+}
+
+async function outcome(txHash: Hex): Promise<Attempt> {
+  const receipt = await mined(txHash);
   const [blocked] = parseEventLogs({ abi: awningMandateAbi, eventName: "Blocked", logs: receipt.logs });
   return blocked ? { txHash, ok: false, reason: BLOCK_REASONS[blocked.args.reason] } : { txHash, ok: true };
 }
@@ -91,13 +97,20 @@ export async function closeHedge(hedgeId: Hex, result: HedgeOutcome, payoutUsd: 
       args: [venue.account.address, mandateAddress],
     });
     if (allowance < payout) {
-      const approval = await venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "approve", args: [mandateAddress, maxUint256] });
-      await publicClient.waitForTransactionReceipt({ hash: approval });
+      await mined(await venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "approve", args: [mandateAddress, maxUint256] }));
     }
   }
   const txHash = await venue.writeContract({ ...mandate, functionName: "closeHedge", args: [hedgeId, HEDGE_OUTCOME[result], payout, evidence] });
-  await publicClient.waitForTransactionReceipt({ hash: txHash });
+  await mined(txHash);
   return txHash;
+}
+
+const HEDGE_STATES = ["none", "open", "paid", "expired", "refunded"] as const;
+
+/** What the contract itself says about a hedge, for when the database and the chain may disagree. */
+export async function hedgeState(hedgeId: Hex): Promise<(typeof HEDGE_STATES)[number]> {
+  const hedge = await publicClient.readContract({ ...mandate, functionName: "hedges", args: [hedgeId] });
+  return HEDGE_STATES[hedge[5]];
 }
 
 export type Allowance = {
@@ -143,7 +156,6 @@ export async function fundLocally(owner: Address, usd: number) {
 
   const { venue } = signers();
   for (const [to, amount] of [[owner, usd], [venue.account.address, 100_000]] as const) {
-    const hash = await venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "mint", args: [to, toUnits(amount)] });
-    await publicClient.waitForTransactionReceipt({ hash });
+    await mined(await venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "mint", args: [to, toUnits(amount)] }));
   }
 }

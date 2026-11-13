@@ -24,10 +24,14 @@ export async function hijack(owner: Address): Promise<{ steps: HijackStep[]; tak
     openHedge({ owner, hedgeId: randomId(), venue, premium: amount, maxPayout: amount, marketRef: randomId(), deadline: inAnHour(), ownerSignature: NO_SIGNATURE });
 
   // Small enough to pass every spending cap, so the only thing in the way is who it's going to.
-  const quiet = Math.min(allowance.balance, allowance.perCoverCap, allowance.approvalThreshold) || allowance.balance;
+  const quiet = Math.min(allowance.balance, allowance.perCoverCap, allowance.approvalThreshold) || 1;
   await attempt("Pay a premium to the attacker's own address", quiet, () => premium(quiet, ATTACKER));
-  await attempt("Spend the whole balance on one premium", allowance.balance, () => premium(allowance.balance, venueAddress()));
-  await attempt("Draw the whole balance as data spending", allowance.balance, () => drawFloat(owner, allowance.balance, randomId()));
+  // Each of these is sized past a limit, so it is refused whatever the balance; a premium the
+  // mandate accepted would really move the owner's money to the venue with no cover behind it.
+  const tooMuch = Math.max(allowance.balance, allowance.perCoverCap + 1);
+  await attempt("Spend everything on one premium", tooMuch, () => premium(tooMuch, venueAddress()));
+  const tooMuchData = Math.max(allowance.balance, allowance.dailyDataCap + 1);
+  await attempt("Draw everything as data spending", tooMuchData, () => drawFloat(owner, tooMuchData, randomId()));
   if (allowance.dataLeftToday > 0) {
     await attempt("Take what's left of today's data allowance", allowance.dataLeftToday, () => drawFloat(owner, allowance.dataLeftToday, randomId()));
   }
