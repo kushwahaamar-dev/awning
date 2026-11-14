@@ -243,7 +243,7 @@ function ActivityFeed({ account }: { account: Account }) {
       <h2 className="heading">Everything the agent has done</h2>
       <p className="mt-3 text-lg text-muted">Read from {account.setup.chainName}, refusals included.</p>
       {account.activity.length === 0 ? (
-        <p className="mt-8 text-soft">Nothing yet. It starts when you set an allowance.</p>
+        <p className="mt-8 text-soft">Nothing yet.</p>
       ) : (
         <ol className="rows panel mt-8">
           {account.activity.map((event) => {
@@ -303,7 +303,7 @@ export function AgentPage() {
       </section>
       {ready && <StandingOrders account={account} />}
       {ready && <HijackTest />}
-      <ActivityFeed account={account} />
+      {(ready || account.activity.length > 0) && <ActivityFeed account={account} />}
     </>
   );
 }

@@ -19,7 +19,9 @@ export function CostChart({ legs }: { legs: Leg[] }) {
   const { data: points = [] } = useSWR(key, fetchPoints, { refreshInterval: 60_000 });
   const [hover, setHover] = useState<number | null>(null);
 
-  if (points.length < 2) return null;
+  // A line that hasn't moved, or has barely started, tells the owner nothing; the chart waits until there is something to see.
+  const costs = points.map((p) => p.cost);
+  if (points.length < 5 || Math.max(...costs) === Math.min(...costs)) return null;
 
   const times = points.map((p) => new Date(p.at).getTime());
   const [t0, t1] = [times[0], times.at(-1)!];

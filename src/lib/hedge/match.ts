@@ -3,7 +3,7 @@ import type { Exposure } from "./exposure";
 
 export type MarketSource = (query: { status: "active"; category?: string; search?: string; limit?: number }) => Promise<Market[]>;
 
-const soonest = (a: Market, b: Market) => a.expiresAt.localeCompare(b.expiresAt);
+export const soonest = (a: Market, b: Market) => a.expiresAt.localeCompare(b.expiresAt);
 
 const easternDay = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" });
 
@@ -19,14 +19,16 @@ export const easternDate = (at: Date) => easternDay.format(at);
 const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
 /** Finds the listed market that settles on the thing the user is exposed to, or null if Gemini has none. */
-export async function findMarket(exposure: Exposure, list: MarketSource): Promise<Market | null> {
+export async function findMarket(exposure: Exposure, list: MarketSource, now = new Date()): Promise<Market | null> {
   const { trigger, on } = exposure;
 
   if (trigger.family === "temperature") {
     const markets = (await list({ status: "active", category: "Weather" }))
       .filter((m) => m.subject.family === "temperature" && (same(m.subject.city, trigger.city) || same(m.subject.cityCode, trigger.city)))
       .sort(soonest);
-    return markets.find((m) => marketDay(m) === on) ?? markets[0] ?? null;
+    // With no day named, cover the next full day: by the time anyone asks, today's high is mostly decided.
+    const today = easternDate(now);
+    return markets.find((m) => marketDay(m) === on) ?? markets.find((m) => marketDay(m) > today) ?? markets[0] ?? null;
   }
 
   if (trigger.family === "price") {

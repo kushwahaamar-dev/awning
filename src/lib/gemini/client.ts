@@ -24,7 +24,8 @@ async function get(path: string, query: Record<string, string | number | undefin
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const res = await fetch(url, { headers: { accept: "application/json" }, cache: "no-store" });
+      // Gemini now and then sits on a request for half a minute; giving up and asking again is quicker.
+      const res = await fetch(url, { headers: { accept: "application/json" }, cache: "no-store", signal: AbortSignal.timeout(8_000) });
       if (res.status === 429 || res.status >= 500) throw new Error(`Gemini responded ${res.status}`);
       if (!res.ok) throw new GeminiError(res.status, await res.text());
       return await res.json();
@@ -46,7 +47,24 @@ export class GeminiError extends Error {
   }
 }
 
-export async function listMarkets(query: Query): Promise<Market[]> {
+// Every quote reads a whole category. These markets move slowly, so a listing is reused for a few
+// seconds: long enough that one visitor's quote, slider and purchase share it, short enough to stay current.
+const FRESH_MS = 15_000;
+const listings = new Map<string, { at: number; markets: Promise<Market[]> }>();
+
+/** The markets Gemini lists for a query. The result is shared between callers, so it must not be changed in place. */
+export function listMarkets(query: Query): Promise<Market[]> {
+  const key = JSON.stringify(query);
+  const recent = listings.get(key);
+  if (recent && Date.now() - recent.at < FRESH_MS) return recent.markets;
+
+  const markets = fetchMarkets(query);
+  listings.set(key, { at: Date.now(), markets });
+  markets.catch(() => listings.delete(key));
+  return markets;
+}
+
+async function fetchMarkets(query: Query): Promise<Market[]> {
   const markets: Market[] = [];
   const limit = query.limit ?? Infinity;
   let offset = query.offset ?? 0;

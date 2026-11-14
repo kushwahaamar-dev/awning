@@ -55,8 +55,10 @@ npm run chain                  # local chain with both contracts and a funded po
 npm run dev                    # in a second terminal
 ```
 
-Open http://localhost:3000 and type a risk into the box, or press **Open the app**. To buy cover,
-go to **Your agent**, press **Get test dollars**, then **Set allowance**.
+Open http://localhost:3000 and type a risk into the box, or press **Open the app** and pick one of
+the examples, which are read from Gemini's prices that minute. The first time you press **Buy cover**
+it also sets up your agent: test dollars in a vault, and spending limits you can change under
+**Your agent**.
 
 `ANTHROPIC_API_KEY` is the only key you need. Everything else in `.env.example` is optional: with no
 Gemini trading keys the pool's own hedge fills on paper against Gemini's live prices. The cover

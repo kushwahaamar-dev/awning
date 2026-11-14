@@ -3,10 +3,12 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { chainLabel, explorerAddress, mandateAddress, poolAddress } from "@/lib/chain/config";
 import { shortAddress } from "@/lib/format";
+import { usesStreams } from "@/lib/ledger/source";
+import { tradesOnGemini } from "@/lib/venue";
 import { Ascii, type Scene } from "./Ascii";
+import { HeroQuote } from "./HeroQuote";
 import { LiveFigures } from "./LiveFigures";
 import { External } from "./icons";
-import { Mark } from "./Logo";
 
 const STEPS: { scene: Scene; label: string; title: string; body: string }[] = [
   {
@@ -15,7 +17,12 @@ const STEPS: { scene: Scene; label: string; title: string; body: string }[] = [
     title: "Say it, or let us find it",
     body: "Type the thing that costs you money, or upload your sales and Awning works it out.",
   },
-  { scene: "prices", label: "A price chart, candle by candle", title: "See the price", body: "Awning finds the Gemini market that pays when it happens." },
+  {
+    scene: "prices",
+    label: "A price chart, candle by candle",
+    title: "See the price",
+    body: "Awning finds the Gemini market that pays when it happens. A one-in-ten day costs about a tenth of what it pays.",
+  },
   {
     scene: "lighthouse",
     label: "A lighthouse on a cliff at night",
@@ -33,15 +40,20 @@ const ATTACK = [
   { tried: "Take what's left of today's data allowance", verdict: "Went through", tone: "" },
 ];
 
-// One cover, in the order it happens, and what does each step.
+// One cover, in the order it happens, and what does each step. Two steps depend on keys this
+// deployment may not have; the page says what is really running, not what could be.
 const PATH = [
   { title: "Read", body: "Your sentence becomes a structured risk.", made: ["Claude"] },
   { title: "Match", body: "Code picks the market and sizes the position.", made: ["Gemini prediction markets"] },
   { title: "Check", body: "The agent pays 2¢ for a 31-run forecast to test the price.", made: ["x402"] },
   { title: "Lock", body: "The pool sets aside the full payout.", made: ["AwningPool", "ERC-4626"] },
   { title: "Pay", body: "The premium moves only inside your limits. Above your line, you sign.", made: ["AwningMandate", "EIP-712"] },
-  { title: "Hedge", body: "The pool takes the same position on Gemini.", made: ["Gemini trading API"] },
-  { title: "Watch", body: "Every contract event streams into the app.", made: ["QuickNode Streams"] },
+  tradesOnGemini
+    ? { title: "Hedge", body: "The pool takes the same position on Gemini.", made: ["Gemini trading API"] }
+    : { title: "Hedge", body: "The pool sizes the same position on Gemini. It is filled on paper until trading keys are set.", made: ["Gemini prices"] },
+  usesStreams
+    ? { title: "Watch", body: "Every contract event streams into the app.", made: ["QuickNode Streams"] }
+    : { title: "Watch", body: "The app reads every contract event from the chain.", made: ["Contract logs"] },
   { title: "Settle", body: "Gemini resolves the market and the pool pays your vault.", made: ["Arc", "Circle CCTP"] },
 ];
 
@@ -53,7 +65,7 @@ const FIXED = [
 
 const TRUSTED = [
   "One key reports Gemini's result. If it goes silent, you're paid in full after three days.",
-  "The pool's hedge on Gemini is simulated until trading keys are added.",
+  ...(tradesOnGemini ? [] : ["The pool's hedge on Gemini is filled on paper until trading keys are set."]),
   "The agent's key and the pool's keys share a server.",
 ];
 
@@ -77,38 +89,6 @@ function Figure({ value, tone = "", children }: { value: string; tone?: string; 
       <p className={`figure text-[clamp(3.5rem,7vw,6.5rem)] leading-none ${tone}`}>{value}</p>
       <p className="mt-4 max-w-sm text-muted">{children}</p>
     </>
-  );
-}
-
-/** A quote the app really gave on Arc testnet, shown so the product is on the page before anyone clicks. */
-function ExampleQuote() {
-  const rows = [
-    { label: "The market's odds it happens", value: "7%" },
-    { label: "What this cover costs", value: "$25.60", strong: true },
-    { label: "If it happens, you're up", value: "$274.40" },
-  ];
-  return (
-    <figure className="rise panel p-6 max-[88rem]:hidden" style={{ "--i": 3 } as React.CSSProperties}>
-      <p className="text-soft">&ldquo;If Chicago&rsquo;s high stays under 46 tomorrow, my coffee cart is out about $300.&rdquo;</p>
-      <p className="mt-5 flex items-center justify-between border-t border-line pt-5 text-sm text-muted">
-        <span className="flex items-center gap-2">
-          <Mark className="size-4 text-accent" />
-          Cover
-        </span>
-        <span className="num">Saturday, Nov 14</span>
-      </p>
-      <p className="title mt-4">Pays $300 if Chicago&rsquo;s high is 45°F or below</p>
-      <dl className="rows mt-4 border-y border-line">
-        {rows.map(({ label, value, strong }) => (
-          <div key={label} className={`flex items-baseline justify-between gap-6 py-2.5 ${strong ? "text-fg" : "text-muted"}`}>
-            <dt>{label}</dt>
-            <dd className={`num ${strong ? "text-xl text-accent" : "text-soft"}`}>{value}</dd>
-          </div>
-        ))}
-      </dl>
-      <p className="status status-accent mt-4">The $300 is locked in the pool before you pay</p>
-      <figcaption className="mt-4 text-xs text-faint">A real quote on Arc testnet, 13 November 2026.</figcaption>
-    </figure>
   );
 }
 
@@ -143,7 +123,8 @@ export function Landing() {
               <span className="block lg:whitespace-nowrap">Get paid when it does.</span>
             </h1>
             <p className="rise mt-7 max-w-xl text-lg text-muted" style={{ "--i": 1 } as React.CSSProperties}>
-              Cover for the bad days insurers won&rsquo;t touch. Priced by Gemini prediction markets, paid out on Arc.
+              Cover for the bad days insurers won&rsquo;t touch. The price comes from prediction markets on the Gemini exchange, and your payout is
+              locked in USDC on Arc before you pay.
             </p>
             <Form action="/app" className="composer rise mt-9 flex max-w-2xl items-center gap-2 p-2 pl-5" style={{ "--i": 2 } as React.CSSProperties}>
               <label htmlFor="ask" className="sr-only">
@@ -153,7 +134,7 @@ export function Landing() {
                 id="ask"
                 name="risk"
                 autoComplete="off"
-                placeholder="If Austin stays under 76° tomorrow, my ice cream truck loses $300"
+                placeholder="If it’s too cold to sit outside tomorrow, my patio loses $300…"
                 className="min-w-0 grow bg-transparent py-2 text-lg placeholder:text-faint focus:outline-none"
               />
               <button type="submit" className="btn btn-primary">
@@ -167,7 +148,7 @@ export function Landing() {
               </Link>
             </p>
           </div>
-          <ExampleQuote />
+          <HeroQuote />
         </div>
         <div aria-hidden className="band rise mt-6" style={{ "--i": 4 } as React.CSSProperties}>
           <Ascii scene="street" label="" />
@@ -180,9 +161,10 @@ export function Landing() {
           <h2 className="heading">How it works</h2>
           <p className="max-w-md text-xl leading-snug text-muted lg:pt-2">Describe the risk, or hand over your sales. The rest is done for you.</p>
         </div>
-        <ol className="mt-16 grid md:grid-cols-3 md:divide-x md:divide-line">
+        <ol className="mt-16 grid gap-x-20 md:grid-cols-3">
           {STEPS.map(({ scene, label, title, body }) => (
-            <li key={title} className="py-6 md:px-10 md:first:pl-0 md:last:pr-0">
+            // Equal columns, so the three titles sit on one line; the rule between them is drawn in the gap.
+            <li key={title} className="relative py-6 md:not-first:before:absolute md:not-first:before:inset-y-0 md:not-first:before:-left-10 md:not-first:before:w-px md:not-first:before:bg-line">
               <div className="flex aspect-[1.75] items-center overflow-hidden">
                 <Ascii scene={scene} label={label} className="fade-soft w-full text-soft" />
               </div>
@@ -282,12 +264,12 @@ export function Landing() {
         </div>
       </Split>
 
-      <section className="mt-32 grid justify-items-center border-t border-line pt-24 text-center">
+      <section className="mt-32 border-t border-line pt-24 text-center">
         <h2 className="display">Say what could go wrong.</h2>
         <Link href="/app" className="btn btn-lg btn-primary mt-9">
           Open the app
         </Link>
-        <div aria-hidden className="fade-out -mb-[3vw] mt-2 w-screen max-w-[100rem]">
+        <div aria-hidden className="band band-middle -mb-24 mt-4">
           <Ascii scene="sunrise" label="" />
         </div>
       </section>

@@ -24,8 +24,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${fonts} h-full antialiased`}>
       <body className="relative flex min-h-full flex-col">
+        <a href="#main" className="btn btn-primary sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-30">
+          Skip to content
+        </a>
         <Storefront />
-        <main className="wrap grow pb-32">
+        <main id="main" className="wrap grow pb-32">
           <AccountProvider>{children}</AccountProvider>
         </main>
         <Footer />

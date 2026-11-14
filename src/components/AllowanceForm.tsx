@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { isLocalChain } from "@/lib/chain/config";
 import { setAllowance, walletBalance } from "@/lib/chain/device";
 import { usd } from "@/lib/format";
-import { post, useAccount } from "./account";
+import { post, useAccount, type Account } from "./account";
 
 const FIELDS = [
   { key: "deposit", label: "Put into your vault", hint: "Premiums leave from here. Payouts land here." },
@@ -19,12 +18,46 @@ const FIELDS = [
 ] as const;
 
 type Key = (typeof FIELDS)[number]["key"];
-const DEFAULTS: Record<Key, number> = { deposit: 2000, perCoverCap: 500, monthlyCap: 1500, approvalThreshold: 100, dailyDataCap: 2 };
+type Limits = Record<Key, number>;
+
+const USUAL: Limits = { deposit: 2000, perCoverCap: 500, monthlyCap: 1500, approvalThreshold: 100, dailyDataCap: 2 };
+// What stays in the wallet for network fees, and the least a day of forecasts costs.
+const FEE_RESERVE = 0.25;
+const TWO_FORECASTS = 0.04;
+const toCents = (n: number) => Math.round(n * 100) / 100;
+
+/**
+ * The usual limits, shrunk in proportion when the wallet holds less than the usual deposit.
+ * @param firstPremium a purchase the limits must let through, so setting up to buy it can't end in a refusal
+ */
+export function fittedLimits(wallet: number, firstPremium = 0): Limits {
+  const scale = Math.min(1, Math.max(0, wallet - FEE_RESERVE) / USUAL.deposit);
+  const deposit = toCents(USUAL.deposit * scale);
+  const room = Math.min(deposit, toCents(firstPremium * 1.25));
+  return {
+    deposit,
+    perCoverCap: Math.max(room, toCents(USUAL.perCoverCap * scale)),
+    monthlyCap: Math.max(room, toCents(USUAL.monthlyCap * scale)),
+    approvalThreshold: Math.max(room, toCents(USUAL.approvalThreshold * scale)),
+    dailyDataCap: Math.min(deposit, Math.max(TWO_FORECASTS, toCents(USUAL.dailyDataCap * scale))),
+  };
+}
+
+/** Everything a first purchase needs, in one go: test dollars if the wallet is empty, then a vault and limits to fit. */
+export async function fundAndSetUp(owner: string, setup: Account["setup"], firstPremium: number, onStep: (label: string) => void) {
+  let wallet = await walletBalance();
+  if (wallet <= FEE_RESERVE) {
+    onStep("Getting test dollars…");
+    await post("/api/faucet", { owner });
+    wallet = await walletBalance();
+  }
+  await setAllowance({ agent: setup.agent, venue: setup.venue, ...fittedLimits(wallet, firstPremium) }, onStep);
+}
 
 /** Funds the vault and sets the limits the mandate will hold the agent to. */
 export function AllowanceForm({ onDone }: { onDone?: () => void }) {
   const { owner, account, refresh } = useAccount();
-  const [values, setValues] = useState(DEFAULTS);
+  const [edited, setEdited] = useState<Partial<Limits>>({});
   const [wallet, setWallet] = useState<number | null>(null);
   const [step, setStep] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +68,8 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
 
   if (!owner || !account) return null;
   const { setup } = account;
+  // Until the owner types a figure, each one follows what the wallet can actually fund.
+  const values = { ...(wallet !== null && wallet > FEE_RESERVE ? fittedLimits(wallet) : USUAL), ...edited };
   const short = wallet !== null && wallet < values.deposit;
 
   async function run(work: () => Promise<void>) {
@@ -51,8 +86,8 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
 
   const getTestDollars = () =>
     run(async () => {
-      setStep("Getting test dollars");
-      await post("/api/dev/fund", { owner });
+      setStep("Getting test dollars…");
+      await post("/api/faucet", { owner });
     });
 
   const save = () =>
@@ -68,21 +103,24 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
         save();
       }}
     >
-      <div className="rows border-y border-line">
+      <div className="rows border-b border-line">
         {FIELDS.map(({ key, label, hint }) => (
-          <div key={key} className="py-3.5">
+          <div key={key} className="py-3.5 first:pt-0">
             <label htmlFor={key} className="flex items-baseline justify-between gap-4">
               <span>{label}</span>
               <span className="flex items-baseline gap-1">
                 <span className="num text-muted">$</span>
                 <input
                   id={key}
+                  name={key}
                   type="number"
+                  inputMode="decimal"
+                  autoComplete="off"
                   min={0}
                   step="any"
                   required
                   value={values[key]}
-                  onChange={(e) => setValues({ ...values, [key]: Number(e.target.value) })}
+                  onChange={(e) => setEdited({ ...edited, [key]: Number(e.target.value) })}
                   className="field num w-24 text-right text-lg"
                 />
               </span>
@@ -95,22 +133,20 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
       {short && (
         <p className="note mt-6 text-sm">
           This device&rsquo;s wallet holds {usd(wallet)}.{" "}
-          {isLocalChain ? (
-            <button type="button" onClick={getTestDollars} disabled={step !== null} className="link text-fg">
-              Get test dollars
-            </button>
-          ) : (
-            <>
-              Send {setup.chainName} USDC to <span className="num break-all text-fg">{owner}</span> from faucet.circle.com, then come back.
-            </>
-          )}
+          <button type="button" onClick={getTestDollars} disabled={step !== null} className="link text-fg">
+            Get test dollars
+          </button>
         </p>
       )}
 
       <button type="submit" disabled={step !== null || short} className="btn btn-lg btn-primary mt-6">
         {step ?? "Set allowance"}
       </button>
-      {error && <p className="note note-bad mt-4 text-sm">{error}</p>}
+      {error && (
+        <p role="alert" className="note note-bad mt-4 text-sm break-words">
+          {error}
+        </p>
+      )}
     </form>
   );
 }

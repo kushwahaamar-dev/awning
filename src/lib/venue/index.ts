@@ -44,7 +44,10 @@ export const paperVenue: Venue = {
   },
 };
 
+/** Whether the pool's hedges are sent to Gemini or only filled on paper. */
+export const tradesOnGemini = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_SECRET);
+
 export async function getVenue(): Promise<Venue> {
-  if (!process.env.GEMINI_API_KEY || !process.env.GEMINI_API_SECRET) return paperVenue;
+  if (!tradesOnGemini) return paperVenue;
   return (await import("./gemini")).geminiVenue;
 }

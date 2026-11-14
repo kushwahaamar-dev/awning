@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useEffectEvent, useRef, useState, type CSSProperties } from "react";
 import useSWRImmutable from "swr/immutable";
+import type { Example } from "@/lib/hedge/examples";
 import type { Exposure } from "@/lib/hedge/exposure";
 import type { Interpretation, Turn } from "@/lib/hedge/interpret";
 import type { CoverPlan } from "@/lib/hedge/plan";
@@ -11,17 +12,23 @@ import { offerPrice } from "@/lib/hedge/quote";
 import { hasAllowance, post, useAccount } from "./account";
 import { Ascii, type Scene } from "./Ascii";
 import { Ask } from "./Ask";
+import { Bought, type Purchase } from "./Bought";
 import { Fit } from "./Fit";
 import { Receipt } from "./Receipt";
 import { useVoice } from "./voice";
 
 type Unlisted = { wanted: string | null };
 type Planned = { plan: CoverPlan | null };
+/** A risk that arrives already worked out, and where it came from. */
+type Linked = { exposure: Exposure; from: "sales" | "example" };
+
+const CAME_FROM = { sales: "Found in your sales", example: "An example, at Gemini’s price right now" } as const;
+const order = (i: number) => ({ "--i": i }) as CSSProperties;
 
 /** The quote as one sentence, for reading aloud. */
 function spokenQuote({ quote, coverage, basis }: CoverPlan) {
   const offer = offerPrice(quote);
-  const price = offer ? `costs ${cents(offer.pricing.total)}` : "has no price right now, because nobody is quoting that market";
+  const price = offer ? `costs ${cents(offer.pricing.total)}` : "has no price right now, because nobody is selling that market";
   const caveat = basis.level === "loose" ? " It only loosely tracks your risk, so read the notes before you buy." : "";
   return `Cover that pays ${usd(quote.payout)} if ${coverage.pays} ${price}.${caveat}`;
 }
@@ -45,18 +52,23 @@ function readJson<T>(text: string | null): T | null {
 }
 
 export function Desk() {
+  const params = useSearchParams();
+  const router = useRouter();
   const [turns, setTurns] = useState<Turn[]>([]);
   const [saying, setSaying] = useState(false);
-  const [pricingSaid, setPricingSaid] = useState(false);
+  // What the sentence was read as. It arrives before the price, so the wait can show it.
+  const [heard, setHeard] = useState<{ summary: string | null } | null>(null);
   const [sayError, setSayError] = useState<string | null>(null);
   const [ownPlan, setOwnPlan] = useState<CoverPlan | null>(null);
   const [nothingListed, setNothingListed] = useState<Unlisted | null>(null);
   const [coverRatio, setCoverRatio] = useState(1);
+  const [repricing, setRepricing] = useState(false);
+  const [bought, setBought] = useState<Purchase | null>(null);
   const latestRequest = useRef(0);
   const { owner, account, error: accountError } = useAccount();
   // Only an owner who has set an allowance has a data budget for the agent to spend on a forecast.
   const payer = account && hasAllowance(account) ? owner : undefined;
-  const voice = useVoice((heard) => say(heard));
+  const voice = useVoice((spoken) => say(spoken));
 
   async function say(text: string) {
     const next: Turn[] = [...turns, { role: "user", text }];
@@ -71,7 +83,7 @@ export function Desk() {
         voice.say(reading.question);
         return;
       }
-      setPricingSaid(true);
+      setHeard({ summary: reading.exposure?.summary ?? null });
       const plan =
         reading.status === "ready" && reading.exposure
           ? (await post<Planned>("/api/plan", { exposure: reading.exposure, coverRatio, owner: payer })).plan
@@ -81,25 +93,26 @@ export function Desk() {
         voice.say(spokenQuote(plan));
       } else {
         setNothingListed({ wanted: reading.wanted });
-        voice.say("Gemini doesn't list a market for that yet.");
+        voice.say("Gemini doesn’t list a market for that yet.");
       }
     } catch (e) {
       setSayError(e instanceof Error ? e.message : String(e));
     } finally {
       setSaying(false);
-      setPricingSaid(false);
+      setHeard(null);
     }
   }
 
-  // A risk can also arrive in the address. One already worked out from the owner's sales is priced
-  // as it stands, with no sentence and so no model; a sentence typed on the landing page is said.
-  const params = useSearchParams();
-  const [linked, setLinked] = useState(() => readJson<Exposure>(params.get("exposure")));
+  // A risk can also arrive ready-made: found in the owner’s sales, or picked from the examples. It is
+  // priced as it stands, with no sentence and so no model. A sentence typed on the landing page is said.
+  const [linked, setLinked] = useState<Linked | null>(() => {
+    const exposure = readJson<Exposure>(params.get("exposure"));
+    return exposure && { exposure, from: params.get("from") === "example" ? "example" : "sales" };
+  });
   // It waits for the account, so an owner with an allowance gets the forecast check like anyone else.
-  const linkedKey = linked && (account || accountError) ? (["/api/plan", linked, payer] as const) : null;
+  const linkedKey = linked && (account || accountError) ? (["/api/plan", linked.exposure, payer] as const) : null;
   const linkedQuote = useSWRImmutable(linkedKey, ([path, exposure, owner]) => post<Planned>(path, { exposure, coverRatio: 1, owner }));
 
-  const router = useRouter();
   const arrived = useRef(false);
   const arrive = useEffectEvent(() => {
     if (arrived.current) return;
@@ -114,8 +127,6 @@ export function Desk() {
 
   const pricingLinked = linked !== null && !linkedQuote.data && !linkedQuote.error;
   const plan = ownPlan ?? linkedQuote.data?.plan ?? null;
-  const busy = saying || pricingLinked;
-  const pricing = pricingSaid || pricingLinked;
   const error = sayError ?? (linkedQuote.error instanceof Error ? linkedQuote.error.message : null);
   const unlisted = nothingListed ?? (linkedQuote.data && !linkedQuote.data.plan ? { wanted: null } : null);
 
@@ -123,15 +134,18 @@ export function Desk() {
     setCoverRatio(ratio);
     if (!plan) return;
     const request = ++latestRequest.current;
+    setRepricing(true);
     try {
       const fresh = await post<Planned>("/api/plan", { exposure: plan.exposure, coverRatio: ratio, owner: payer });
       if (fresh.plan && request === latestRequest.current) setOwnPlan(fresh.plan);
     } catch (e) {
       setSayError(e instanceof Error ? e.message : String(e));
+    } finally {
+      if (request === latestRequest.current) setRepricing(false);
     }
   }
 
-  function startOver() {
+  function clear() {
     setTurns([]);
     setOwnPlan(null);
     setLinked(null);
@@ -140,26 +154,61 @@ export function Desk() {
     setCoverRatio(1);
   }
 
+  function startOver() {
+    clear();
+    setBought(null);
+  }
+
+  function finish(receipt: Omit<Purchase, "plan">) {
+    if (!plan) return;
+    setBought({ plan, ...receipt });
+    clear();
+    window.scrollTo({ top: 0 });
+    voice.say(`You’re covered. ${usd(receipt.payout)} is locked for you.`);
+  }
+
+  if (bought) return <Bought purchase={bought} onAgain={startOver} />;
+
   if (plan) {
     return (
-      <div className="grid items-start gap-x-16 gap-y-12 pt-14 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,29rem)]">
-        <div className="rise lg:order-last" style={{ "--i": 1 } as CSSProperties}>
-          <Receipt plan={plan} coverRatio={coverRatio} onCoverChange={changeCover} onBought={startOver} />
-        </div>
+      <div className="grid items-start gap-x-16 gap-y-10 pt-14 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,29rem)] lg:grid-rows-[auto_1fr]">
         <div className="rise">
           <button type="button" onClick={startOver} className="link text-sm">
             Describe a different risk
           </button>
-          <div className="fade-edges mt-4 flex h-40 items-center overflow-hidden">
+          <div className="fade-edges mt-4 flex h-40 items-center overflow-hidden max-sm:h-24">
             <Ascii {...sceneFor(plan)} className="w-full" />
           </div>
-          <p className="mt-4 text-sm text-muted">{linked ? "Found in your sales" : "You said"}</p>
+          <p className="mt-4 text-sm text-muted">{linked ? CAME_FROM[linked.from] : "You said"}</p>
           <h1 className="mt-2 max-w-3xl text-[1.75rem] leading-[1.2] font-[510] tracking-[-0.02em] text-balance">{plan.exposure.summary}</h1>
+        </div>
+        {/* In the source it sits between the risk and its small print, which is the order a phone shows them in. */}
+        <div className="rise lg:col-start-2 lg:row-span-2 lg:row-start-1" style={order(1)}>
+          <Receipt plan={plan} coverRatio={coverRatio} repricing={repricing} onCoverChange={changeCover} onBought={finish} />
+        </div>
+        <div className="rise lg:col-start-1" style={order(2)}>
           <Fit plan={plan} />
         </div>
       </div>
     );
   }
 
-  return <Ask turns={turns} busy={busy} pricing={pricing} error={error ?? voice.error} unlisted={unlisted} onSay={say} voice={voice} />;
+  return (
+    <Ask
+      turns={turns}
+      busy={saying || pricingLinked}
+      pricing={heard !== null || pricingLinked}
+      understood={heard?.summary ?? (pricingLinked ? linked.exposure.summary : null)}
+      checking={payer !== undefined}
+      error={error ?? voice.error}
+      unlisted={unlisted}
+      onSay={say}
+      onPick={(example: Example) => {
+        setNothingListed(null);
+        setSayError(null);
+        setLinked({ exposure: example.exposure, from: "example" });
+      }}
+      voice={voice}
+    />
+  );
 }

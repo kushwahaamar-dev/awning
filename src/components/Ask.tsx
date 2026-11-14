@@ -2,39 +2,35 @@
 
 import Link from "next/link";
 import { useRef, useState, type CSSProperties } from "react";
+import useSWR from "swr";
+import { cents } from "@/lib/format";
+import type { Example } from "@/lib/hedge/examples";
 import type { Turn } from "@/lib/hedge/interpret";
 import { Ascii } from "./Ascii";
 import { Chevron, Mic } from "./icons";
 import type { useVoice } from "./voice";
 
-const EXAMPLES = [
-  {
-    kind: "Weather",
-    text: "Any day Austin's high stays under 76, my ice cream truck is out about $300.",
-  },
-  {
-    kind: "Fuel",
-    text: "If oil is above $90 a barrel at the end of next week, my delivery vans cost me $1,500 more.",
-  },
-  {
-    kind: "Game day",
-    text: "If the Longhorns lose on Saturday, my bar makes about $4,000 less.",
-  },
-];
+export const fetchExamples = async (url: string): Promise<Example[]> => (await (await fetch(url)).json()).examples ?? [];
 
 type Props = {
   turns: Turn[];
   busy: boolean;
+  /** The sentence has been read and the market is being priced. */
   pricing: boolean;
+  /** The risk as it was understood, once that is known. */
+  understood: string | null;
+  /** The agent has a data budget, so the wait includes buying a forecast. */
+  checking: boolean;
   error: string | null;
   unlisted: { wanted: string | null } | null;
   onSay: (text: string) => void;
+  onPick: (example: Example) => void;
   voice: ReturnType<typeof useVoice>;
 };
 
 const MIC_LABEL = {
   idle: "Say it",
-  recording: "Stop, I'm done",
+  recording: "Stop, I’m done",
   transcribing: "Listening back…",
 } as const;
 
@@ -43,20 +39,27 @@ const order = (i: number) => ({ "--i": i }) as CSSProperties;
 /** One step of the wait for a quote: done, happening now, or still to come. */
 function Phase({ state, children }: { state: "done" | "now" | "next"; children: string }) {
   const look = { done: "status-good text-muted", now: "status-accent status-live text-fg", next: "text-faint" }[state];
-  return <li className={`status text-base ${look}`}>{children}</li>;
+  return <li className={`status text-base whitespace-normal ${look}`}>{children}</li>;
 }
 
-export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Props) {
+export function Ask({ turns, busy, pricing, understood, checking, error, unlisted, onSay, onPick, voice }: Props) {
   const [draft, setDraft] = useState("");
+  const [nudged, setNudged] = useState(false);
   const field = useRef<HTMLTextAreaElement>(null);
+  // Risks Gemini is pricing sensibly this minute, so the first click always ends in a real quote.
+  const { data: examples = [] } = useSWR("/api/examples", fetchExamples, { revalidateOnFocus: false });
   const question = turns.at(-1)?.role === "assistant" ? turns.at(-1)!.text : null;
   const said = turns.filter((t) => t.role === "user").map((t) => t.text);
   const fresh = turns.length === 0;
 
   function submit(text: string) {
-    // Pressing the button with nothing written puts the cursor where the writing goes.
-    if (!text.trim()) field.current?.focus();
-    if (!text.trim() || busy) return;
+    if (busy) return;
+    if (!text.trim()) {
+      // Pressing the button with nothing written says so, and puts the cursor where the writing goes.
+      setNudged(true);
+      field.current?.focus();
+      return;
+    }
     onSay(text.trim());
     setDraft("");
   }
@@ -92,21 +95,28 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
             </label>
             <textarea
               id="risk"
+              name="risk"
               ref={field}
               rows={3}
+              autoComplete="off"
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                setNudged(false);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   submit(draft);
                 }
               }}
-              placeholder={question ? "Your answer" : "If it's too cold to sit outside, my patio…"}
+              placeholder={question ? "Your answer…" : "If it’s too cold to sit outside, my patio…"}
               className="block w-full resize-none bg-transparent px-5 pt-4 pb-1 text-lg leading-relaxed placeholder:text-faint focus:outline-none"
             />
             <div className="flex flex-wrap items-center justify-between gap-3 p-3 pl-5">
-              <span className="text-xs text-faint">Press Enter to send</span>
+              <span aria-live="polite" className={`text-xs ${nudged ? "text-accent" : "text-faint"}`}>
+                {nudged ? "Write what could cost you money first" : "Press Enter to send"}
+              </span>
               <span className="flex gap-2">
                 {voice.enabled && (
                   <button
@@ -130,19 +140,26 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
         {busy && (
           <div className="mt-8" aria-live="polite">
             <ol className="grid gap-2.5">
-              {said.length > 0 && <Phase state={pricing ? "done" : "now"}>Reading your sentence</Phase>}
-              <Phase state={pricing ? "now" : "next"}>Finding the market on Gemini and pricing it</Phase>
+              {said.length > 0 && <Phase state={pricing ? "done" : "now"}>{pricing ? "Read your sentence" : "Reading your sentence…"}</Phase>}
+              {understood && <li className="ml-[0.1875rem] border-l border-edge py-0.5 pl-[1.0625rem] text-soft">{understood}</li>}
+              <Phase state={pricing ? "now" : "next"}>
+                {checking ? "Finding the market on Gemini, and buying a forecast to check its price…" : "Finding the market on Gemini and pricing it…"}
+              </Phase>
             </ol>
-            <p className="mt-5 text-sm text-faint">This can take up to a minute.</p>
+            {said.length > 0 && <p className="mt-5 text-sm text-faint">This can take up to a minute.</p>}
           </div>
         )}
-        {error && <p className="note note-bad mt-5">{error}</p>}
+        {error && (
+          <p role="alert" className="note note-bad mt-5">
+            {error}
+          </p>
+        )}
 
         {unlisted && (
           <div className="panel mt-5 p-5">
             <p className="font-[510]">Gemini doesn&rsquo;t list a market for that yet.</p>
             <p className="mt-1 text-muted">
-              {unlisted.wanted && `We've noted "${unlisted.wanted}" as one people want. `}
+              {unlisted.wanted && `We’ve noted “${unlisted.wanted}” as one people want. `}
               Today there is cover for daily highs in 49 US cities, oil, gas and metal prices, crypto prices, and game results.
             </p>
           </div>
@@ -150,23 +167,27 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
 
         {fresh && !busy && (
           <div className="rise mt-10" style={order(3)}>
-            <p className="text-sm text-muted">Or try one of these</p>
-            <ul className="rows mt-3 border-y border-line">
-              {EXAMPLES.map(({ kind, text }) => (
-                <li key={kind}>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => submit(text)}
-                    className="group grid w-full grid-cols-[5.5rem_1fr_auto] items-baseline gap-x-3 py-3.5 text-left text-soft transition-colors hover:text-fg disabled:opacity-50 max-sm:grid-cols-[1fr_auto]"
-                  >
-                    <span className="text-sm text-muted max-sm:col-span-2">{kind}</span>
-                    <span>{text}</span>
-                    <Chevron className="size-4 self-center text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-fg" />
-                  </button>
-                </li>
-              ))}
-            </ul>
+            {examples.length > 0 && (
+              <>
+                <p className="text-sm text-muted">Or start from one Gemini is pricing right now</p>
+                <ul className="rows mt-3 border-y border-line">
+                  {examples.map((example) => (
+                    <li key={example.text}>
+                      <button
+                        type="button"
+                        onClick={() => onPick(example)}
+                        className="group grid w-full grid-cols-[5.5rem_1fr_auto_auto] items-baseline gap-x-3 py-3.5 text-left text-soft transition-colors hover:text-fg max-sm:grid-cols-[1fr_auto_auto]"
+                      >
+                        <span className="text-sm text-muted max-sm:col-span-3">{example.kind}</span>
+                        <span>{example.text}</span>
+                        <span className="num text-sm text-muted">{cents(example.cost)}</span>
+                        <Chevron className="size-4 self-center text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-fg" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
             <p className="mt-5 text-sm text-muted">
               Not sure what costs you?{" "}
               <Link href="/find" className="link">

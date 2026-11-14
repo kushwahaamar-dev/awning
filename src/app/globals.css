@@ -10,7 +10,7 @@
   --color-fg: #f7f8f8;
   --color-soft: #d0d6e0;
   --color-muted: #8a8f98;
-  --color-faint: #777b84;
+  --color-faint: #80848d;
   /* The one colour: the light under an awning. Used for what matters on a screen, never for decoration. */
   --color-accent: #f2b54a;
   --color-good: #4cb782;
@@ -308,6 +308,17 @@ body {
     pointer-events: none;
     mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 60%, transparent);
   }
+  /* The closing scene: a window of fixed height onto the middle of the picture, where the sun meets the sea. */
+  .band-middle {
+    aspect-ratio: auto;
+    height: clamp(14rem, 34vw, 26rem);
+    mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+  }
+  .band-middle > * {
+    position: relative;
+    top: 50%;
+    transform: translateY(-52%);
+  }
 
   /* Scenes are drawn in one quiet ink and dissolve into the page instead of sitting in a frame. */
   .ascii {
@@ -317,9 +328,6 @@ body {
     mask-image:
       linear-gradient(to bottom, transparent, #000 22%, #000 55%, transparent), linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
     mask-composite: intersect;
-  }
-  .fade-out {
-    mask-image: radial-gradient(closest-side, #000 40%, transparent);
   }
   .fade-soft {
     mask-image: radial-gradient(ellipse 62% 64% at center, #000 42%, transparent);

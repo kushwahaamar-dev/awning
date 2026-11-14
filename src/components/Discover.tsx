@@ -32,7 +32,7 @@ function Result({ result, sample, onAgain }: { result: Found; sample: boolean; o
       </button>
       {sample && (
         <p className="note mt-6 max-w-2xl text-sm">
-          This is sample data: made-up takings for an ice cream truck, set against Austin&rsquo;s real weather for the past year.
+          This is sample data: made-up takings for an ice cream truck, set against {city}&rsquo;s real weather for the past year.
         </p>
       )}
       <h1 className="heading rise mt-6 max-w-4xl">
@@ -85,8 +85,8 @@ export function Discover() {
     setBusy(sample ? "sample" : "file");
     setError(null);
     try {
-      // The sample is an Austin ice cream truck, so it is always read against Austin's weather.
-      const found = await post<Discovery>("/api/discover", sample ? { city: "Austin" } : { city, csv: file!.text });
+      // The sample truck trades wherever the server finds a fair demonstration that day, whatever is chosen here.
+      const found = await post<Discovery>("/api/discover", sample ? { city } : { city, csv: file!.text });
       setResult({ found, sample });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

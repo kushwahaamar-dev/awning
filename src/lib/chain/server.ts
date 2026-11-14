@@ -205,11 +205,41 @@ export async function readAllowance(owner: Address): Promise<Allowance> {
   };
 }
 
-/** Local chains only: gives a fresh device key gas and test dollars. */
-export async function fundLocally(owner: Address, usd: number) {
-  if (!isLocalChain) throw new Error("The built-in faucet only works on a local chain. On Arc testnet use faucet.circle.com.");
-  const test = createTestClient({ chain, transport, mode: "anvil" });
-  await test.setBalance({ address: owner, value: parseEther("10") });
+const LOCAL_GRANT_USD = 5_000;
+// On a public testnet the grant comes out of the operator's own faucet money, so it is small.
+const TESTNET_GRANT_USD = Number(process.env.FAUCET_USD ?? 2);
+const OPERATOR_RESERVE_USD = 1;
+const GRANTS_PER_HOUR = 30;
+const granted: number[] = [];
 
-  await mined(await signers().venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "mint", args: [owner, toUnits(usd)] }));
+/**
+ * Gives a new device key something to try the app with, and says how much. A local chain mints
+ * it. On a public testnet the operator sends a little of its own; there USDC also pays the
+ * network fees, so the one transfer is all a visitor needs.
+ */
+export async function fundVisitor(owner: Address): Promise<number> {
+  if (isLocalChain) {
+    const test = createTestClient({ chain, transport, mode: "anvil" });
+    await test.setBalance({ address: owner, value: parseEther("10") });
+    await mined(await signers().venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "mint", args: [owner, toUnits(LOCAL_GRANT_USD)] }));
+    return LOCAL_GRANT_USD;
+  }
+
+  const operator = signers().venue.account.address;
+  const usdc = { address: usdcAddress, abi: usdcAbi, functionName: "balanceOf" } as const;
+  const [held, vault, spare] = await Promise.all([
+    publicClient.readContract({ ...usdc, args: [owner] }),
+    publicClient.readContract({ ...mandate, functionName: "balanceOf", args: [owner] }),
+    publicClient.readContract({ ...usdc, args: [operator] }),
+  ]);
+  if (fromUnits(held + vault) >= TESTNET_GRANT_USD / 2) throw new Error("This device already has its test dollars.");
+
+  const hourAgo = Date.now() - 3_600_000;
+  while (granted.length && granted[0] < hourAgo) granted.shift();
+  if (fromUnits(spare) < TESTNET_GRANT_USD + OPERATOR_RESERVE_USD || granted.length >= GRANTS_PER_HOUR) {
+    throw new Error(`The demo's test dollars have run out for now. Send ${chain.name} USDC to ${owner} from faucet.circle.com, then come back.`);
+  }
+  granted.push(Date.now());
+  await mined(await signers().venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "transfer", args: [owner, toUnits(TESTNET_GRANT_USD)] }));
+  return TESTNET_GRANT_USD;
 }

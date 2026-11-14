@@ -73,11 +73,11 @@ export async function setAllowance(s: AllowanceSettings, onStep: (label: string)
   const base = { account, chain } as const;
 
   if (s.deposit > 0) {
-    onStep("Moving funds into your vault");
+    onStep("Moving funds into your vault…");
     await send({ ...base, address: usdcAddress, abi: usdcAbi, functionName: "approve", args: [mandateAddress, toUnits(s.deposit)] });
     await send({ ...base, ...mandate, functionName: "deposit", args: [toUnits(s.deposit)] });
   }
-  onStep("Setting your agent's limits");
+  onStep("Setting your agent's limits…");
   await send({
     ...base,
     ...mandate,
@@ -91,7 +91,7 @@ export async function setAllowance(s: AllowanceSettings, onStep: (label: string)
       toUnits(s.approvalThreshold),
     ],
   });
-  onStep("Naming where premiums may go");
+  onStep("Naming where premiums may go…");
   await send({ ...base, ...mandate, functionName: "setVenue", args: [s.venue, true] });
 }
 
@@ -108,9 +108,9 @@ export async function cashOut(amount: number, to: { domain: number; address: Add
   const base = { account: deviceAccount(), chain } as const;
   const units = toUnits(amount);
 
-  onStep("Taking it out of your vault");
+  onStep("Taking it out of your vault…");
   await send({ ...base, address: mandateAddress, abi: awningMandateAbi, functionName: "withdraw", args: [units] });
-  onStep("Handing it to Circle");
+  onStep("Handing it to Circle…");
   await send({ ...base, address: usdcAddress, abi: usdcAbi, functionName: "approve", args: [TOKEN_MESSENGER, units] });
   return send({
     ...base,

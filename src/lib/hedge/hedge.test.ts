@@ -5,6 +5,7 @@ import { rawEventSchema } from "../gemini/schema";
 import { assessBasis } from "./basis";
 import type { Exposure } from "./exposure";
 import { buildCoverage } from "./legs";
+import { liveExamples } from "./examples";
 import { findMarket } from "./match";
 import { quoteCover } from "./quote";
 
@@ -173,8 +174,36 @@ describe("findMarket", () => {
     expect(basis.notes).toContain("The nearest listed market is for 2026-11-20, not 2026-12-20.");
   });
 
+  it("prices the next full day when no day is named, because today's high is mostly decided", async () => {
+    const day = austin.subject.family === "temperature" ? austin.subject.day! : "";
+    const dayAfter = new Date(new Date(`${day}T12:00:00Z`).getTime() + 86_400_000).toISOString().slice(0, 10);
+    const tomorrow: Market = { ...austin, ticker: "WXHIGH-AUS-NEXT", subject: { ...austin.subject, day: dayAfter } as Market["subject"], expiresAt: `${dayAfter}T23:00:00.000Z` };
+    const both = async (q: { category?: string }) => [...markets, tomorrow].filter((m) => (q.category ? m.category === q.category : true));
+    const noon = new Date(`${day}T17:00:00Z`);
+    expect((await findMarket(coldDay, both, noon))?.ticker).toBe(tomorrow.ticker);
+    expect((await findMarket({ ...coldDay, on: day }, both, noon))?.ticker).toBe(austin.ticker);
+  });
+
   it("returns null when nothing is listed", async () => {
     const tulsa: Exposure = { ...coldDay, trigger: { family: "temperature", city: "Reykjavik", direction: "below", threshold: 40 } };
     expect(await findMarket(tulsa, list)).toBeNull();
+  });
+});
+
+describe("liveExamples", () => {
+  it("only offers risks that are for a day still to come and cost a small share of what they pay", async () => {
+    const examples = await liveExamples(list, new Date("2026-11-12T17:00:00Z"));
+    expect(examples.length).toBeGreaterThan(0);
+    for (const example of examples) {
+      expect(example.day > "2026-11-12").toBe(true);
+      expect(example.cost / example.payout).toBeGreaterThanOrEqual(0.04);
+      expect(example.cost / example.payout).toBeLessThanOrEqual(0.3);
+      expect(example.text).toContain(String(example.exposure.trigger.family === "game" ? "" : example.exposure.trigger.threshold));
+    }
+    expect(new Set(examples.map((e) => e.text)).size).toBe(examples.length);
+  });
+
+  it("offers nothing rather than something that can't be priced", async () => {
+    expect(await liveExamples(async () => [])).toEqual([]);
   });
 });
