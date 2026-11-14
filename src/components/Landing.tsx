@@ -43,7 +43,7 @@ const ATTACK = [
 // One cover, in the order it happens, and what does each step. Two steps depend on keys this
 // deployment may not have; the page says what is really running, not what could be.
 const PATH = [
-  { title: "Read", body: "Your sentence becomes a structured risk.", made: ["Claude"] },
+  { title: "Read", body: "Your sentence becomes a structured risk.", made: ["Google Gemini"] },
   { title: "Match", body: "Code picks the market and sizes the position.", made: ["Gemini prediction markets"] },
   { title: "Check", body: "The agent pays 2¢ for a 31-run forecast to test the price.", made: ["x402"] },
   { title: "Lock", body: "The pool sets aside the full payout.", made: ["AwningPool", "ERC-4626"] },

@@ -4,7 +4,7 @@ import { getCatalog } from "./catalog";
 import { interpret } from "./interpret";
 import { planCover } from "./plan";
 
-// Hits Gemini and the Claude API. Run with: LIVE=1 npx vitest run src/lib/hedge/live.test.ts
+// Hits the Gemini exchange and Google's Gemini model (needs GOOGLE_AI_API_KEY). Run with: LIVE=1 npx vitest run src/lib/hedge/live.test.ts
 describe.skipIf(!process.env.LIVE)("live: sentence to priced cover", () => {
   const today = new Date().toISOString().slice(0, 10);
 

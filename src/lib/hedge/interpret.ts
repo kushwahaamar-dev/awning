@@ -1,10 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
+import { ask, type Turn } from "../model";
 import type { Catalog } from "./catalog";
 import { exposureSchema } from "./exposure";
 
-const interpretationSchema = z.object({
+export const interpretationSchema = z.object({
   status: z.enum(["ready", "needs_detail", "unlisted"]),
   exposure: exposureSchema.nullable().describe("Set only when status is ready"),
   question: z.string().nullable().describe("When status is needs_detail: the one question that would let you finish"),
@@ -15,7 +14,7 @@ const interpretationSchema = z.object({
 });
 
 export type Interpretation = z.infer<typeof interpretationSchema>;
-export type Turn = { role: "user" | "assistant"; text: string };
+export type { Turn };
 
 const SYSTEM = `You work the intake desk at Awning, a service that lets small business owners and ordinary people offset a real-world risk using Gemini prediction markets. People describe, in their own words, something that could cost them money. Your job is to turn that into a structured exposure that can be matched to a listed market.
 
@@ -49,24 +48,12 @@ function describeCatalog(catalog: Catalog, today: string) {
 }
 
 export async function interpret(turns: Turn[], catalog: Catalog, today: string): Promise<Interpretation> {
-  const client = new Anthropic();
   const [first, ...rest] = turns;
-
-  const response = await client.beta.messages.parse({
-    model: process.env.AWNING_MODEL ?? "claude-opus-5-5",
-    max_tokens: 4000,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
+  // What is listed today travels with the first thing the person said, so every later turn is read against it.
+  return ask({
     system: SYSTEM,
-    output_config: { effort: "low", format: betaZodOutputFormat(interpretationSchema) },
-    messages: [
-      { role: "user", content: `${describeCatalog(catalog, today)}\n\n${first.text}` },
-      ...rest.map((t) => ({ role: t.role, content: t.text })),
-    ],
+    shape: interpretationSchema,
+    maxTokens: 4000,
+    turns: [{ role: "user", text: `${describeCatalog(catalog, today)}\n\n${first.text}` }, ...rest],
   });
-
-  if (response.stop_reason === "refusal" || !response.parsed_output) {
-    throw new Error(`Could not interpret the request (stop reason: ${response.stop_reason})`);
-  }
-  return response.parsed_output;
 }

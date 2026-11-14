@@ -22,7 +22,7 @@ Built for the University Blockchain Conference 2026 hackathon.
 | Agent's limits | [`AwningMandate`](https://testnet.arcscan.app/address/0x708ae0910eFAf32B97D0bA9429C4F2BD44988413) on Arc testnet |
 | Cover pool | [`AwningPool`](https://testnet.arcscan.app/address/0x0dE9149998eE6CAA3577007f31A1803Bc49C3F6F) on Arc testnet |
 | Tests | 126 contract tests with fuzzing and invariants, 49 engine tests |
-| Stack | Next.js 16, React 19, Solidity 0.8.28 (Foundry), viem, Postgres, Claude |
+| Stack | Next.js 16, React 19, Solidity 0.8.28 (Foundry), viem, Postgres, Google's Gemini model |
 
 ## Contents
 
@@ -50,7 +50,7 @@ Requires Node 22 or newer and [Foundry](https://getfoundry.sh).
 
 ```bash
 npm install
-cp .env.example .env.local     # then set ANTHROPIC_API_KEY
+cp .env.example .env.local     # then set GOOGLE_AI_API_KEY
 npm run chain                  # local chain with both contracts and a funded pool
 npm run dev                    # in a second terminal
 ```
@@ -60,7 +60,7 @@ the examples, which are read from Gemini's prices that minute. The first time yo
 it also sets up your agent: test dollars in a vault, and spending limits you can change under
 **Your agent**.
 
-`ANTHROPIC_API_KEY` is the only key you need. Everything else in `.env.example` is optional: with no
+`GOOGLE_AI_API_KEY` is the only key you need, and only for typed sentences and the agent's daily decision; a free one from Google AI Studio is enough. (Two things here are called Gemini and they are unrelated: the markets are on the Gemini exchange, and the model that reads a sentence is Google's.) Everything else in `.env.example` is optional: with no
 Gemini trading keys the pool's own hedge fills on paper against Gemini's live prices. The cover
 itself is real either way, locked onchain and paid on Gemini's resolution.
 
@@ -91,7 +91,7 @@ prompt is a suggestion.
 ## What Awning does
 
 1. **You describe a risk in a sentence**, typed or spoken.
-2. **Claude turns it into a structured exposure**: what has to happen, where, when, and what it costs you.
+2. **Google's Gemini model turns it into a structured exposure**: what has to happen, where, when, and what it costs you.
    If something essential is missing it asks one question. If Gemini lists nothing that tracks the
    risk, it says so and records the gap.
 3. **The engine matches it to live Gemini contracts** and builds the position that pays when your
@@ -207,7 +207,7 @@ free assets. All three are fixed and have tests.
 ```
  browser                         server (Next.js)                         outside
  ───────                         ────────────────                         ───────
- device key (owner) ──signs──▶   /api/interpret ─────────────────────▶   Claude
+ device key (owner) ──signs──▶   /api/interpret ─────────────────────▶   Google's model
    allowance, approvals          /api/plan ──▶ hedge engine ─────────▶   Gemini public market data
                                      │            └─▶ second opinion
                                      │                  │ x402: 402 → sign → settle
@@ -216,7 +216,7 @@ free assets. All three are fixed and have tests.
                                  /api/covers ─┬▶ underwriter key ──▶ AwningPool.offer   (locks the payout)
                                               ├▶ agent key ────────▶ AwningMandate.openHedge ──▶ premium to the pool
                                               └▶ Gemini trading API  (the pool's own hedge; paper without keys)
-                                 /api/standing ▶ agent: forecast → Claude decides buy or skip → same path as above
+                                 /api/standing ▶ agent: forecast → the model decides buy or skip → same path as above
                                  background ───▶ resolver key ─────▶ AwningPool.settle ──▶ payout to the owner's vault
                                  /api/streams ◀── QuickNode Stream ◀── logs of both contracts
                                      │
@@ -243,7 +243,7 @@ free assets. All three are fixed and have tests.
 **When you ask for cover**, the agent runs a fixed sequence. The model is used for one step and
 never chooses which transaction to send.
 
-1. **Interpret** (Claude, structured output): sentence → `Exposure`, or one clarifying question, or "unlisted".
+1. **Interpret** (Google's Gemini model, structured output): sentence → `Exposure`, or one clarifying question, or "unlisted".
 2. **Match** (code): find the market that settles on the exposure's subject and date.
 3. **Construct** (code): choose legs, snapping the user's threshold to the market's steps and reporting the snap.
 4. **Check** (code + paid data): for temperature markets, buy an ensemble forecast over x402 from the
@@ -264,7 +264,7 @@ standing order and for today's and tomorrow's market:
 1. **Look** (code + paid data): price the day's cover, and buy that day's forecast.
 2. **Rule out** (code): skip without asking the model if cover costs what it pays, costs more than
    the owner's cap for one day, or is above the owner's ask-first line.
-3. **Decide** (Claude, structured output): buy or skip, given the price, the market's odds, the
+3. **Decide** (Google's Gemini model, structured output): buy or skip, given the price, the market's odds, the
    forecast's odds, the cap and the owner's own instruction. It must give its reason in plain words.
 4. **Act** (code): on "buy", steps 7 to 9 above. The mandate can still refuse, and that is recorded too.
 5. **Record**: the decision, the reason, and the numbers the agent saw, shown on the agent page.
@@ -392,7 +392,7 @@ The app runs on any Node host. On a long-running server it does its background w
 covers, the agent's daily decisions) on a one-minute timer. On a serverless host such as Vercel
 there is no timer, so the same pass runs after a page is served, at most once a minute, and
 `vercel.json` adds a daily cron as a floor. A hosted deployment needs `DATABASE_URL` (Postgres),
-the chain block of `.env.example`, `ANTHROPIC_API_KEY`, and a `CRON_SECRET`.
+the chain block of `.env.example`, `GOOGLE_AI_API_KEY`, and a `CRON_SECRET`.
 
 ## Tests
 
@@ -401,7 +401,7 @@ npm test                       # engine, settlement, forecast and sales-analysis
 npm run typecheck && npm run lint
 cd contracts && forge test     # 126 tests including fuzz and invariants on both contracts
 FOUNDRY_PROFILE=ci forge test  # the same tests at four times the fuzz depth; takes several minutes
-LIVE=1 npx vitest run src/lib/hedge/live.test.ts   # sentence → priced cover against live Gemini and Claude
+LIVE=1 npx vitest run src/lib/hedge/live.test.ts   # sentence → priced cover against the live exchange and Google's model
 ```
 
 ## What is real and what is not

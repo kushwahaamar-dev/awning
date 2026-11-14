@@ -1,10 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import type { DecisionFacts } from "../db/schema";
 import { cents, percent, usd } from "../format";
+import { ask } from "../model";
 
-const verdictSchema = z.object({
+export const verdictSchema = z.object({
   decision: z.enum(["buy", "skip"]),
   reason: z
     .string()
@@ -51,17 +50,5 @@ function describe({ risk, day, instruction, dailyCap, facts }: Brief) {
 
 /** Has the model decide whether one day's cover is worth buying, and say why in words the owner can read. */
 export async function decide(brief: Brief): Promise<Verdict> {
-  const response = await new Anthropic().beta.messages.parse({
-    model: process.env.AWNING_MODEL ?? "claude-opus-5-5",
-    max_tokens: 2000,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-    system: SYSTEM,
-    output_config: { effort: "low", format: betaZodOutputFormat(verdictSchema) },
-    messages: [{ role: "user", content: describe(brief) }],
-  });
-  if (response.stop_reason === "refusal" || !response.parsed_output) {
-    throw new Error(`The agent could not decide (stop reason: ${response.stop_reason})`);
-  }
-  return response.parsed_output;
+  return ask({ system: SYSTEM, shape: verdictSchema, maxTokens: 2000, turns: [{ role: "user", text: describe(brief) }] });
 }

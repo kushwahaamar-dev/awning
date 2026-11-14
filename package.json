@@ -18,9 +18,9 @@
     "start:arc": "set -a && . ./.env.arc && set +a && next build && next start -p 3001"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^1.8.0",
     "@electric-sql/pglite": "^0.5.16",
     "@elevenlabs/elevenlabs-js": "^2.78.0",
+    "@google/genai": "^3.3.0",
     "@x402/core": "^2.31.0",
     "@x402/evm": "^2.31.0",
     "@x402/fetch": "^2.31.0",
