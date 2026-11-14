@@ -9,7 +9,12 @@ import { External } from "./icons";
 import { Mark } from "./Logo";
 
 const STEPS: { scene: Scene; label: string; title: string; body: string }[] = [
-  { scene: "storm", label: "Storm clouds and lightning over dark hills", title: "Say it", body: "Type or speak the thing that costs you money." },
+  {
+    scene: "storm",
+    label: "Storm clouds and lightning over dark hills",
+    title: "Say it, or let us find it",
+    body: "Type the thing that costs you money, or upload your sales and Awning works it out.",
+  },
   { scene: "prices", label: "A price chart, candle by candle", title: "See the price", body: "Awning finds the Gemini market that pays when it happens." },
   {
     scene: "lighthouse",
@@ -155,6 +160,12 @@ export function Landing() {
                 Find cover
               </button>
             </Form>
+            <p className="rise mt-4 text-sm text-muted" style={{ "--i": 3 } as React.CSSProperties}>
+              Not sure what costs you?{" "}
+              <Link href="/find" className="link">
+                Find it in your sales
+              </Link>
+            </p>
           </div>
           <ExampleQuote />
         </div>
@@ -167,7 +178,7 @@ export function Landing() {
       <section id="how" className="mt-32 scroll-mt-14 border-t border-line pt-12">
         <div className="grid gap-x-20 gap-y-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
           <h2 className="heading">How it works</h2>
-          <p className="max-w-md text-xl leading-snug text-muted lg:pt-2">Describe the risk in a sentence. The rest is done for you.</p>
+          <p className="max-w-md text-xl leading-snug text-muted lg:pt-2">Describe the risk, or hand over your sales. The rest is done for you.</p>
         </div>
         <ol className="mt-16 grid md:grid-cols-3 md:divide-x md:divide-line">
           {STEPS.map(({ scene, label, title, body }) => (

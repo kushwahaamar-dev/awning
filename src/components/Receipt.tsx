@@ -6,6 +6,7 @@ import { cents, day, percent, usd } from "@/lib/format";
 import { offerPrice } from "@/lib/hedge/quote";
 import { Buy } from "./Buy";
 import { Mark } from "./Logo";
+import { Standing } from "./Standing";
 
 type Props = {
   plan: CoverPlan;
@@ -53,8 +54,8 @@ export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
         {price && (
           <>
             <Line label="What this cover costs" value={cents(price.total)} strong />
-            <Line label="If it happens, you're up" value={cents(quote.payout - price.total)} />
-            <Line label="If it doesn't, you're out" value={cents(price.total)} />
+            {worthIt && <Line label="If it happens, you're up" value={cents(quote.payout - price.total)} />}
+            {worthIt && <Line label="If it doesn't, you're out" value={cents(price.total)} />}
           </>
         )}
       </dl>
@@ -91,9 +92,14 @@ export function Receipt({ plan, coverRatio, onCoverChange, onBought }: Props) {
         <Buy plan={plan} coverRatio={coverRatio} onBought={onBought} />
       ) : (
         price && (
-          <p className="note mt-5">
-            The market sees this as near certain, so cover costs as much as it pays. Try a threshold less likely to be hit.
-          </p>
+          <>
+            <p className="note mt-5">
+              The market sees this as near certain, so cover costs as much as it pays.{" "}
+              {exposure.recurring ? "Your agent can watch it and buy on the days it's worth it." : "Try a threshold less likely to be hit."}
+            </p>
+            {/* Today's price says nothing about a normal day, so the cap starts from the size of the loss instead. */}
+            {exposure.recurring && <Standing plan={plan} coverRatio={coverRatio} price={quote.payout * 0.15} alone />}
+          </>
         )
       )}
 

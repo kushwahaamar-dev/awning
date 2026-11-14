@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { usd } from "@/lib/format";
 import type { CoverPlan } from "@/lib/hedge/plan";
-import { post, useAccount } from "./account";
+import { hasAllowance, post, useAccount } from "./account";
 
 /** Offers to leave a daily risk with the agent, with a cap and whatever the owner wants it to know. */
-export function Standing({ plan, coverRatio, price }: { plan: CoverPlan; coverRatio: number; price: number }) {
+export function Standing({ plan, coverRatio, price, alone = false }: { plan: CoverPlan; coverRatio: number; price: number; alone?: boolean }) {
   const { owner, account, refresh } = useAccount();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -18,7 +18,7 @@ export function Standing({ plan, coverRatio, price }: { plan: CoverPlan; coverRa
   const [error, setError] = useState<string | null>(null);
 
   // Only temperature has a market every day, which is what a standing order needs.
-  if (!account || plan.exposure.trigger.family !== "temperature") return null;
+  if (!account || !hasAllowance(account) || plan.exposure.trigger.family !== "temperature") return null;
   const askFirst = account.allowance.approvalThreshold;
 
   async function start() {
@@ -37,7 +37,7 @@ export function Standing({ plan, coverRatio, price }: { plan: CoverPlan; coverRa
   if (!open) {
     return (
       <button type="button" onClick={() => setOpen(true)} className="btn btn-secondary mt-3 w-full">
-        Or have your agent cover this every day
+        {alone ? "Have your agent cover this every day" : "Or have your agent cover this every day"}
       </button>
     );
   }

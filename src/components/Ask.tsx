@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState, type CSSProperties } from "react";
 import type { Turn } from "@/lib/hedge/interpret";
 import { Ascii } from "./Ascii";
@@ -129,7 +130,7 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
         {busy && (
           <div className="mt-8" aria-live="polite">
             <ol className="grid gap-2.5">
-              <Phase state={pricing ? "done" : "now"}>Reading your sentence</Phase>
+              {said.length > 0 && <Phase state={pricing ? "done" : "now"}>Reading your sentence</Phase>}
               <Phase state={pricing ? "now" : "next"}>Finding the market on Gemini and pricing it</Phase>
             </ol>
             <p className="mt-5 text-sm text-faint">This can take up to a minute.</p>
@@ -147,7 +148,7 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
           </div>
         )}
 
-        {fresh && (
+        {fresh && !busy && (
           <div className="rise mt-10" style={order(3)}>
             <p className="text-sm text-muted">Or try one of these</p>
             <ul className="rows mt-3 border-y border-line">
@@ -166,6 +167,12 @@ export function Ask({ turns, busy, pricing, error, unlisted, onSay, voice }: Pro
                 </li>
               ))}
             </ul>
+            <p className="mt-5 text-sm text-muted">
+              Not sure what costs you?{" "}
+              <Link href="/find" className="link">
+                Find it in your sales
+              </Link>
+            </p>
           </div>
         )}
       </section>

@@ -7,6 +7,7 @@ import { Logo } from "./Logo";
 
 const APP = [
   { href: "/app", label: "Cover" },
+  { href: "/find", label: "Find a risk" },
   { href: "/agent", label: "Your agent" },
 ];
 

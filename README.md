@@ -21,7 +21,7 @@ Built for the University Blockchain Conference 2026 hackathon.
 | --- | --- |
 | Agent's limits | [`AwningMandate`](https://testnet.arcscan.app/address/0x708ae0910eFAf32B97D0bA9429C4F2BD44988413) on Arc testnet |
 | Cover pool | [`AwningPool`](https://testnet.arcscan.app/address/0x0dE9149998eE6CAA3577007f31A1803Bc49C3F6F) on Arc testnet |
-| Tests | 126 contract tests with fuzzing and invariants, 35 engine tests |
+| Tests | 126 contract tests with fuzzing and invariants, 49 engine tests |
 | Stack | Next.js 16, React 19, Solidity 0.8.28 (Foundry), viem, Postgres, Claude |
 
 ## Contents
@@ -30,6 +30,7 @@ Built for the University Blockchain Conference 2026 hackathon.
 - [What it looks like](#what-it-looks-like)
 - [The problem](#the-problem)
 - [What Awning does](#what-awning-does)
+- [Finding the risk in your sales](#finding-the-risk-in-your-sales)
 - [The mandate](#the-mandate)
 - [The pool](#the-pool)
 - [Architecture](#architecture)
@@ -109,6 +110,30 @@ prompt is a suggestion.
 
 You can also leave a daily risk with the agent. Each day it looks at that day's price and forecast
 and decides for itself whether the cover is worth buying, inside a cap you set, and writes down why.
+
+## Finding the risk in your sales
+
+Most owners can't say what a cold day costs them. **Find a risk** works it out from their own books.
+
+1. Upload a spreadsheet export of daily sales, or try the built-in sample.
+2. Awning looks up the station the city's Gemini market settles on (`src/lib/weather/stations.ts`,
+   read from the National Weather Service) and pulls the daily high there for every day in the file.
+3. `src/lib/discover/analyze.ts` looks for the temperature at which takings drop:
+   - Each day is compared with other days **in the same month and on the same weekday**, by taking
+     both patterns out of sales and out of the weather before comparing. A business that is simply
+     busier in summer, or on Saturdays, shows no effect.
+   - Every whole-degree threshold between the 5th and 95th percentile is tried, in both directions.
+   - Trying many thresholds makes the best one look significant by luck. So the weather is shuffled
+     within each month 800 times, the whole search is rerun on each shuffle, and a finding is
+     reported only if fewer than 1 in 100 shuffles do as well.
+4. The result is a number in dollars with a range, how many days a year it applies to, and a chart
+   of every day in the file. One click prices cover for it, with no model involved: the finding is
+   already the structured risk the engine takes.
+
+What it can't do: it treats days as independent, so a slow fortnight that happens to be cold can
+look like weather. The highs come from a weather archive for the station's location rather than the
+station's own log, so they can be a degree or two off. And one no-effect file in a hundred will
+still pass, which is why the page shows the odds instead of hiding them.
 
 ## The mandate
 
@@ -370,7 +395,7 @@ the chain block of `.env.example`, `ANTHROPIC_API_KEY`, and a `CRON_SECRET`.
 ## Tests
 
 ```bash
-npm test                       # engine, settlement and forecast logic
+npm test                       # engine, settlement, forecast and sales-analysis logic
 npm run typecheck && npm run lint
 cd contracts && forge test     # 126 tests including fuzz and invariants on both contracts
 FOUNDRY_PROFILE=ci forge test  # the same tests at four times the fuzz depth; takes several minutes
@@ -387,6 +412,7 @@ LIVE=1 npx vitest run src/lib/hedge/live.test.ts   # sentence → priced cover a
 | The agent's daily decisions on standing orders, made by the model | The agent, underwriter and resolver keys sit on one server |
 | x402 payments, settled onchain per request | The forecast desk is run by the same operator as the agent |
 | The forecast data and the odds history | The pool on testnet is seeded by its operator |
+| The analysis of an uploaded sales file, against real weather history | The sample on the Find a risk page is made-up sales over real weather, and says so |
 | Circle CCTP cash-out, verified on testnet | The QuickNode Stream is not registered yet; the app reads logs itself |
 | | Voice has not been tested with a live ElevenLabs key |
 
@@ -403,6 +429,8 @@ src/lib/chain/    contract calls, the device wallet, CCTP
 src/lib/gemini/   prediction market data and trading
 src/lib/desk/     the x402 forecast seller and the agent's buyer
 src/lib/ledger/   contract events, from QuickNode Streams or from logs
+src/lib/discover/ finding a weather risk in a sales file: parsing, weather history, the analysis
+src/lib/weather/  the official station each city's market settles on
 quicknode/        the Stream filter
 scripts/          local chain, Arc deploy, Stream replay
 drizzle/          database migrations
