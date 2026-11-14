@@ -5,7 +5,11 @@ export type Turn = { role: "user" | "assistant"; text: string };
 
 // Google's Gemini models. They share a name with the exchange the markets are on and nothing
 // else, so the key has a variable of its own that can't be mistaken for the exchange's trading key.
-const MODEL = process.env.AWNING_MODEL ?? "gemini-3.8-flash";
+// The first model reads best: given a vague risk it asks rather than inventing a level. On a free
+// key any one model can sit silent for a minute while another answers in a second, so there is a
+// second to turn to and neither is waited on for long.
+const MODELS = process.env.AWNING_MODEL ? [process.env.AWNING_MODEL] : ["gemini-4-hydrogen", "gemini-3.6-flash"];
+const PATIENCE_MS = 15_000;
 
 type Json = { [key: string]: unknown };
 
@@ -35,20 +39,31 @@ const said = (text: string) => [{ type: "text" as const, text }];
 
 /** One question to the language model, answered as data of a known shape. */
 export async function ask<T>({ system, turns, shape, maxTokens }: { system: string; turns: Turn[]; shape: z.ZodType<T>; maxTokens: number }): Promise<T> {
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
+  const apiKey = process.env.GOOGLE_AI_API_KEY?.trim();
   if (!apiKey) throw new Error("Reading a typed risk isn't switched on here. Pick one of the examples, or find a risk in your sales.");
+  const client = new GoogleGenAI({ apiKey });
 
-  const reply = await new GoogleGenAI({ apiKey }).interactions.create({
-    model: MODEL,
-    system_instruction: system,
-    input: turns.map(({ role, text }) =>
-      role === "user" ? { type: "user_input" as const, content: said(text) } : { type: "model_output" as const, content: said(text) },
-    ),
-    response_format: { type: "text", mime_type: "application/json", schema: replySchema(shape) },
-    generation_config: { max_output_tokens: maxTokens, thinking_level: "low" },
-    // Each request carries everything it needs, so there is nothing for Google to keep between them.
-    store: false,
-  });
-  if (reply.status !== "completed" || !reply.output_text) throw new Error(`The model didn't finish its answer (${reply.status}).`);
-  return shape.parse(JSON.parse(reply.output_text));
+  for (const model of MODELS) {
+    try {
+      const reply = await client.interactions.create(
+        {
+          model,
+          system_instruction: system,
+          input: turns.map(({ role, text }) =>
+            role === "user" ? { type: "user_input" as const, content: said(text) } : { type: "model_output" as const, content: said(text) },
+          ),
+          response_format: { type: "text", mime_type: "application/json", schema: replySchema(shape) },
+          generation_config: { max_output_tokens: maxTokens, thinking_level: "low" },
+          // Each request carries everything it needs, so there is nothing for Google to keep between them.
+          store: false,
+        },
+        { timeout: PATIENCE_MS, maxRetries: 0 },
+      );
+      if (reply.status !== "completed" || !reply.output_text) throw new Error(`it stopped early (${reply.status})`);
+      return shape.parse(JSON.parse(reply.output_text));
+    } catch (error) {
+      console.error(`${model} could not answer`, error);
+    }
+  }
+  throw new Error("The model that reads sentences is busy right now. Try again in a moment, or pick one of the examples.");
 }
