@@ -8,7 +8,7 @@ import { getMarket, listMarkets } from "../gemini/client";
 import type { Exposure } from "../hedge/exposure";
 import { planCover, type CoverPlan } from "../hedge/plan";
 import { offerPrice } from "../hedge/quote";
-import { getVenue } from "../venue";
+import { venueFor, venueNamed } from "../venue";
 import { resolution } from "./settlement";
 
 /** A problem the person can do something about; shown to them as-is. */
@@ -84,7 +84,7 @@ export async function quoteCover(input: {
     status: "quoted",
     plan,
     mode,
-    venue: (await getVenue()).name,
+    venue: (await venueFor(plan.market.ticker, plan.coverage.legs.map((leg) => leg.symbol))).name,
     premium: terms.premium,
     maxPayout: terms.maxPayout,
     // What the pool will buy on Gemini to lay off the risk it is about to take on.
@@ -180,7 +180,7 @@ export async function openCover(id: Hex, approval: { deadline: number; signature
 async function layOff(cover: typeof covers.$inferSelect) {
   const db = await getDb();
   try {
-    const orders = await (await getVenue()).place(cover.orders, cover.mode);
+    const orders = await (await venueNamed(cover.venue)).place(cover.orders, cover.mode);
     await db.update(covers).set({ orders }).where(eq(covers.id, cover.id));
   } catch (error) {
     console.error(`could not lay off cover ${cover.id} on Gemini`, error);
@@ -266,7 +266,7 @@ async function settle(cover: typeof covers.$inferSelect) {
   if (!market) return;
 
   // Keeps the record of the pool's own hedge up to date; it has no bearing on what the owner is paid.
-  const orders: Order[] = await (await getVenue()).refresh(cover.orders, market);
+  const orders: Order[] = await (await venueNamed(cover.venue)).refresh(cover.orders, market);
   const result = resolution(orders, market);
   if (!result) {
     await db.update(covers).set({ orders }).where(eq(covers.id, cover.id));

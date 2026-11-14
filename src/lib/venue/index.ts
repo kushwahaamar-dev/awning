@@ -44,10 +44,27 @@ export const paperVenue: Venue = {
   },
 };
 
-/** Whether the pool's hedges are sent to Gemini or only filled on paper. */
-export const tradesOnGemini = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_SECRET);
+const TRADING_URL = process.env.GEMINI_TRADING_URL ?? "https://api.sandbox.gemini.com";
 
-export async function getVenue(): Promise<Venue> {
-  if (!tradesOnGemini) return paperVenue;
-  return (await import("./gemini")).geminiVenue;
+/**
+ * How the pool's own hedges are placed: on paper with no trading key, on Gemini's sandbox with a
+ * sandbox key, or on the live exchange. The sandbox lists only part of what the live exchange
+ * does (commodities and crypto, no weather or games), so there some hedges still stay on paper.
+ */
+export const hedging: "paper" | "sandbox" | "live" =
+  !process.env.GEMINI_API_KEY || !process.env.GEMINI_API_SECRET ? "paper" : TRADING_URL.includes("sandbox") ? "sandbox" : "live";
+
+/**
+ * Where the hedge for one market can really be placed. An order for a contract the trading
+ * exchange doesn't list can only fail, so that hedge is kept on paper and recorded as paper.
+ */
+export async function venueFor(ticker: string, symbols: string[]): Promise<Venue> {
+  if (hedging === "paper") return paperVenue;
+  const { geminiVenue, lists } = await import("./gemini");
+  return (await lists(ticker, symbols)) ? geminiVenue : paperVenue;
+}
+
+/** The venue a cover's hedge was recorded against when it was quoted. */
+export async function venueNamed(name: string): Promise<Venue> {
+  return name === paperVenue.name || hedging === "paper" ? paperVenue : (await import("./gemini")).geminiVenue;
 }

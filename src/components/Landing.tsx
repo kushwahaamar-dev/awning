@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { chainLabel, explorerAddress, mandateAddress, poolAddress } from "@/lib/chain/config";
 import { shortAddress } from "@/lib/format";
 import { usesStreams } from "@/lib/ledger/source";
-import { tradesOnGemini } from "@/lib/venue";
+import { hedging } from "@/lib/venue";
 import { Ascii, type Scene } from "./Ascii";
 import { HeroQuote } from "./HeroQuote";
 import { LiveFigures } from "./LiveFigures";
@@ -48,9 +48,15 @@ const PATH = [
   { title: "Check", body: "The agent pays 2¢ for a 31-run forecast to test the price.", made: ["x402"] },
   { title: "Lock", body: "The pool sets aside the full payout.", made: ["AwningPool", "ERC-4626"] },
   { title: "Pay", body: "The premium moves only inside your limits. Above your line, you sign.", made: ["AwningMandate", "EIP-712"] },
-  tradesOnGemini
-    ? { title: "Hedge", body: "The pool takes the same position on Gemini.", made: ["Gemini trading API"] }
-    : { title: "Hedge", body: "The pool sizes the same position on Gemini. It is filled on paper until trading keys are set.", made: ["Gemini prices"] },
+  {
+    live: { title: "Hedge", body: "The pool takes the same position on Gemini.", made: ["Gemini trading API"] },
+    sandbox: {
+      title: "Hedge",
+      body: "The pool places the same position on Gemini's sandbox for oil, gas, metal and crypto cover. The sandbox lists no weather, so that hedge is on paper.",
+      made: ["Gemini trading API"],
+    },
+    paper: { title: "Hedge", body: "The pool sizes the same position on Gemini. It is filled on paper until trading keys are set.", made: ["Gemini prices"] },
+  }[hedging],
   usesStreams
     ? { title: "Watch", body: "Every contract event streams into the app.", made: ["QuickNode Streams"] }
     : { title: "Watch", body: "The app reads every contract event from the chain.", made: ["Contract logs"] },
@@ -65,7 +71,11 @@ const FIXED = [
 
 const TRUSTED = [
   "One key reports Gemini's result. If it goes silent, you're paid in full after three days.",
-  ...(tradesOnGemini ? [] : ["The pool's hedge on Gemini is filled on paper until trading keys are set."]),
+  ...{
+    live: [],
+    sandbox: ["The pool's hedge runs on Gemini's sandbox with test money, and on paper for weather, which the sandbox doesn't list."],
+    paper: ["The pool's hedge on Gemini is filled on paper until trading keys are set."],
+  }[hedging],
   "The agent's key and the pool's keys share a server.",
 ];
 
