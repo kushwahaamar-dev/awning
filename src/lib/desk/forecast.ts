@@ -1,4 +1,5 @@
 import type { Market } from "../gemini/market";
+import { stationFor, type Station } from "../weather/stations";
 
 export type BucketForecast = {
   ticker: string;
@@ -12,30 +13,14 @@ export type BucketForecast = {
 
 const MODEL = "gfs_seamless";
 
-type Place = { latitude: number; longitude: number; timezone: string };
-const places = new Map<string, Place>();
-
 async function json(url: string) {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`${new URL(url).host} responded ${res.status}`);
   return res.json();
 }
 
-/** Gemini names the settlement station in each contract's rules; this finds where that station is. */
-async function locate(station: string): Promise<Place> {
-  const known = places.get(station);
-  if (known) return known;
-  // The rules say "Austin-Bergstrom International Airport, TX"; the gazetteer wants the name alone.
-  const name = station.replace(/,\s*[A-Z]{2}$/, "");
-  const found = (await json(`https://geocoding-api.open-meteo.com/v1/search?count=1&name=${encodeURIComponent(name)}`)).results?.[0];
-  if (!found) throw new Error(`Could not locate ${station}`);
-  const place = { latitude: found.latitude, longitude: found.longitude, timezone: found.timezone };
-  places.set(station, place);
-  return place;
-}
-
 /** The highest reading each ensemble member forecasts for the station's local day, as NWS would report it: whole degrees. */
-async function memberHighs(place: Place, day: string): Promise<number[]> {
+async function memberHighs(place: Station, day: string): Promise<number[]> {
   const url = new URL("https://ensemble-api.open-meteo.com/v1/ensemble");
   url.search = new URLSearchParams({
     latitude: String(place.latitude),
@@ -73,14 +58,15 @@ export function bucketProbabilities(market: Market, highs: number[]): Record<str
 /** An independent read on a temperature market: what a weather model ensemble says each bucket is worth. */
 export async function forecastBuckets(market: Market): Promise<BucketForecast> {
   const { subject } = market;
-  if (subject.family !== "temperature" || !subject.station || !subject.day) {
+  if (subject.family !== "temperature" || !subject.day) {
     throw new Error("Forecasts are only available for daily temperature markets.");
   }
-  const highs = await memberHighs(await locate(subject.station), subject.day);
+  const station = await stationFor(subject.cityCode);
+  const highs = await memberHighs(station, subject.day);
   if (highs.length === 0) throw new Error("The forecast model returned no members for that day.");
   return {
     ticker: market.ticker,
-    station: subject.station,
+    station: station.name,
     day: subject.day,
     model: `${MODEL} ensemble via Open-Meteo`,
     members: highs.length,
