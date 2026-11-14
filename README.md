@@ -359,6 +359,14 @@ npm run start:arc       # production build against Arc, http://localhost:3001
 Arc enforces a 20 gwei minimum base fee; the script sets the gas price because Foundry's defaults
 can leave a transaction pending.
 
+### Hosting
+
+The app runs on any Node host. On a long-running server it does its background work (settling
+covers, the agent's daily decisions) on a one-minute timer. On a serverless host such as Vercel
+there is no timer, so the same pass runs after a page is served, at most once a minute, and
+`vercel.json` adds a daily cron as a floor. A hosted deployment needs `DATABASE_URL` (Postgres),
+the chain block of `.env.example`, `ANTHROPIC_API_KEY`, and a `CRON_SECRET`.
+
 ## Tests
 
 ```bash
