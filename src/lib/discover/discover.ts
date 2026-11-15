@@ -36,11 +36,18 @@ async function settlementStation(city: string, list: MarketSource): Promise<Stat
 const SAMPLE_HOME = "Austin";
 const SAMPLE_TRIES = 4;
 
+const join = (rows: Sale[], highs: Map<string, number>) =>
+  rows.flatMap(({ day, amount }) => {
+    const high = highs.get(day);
+    return high === undefined ? [] : [{ day, amount, high }];
+  });
+
 /**
  * Where the sample truck trades and where its bad days start. Both are made up either way, so they
  * are put where a market prices tomorrow's cold as unlikely but real, and the walk-through ends on
- * a cover worth buying. The past year has to hold enough such days to measure; if no city fits,
- * the truck stays home and the sample picks its own idea of cold.
+ * a cover worth buying. A city is kept only if the analysis, run in full, lands on that very level:
+ * a degree to either side falls between the market's steps and prices as a different risk. If no
+ * city fits, the truck stays home and the sample picks its own idea of cold.
  */
 async function sampleSetting(list: MarketSource, from: string, to: string) {
   const spots = await coldSpots(list).catch(() => []);
@@ -48,11 +55,13 @@ async function sampleSetting(list: MarketSource, from: string, to: string) {
   for (const { city, level } of homeFirst.slice(0, SAMPLE_TRIES)) {
     const station = await settlementStation(city, list);
     const highs = await dailyHighs(station, from, to);
-    const days = [...highs.values()].filter((high) => Math.round(high) <= level).length;
-    if (days >= highs.size * 0.05) return { city, station, highs, cold: level };
+    const rows = sampleSales(highs, level);
+    const found = analyze(join(rows, highs)).finding;
+    if (found?.direction === "below" && found.threshold === level) return { city, station, highs, rows };
   }
   const station = await settlementStation(SAMPLE_HOME, list);
-  return { city: SAMPLE_HOME, station, highs: await dailyHighs(station, from, to), cold: undefined };
+  const highs = await dailyHighs(station, from, to);
+  return { city: SAMPLE_HOME, station, highs, rows: sampleSales(highs) };
 }
 
 /**
@@ -75,14 +84,9 @@ export async function discover(where: string, sales: Sale[] | null, list: Market
     highs = await dailyHighs(station, from, to);
     rows = sales;
   } else {
-    const setting = await sampleSetting(list, from, to);
-    ({ city, station, highs } = setting);
-    rows = sampleSales(highs, setting.cold);
+    ({ city, station, highs, rows } = await sampleSetting(list, from, to));
   }
-  const joined = rows.flatMap(({ day, amount }) => {
-    const high = highs.get(day);
-    return high === undefined ? [] : [{ day, amount, high }];
-  });
+  const joined = join(rows, highs);
 
   const result = analyze(joined);
   if (!result.finding) return { ...result, city, station: station.name };
