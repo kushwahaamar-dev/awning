@@ -39,6 +39,8 @@ export function Covers() {
         {account.covers.map((cover) => {
           const { label, tone } = state(cover);
           const receipt = cover.openTx && explorerTx(cover.openTx);
+          // The pool's own order on the exchange, when this cover's hedge could really be placed there.
+          const hedge = cover.venue === "paper" ? undefined : cover.orders.find((order) => order.id);
           return (
             <li key={cover.id} className="grid gap-x-6 gap-y-2 px-5 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
               <div>
@@ -61,6 +63,11 @@ export function Covers() {
                     </a>
                   )}
                 </p>
+                {hedge && (
+                  <p className="mt-1 text-sm text-muted">
+                    Hedged on {cover.venue === "gemini" ? "Gemini" : "Gemini’s sandbox"}, order <span className="num text-soft">{hedge.id}</span>
+                  </p>
+                )}
               </div>
               <span className={`status justify-self-start ${tone}`}>{label}</span>
             </li>
