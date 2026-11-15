@@ -7,13 +7,17 @@ agent buys it for you, or keeps buying it every day on its own judgement. Two co
 the money: a mandate that limits what the agent can spend, and a pool that locks your whole payout
 before you pay a cent.
 
+**Try it: https://awning-eight.vercel.app** (Arc testnet). Pick one of the examples and press Buy
+cover; the first press gives you test dollars, sets up your agent and buys. The test pool is small,
+so the amounts are too.
+
 ![The Awning landing page: a headline, an input for the risk, a real quote, and a rainy street of small shops drawn in dots](docs/screenshots/landing.jpg)
 
 > "If Chicago's high stays under 46 tomorrow, my coffee cart is out about $300."
 >
 > **Pays $300 if Chicago's high is 45°F or below. Costs $25.60.**
 >
-> A real quote on Arc testnet, 13 November 2026.
+> A quote the app gave on 13 November 2026. The examples on the site are priced from Gemini that minute.
 
 Built for the University Blockchain Conference 2026 hackathon.
 
@@ -361,7 +365,8 @@ hijack test was run on Arc testnet, and the agent page shows where its events ar
 
 ![The agent page on Arc testnet, fed by the Stream](docs/screenshots/stream.jpg)
 
-When the Stream has been quiet for 90 seconds (paused, or simply no events) the app reads the same
+It delivers to the hosted site's `/api/streams`, and each event records whether the Stream or a chain
+read brought it first. When the Stream has been quiet for 90 seconds (paused, or simply no events) the app reads the same
 logs from the chain itself; both write the same rows, so nothing is counted twice.
 `scripts/quicknode-stream.mjs` creates, points, pauses and resumes the Stream.
 
