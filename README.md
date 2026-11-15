@@ -349,7 +349,9 @@ $0.95 at the same address on Base Sepolia a few seconds later.
 `category`, `search` and `status`, and `GET /v1/prediction-markets/events/{ticker}` for prices and
 resolution. Trading: `POST /v1/prediction-markets/order`, `/orders/active`, `/orders/history` and
 `/terms/status`, signed with HMAC-SHA384. Every price in the app, including the examples on the first
-screen, is read from these markets at that moment.
+screen, is read from these markets at that moment. Once a quote is on screen it follows Gemini's
+public WebSocket (`wss://ws.gemini.com`, `<symbol>@bookTicker` for each contract in the cover), so
+the price moves when the market does.
 
 The trading calls run against Gemini's sandbox. The sandbox lists commodities and crypto under the
 same tickers as the live exchange, but no weather or sports, so the pool's hedge goes to Gemini when

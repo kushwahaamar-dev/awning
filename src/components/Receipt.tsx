@@ -4,10 +4,11 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import type { CoverPlan } from "@/lib/hedge/plan";
 import { cents, day, percent, usd } from "@/lib/format";
-import { offerPrice } from "@/lib/hedge/quote";
+import { offerPrice, quoteCover } from "@/lib/hedge/quote";
 import { hasAllowance, useAccount } from "./account";
 import type { Purchase } from "./Bought";
 import { Buy } from "./Buy";
+import { useLiveLegs } from "./liveLegs";
 import { Mark } from "./Logo";
 import { Standing } from "./Standing";
 
@@ -33,8 +34,14 @@ function Line({ label, value, strong }: { label: string; value: string; strong?:
 }
 
 /** The quote: what the cover pays, what it costs, how much of the loss to cover, and the way to buy it. */
-export function Receipt({ plan, coverRatio, repricing, onCoverChange, onBought }: Props) {
+export function Receipt({ plan: priced, coverRatio, repricing, onCoverChange, onBought }: Props) {
   const { account } = useAccount();
+  // The quote arrives priced by the server; from then on it follows Gemini's own feed. Only a price
+  // that can be bought at once is taken from the feed, because a resting price also leans on the forecast.
+  const feed = useLiveLegs(priced.coverage.legs);
+  const fromFeed = feed.live ? quoteCover({ ...priced.coverage, legs: feed.legs }, priced.exposure.lossUsd, coverRatio) : null;
+  const live = fromFeed?.now != null && priced.quote.now !== null && !repricing;
+  const plan = live ? { ...priced, coverage: { ...priced.coverage, legs: feed.legs }, quote: fromFeed! } : priced;
   const { quote, coverage, market, exposure, forecast } = plan;
   const price = offerPrice(quote)?.pricing ?? null;
   // When the market sees the event as near-certain, cover costs what it pays and isn't worth buying.
@@ -72,7 +79,8 @@ export function Receipt({ plan, coverRatio, repricing, onCoverChange, onBought }
       </dl>
       {price ? (
         <p className="mt-3 text-xs text-faint">
-          Gemini&rsquo;s price, including about {cents(price.fees)} in exchange fees.
+          {live && <span className="status status-good status-live mr-2 align-baseline text-xs">Live</span>}
+          Gemini&rsquo;s price{live ? ", following its feed as you watch" : ""}, including about {cents(price.fees)} in exchange fees.
           {forecast && ` Your agent paid ${cents(forecast.paid)} for the ${forecast.members}-run forecast.`}
         </p>
       ) : (
