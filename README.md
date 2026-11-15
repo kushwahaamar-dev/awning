@@ -236,7 +236,7 @@ free assets. All three are fixed and have tests.
 - `src/components/Ascii.tsx` plays the animated scenes on the landing page and inside the app. They
   come from [ascii-magic-art](https://www.ascii-magic.com/ascii) (MIT), bundled from the npm package
   so nothing is loaded from a third party at run time.
-- `src/lib/venue` places the pool's hedge: through Gemini's trading API when keys are set, on paper otherwise.
+- `src/lib/venue` places the pool's hedge: through Gemini's trading API when the exchange the key trades on lists the contracts, on paper otherwise.
 
 ## The agent's decision loop
 
@@ -344,14 +344,26 @@ $0.95 at the same address on Base Sepolia a few seconds later.
 **Gemini Prediction Markets.** Market data: `GET /v1/prediction-markets/events` filtered by
 `category`, `search` and `status`, and `GET /v1/prediction-markets/events/{ticker}` for prices and
 resolution. Trading: `POST /v1/prediction-markets/order`, `/orders/active`, `/orders/history` and
-`/terms/status`, signed with HMAC-SHA384. The trading calls have not been run against Gemini's
-sandbox yet; without keys the pool's hedge fills on paper. Gemini's API has no price history, so Awning records its
-own and charts what a dollar of each cover has cost over time. Risks people ask about that no market
-tracks are stored as gaps.
+`/terms/status`, signed with HMAC-SHA384. Every price in the app, including the examples on the first
+screen, is read from these markets at that moment.
 
-**QuickNode Streams.** The activity ledger is built to be fed by one Stream. The filter, the
-webhook handler and a replay test are in this repository. The Stream itself is not registered yet,
-because it needs a public URL to deliver to, so today's deployment reads the contracts' logs directly.
+The trading calls run against Gemini's sandbox. The sandbox lists commodities and crypto under the
+same tickers as the live exchange, but no weather or sports, so the pool's hedge goes to Gemini when
+the sandbox lists every contract in it and stays on paper otherwise, and each cover records which.
+The first hedge placed this way, by an ordinary purchase of oil-price cover, was order
+`145853902319270757`: buy 200 Yes of `GEMI-BRENT2611152200-HI92` at $0.20, resting. Without keys
+every hedge fills on paper. Awning also keeps its own record of prices and charts what a dollar of
+each cover has cost over time, and stores the risks people ask about that no market tracks.
+
+**QuickNode Streams.** The activity ledger is fed by one Stream, `awning-ledger`. On 14 November it
+delivered 13 of the two contracts' events in 11 signed deliveries while a cover was bought and the
+hijack test was run on Arc testnet, and the agent page shows where its events are coming from:
+
+![The agent page on Arc testnet, fed by the Stream](docs/screenshots/stream.jpg)
+
+When the Stream has been quiet for 90 seconds (paused, or simply no events) the app reads the same
+logs from the chain itself; both write the same rows, so nothing is counted twice.
+`scripts/quicknode-stream.mjs` creates, points, pauses and resumes the Stream.
 
 - Network: Arc testnet.
 - Dataset: `block_with_receipts`, chosen over `logs` because each block carries its timestamp, so
@@ -366,8 +378,10 @@ because it needs a public URL to deliver to, so today's deployment reads the con
   result, signed the same way, to test the path end to end.
 
 **ElevenLabs.** Scribe (`scribe_v2`) transcribes push-to-talk recordings; Flash (`eleven_flash_v2_5`)
-streams spoken replies: the clarifying question, the quote, and refusals. Replies are only spoken
-after the person has used the microphone. This path has not been exercised with a live key yet.
+streams spoken replies: the clarifying question, the quote, the confirmation, and refusals. Replies
+are only spoken after the person has used the microphone. Both calls have been run with a live key:
+a quote was spoken and transcribed back word for word. The microphone button itself has not been
+tried by a person yet.
 
 **x402.** The forecast desk and the agent's buyer use the official `@x402/core` and `@x402/evm`
 packages (v2 protocol, `exact` scheme). The desk settles its own sales.
@@ -408,15 +422,16 @@ LIVE=1 npx vitest run src/lib/hedge/live.test.ts   # sentence → priced cover a
 
 | Real | Stand-in |
 | --- | --- |
-| Gemini markets, prices, and resolution | The pool's hedge on Gemini fills on paper unless trading keys are set |
+| Gemini markets, prices, and resolution | The pool's hedge runs on Gemini's sandbox with test money, and on paper for weather and games, which the sandbox doesn't list |
 | Every cover: the payout locked in the pool, and paid from it | The resolver that reports Gemini's result is one trusted key |
 | Every mandate transaction, including refusals and the hijack test | The owner's key is browser storage rather than a passkey |
 | The agent's daily decisions on standing orders, made by the model | The agent, underwriter and resolver keys sit on one server |
 | x402 payments, settled onchain per request | The forecast desk is run by the same operator as the agent |
 | The forecast data and the odds history | The pool on testnet is seeded by its operator |
 | The analysis of an uploaded sales file, against real weather history | The sample on the Find a risk page is made-up sales over real weather, and says so |
-| Circle CCTP cash-out, verified on testnet | The QuickNode Stream is not registered yet; the app reads logs itself |
-| | Voice has not been tested with a live ElevenLabs key |
+| Circle CCTP cash-out, verified on testnet | The paid forecast is a raw model ensemble and can run several degrees off a station; it is not yet corrected |
+| The QuickNode Stream, delivering both contracts' events | The Stream is paused between sessions to save credits; the app then reads logs itself |
+| ElevenLabs speech and transcription, run with a live key | The microphone button has not been tried by a person |
 
 ## Repository layout
 

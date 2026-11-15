@@ -3,6 +3,7 @@ import { gunzipSync } from "node:zlib";
 import { z } from "zod";
 import { fail, hex } from "@/lib/api/respond";
 import { ingest } from "@/lib/ledger/ingest";
+import { streamDelivered } from "@/lib/ledger/source";
 
 // The shape produced by quicknode/filter.js. Numbers arrive as hex quantities, as they do over JSON-RPC.
 const bodySchema = z.object({
@@ -64,6 +65,7 @@ export async function POST(request: Request) {
       })),
       timestamps,
     );
+    streamDelivered(logs.length);
     return Response.json({ stored });
   } catch (error) {
     return fail(error);

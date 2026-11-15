@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
+import useSWR from "swr";
 import { cctpAvailable } from "@/lib/chain/cctp";
 import { setPaused } from "@/lib/chain/device";
 import type { HijackStep } from "@/lib/covers/hijack";
@@ -237,11 +238,31 @@ function HijackTest() {
   );
 }
 
+type Feed = { on: boolean; heardAt: string | null; deliveries: number; events: number };
+const fetchFeed = async (url: string): Promise<Feed | null> => (await (await fetch(url)).json()).feed ?? null;
+const FRESH_MS = 90_000;
+
+/** Where the events on this page come from: pushed by the QuickNode Stream, or read from the chain while it is quiet. */
+function FeedSource() {
+  const { data: feed } = useSWR("/api/stats#feed", () => fetchFeed("/api/stats"), { refreshInterval: 5_000 });
+  if (!feed?.on) return null;
+  if (!feed.heardAt) return <p className="status mt-4">QuickNode Stream connected, waiting for its first delivery</p>;
+  // The page asks again every few seconds, so the server's clock is close enough to the browser's.
+  const live = new Date(feed.heardAt).getTime() > new Date().getTime() - FRESH_MS;
+  return (
+    <p className={`status mt-4 whitespace-normal ${live ? "status-good status-live" : ""}`}>
+      {live ? "Live from a QuickNode Stream" : "Fed by a QuickNode Stream"}: {feed.events} events in {feed.deliveries} deliveries, the last at{" "}
+      {clock(feed.heardAt)}
+    </p>
+  );
+}
+
 function ActivityFeed({ account }: { account: Account }) {
   return (
     <section className="mt-24">
       <h2 className="heading">Everything the agent has done</h2>
       <p className="mt-3 text-lg text-muted">Read from {account.setup.chainName}, refusals included.</p>
+      <FeedSource />
       {account.activity.length === 0 ? (
         <p className="mt-8 text-soft">Nothing yet.</p>
       ) : (

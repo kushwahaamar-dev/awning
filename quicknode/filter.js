@@ -4,9 +4,9 @@
 // Keeps only logs emitted by the AwningMandate and AwningPool contracts and attaches each block's
 // timestamp, so the app never has to call back to the chain to date an event.
 //
-// Set both to the deployed addresses (lowercase) before saving the Stream.
-const MANDATE = "0x0000000000000000000000000000000000000001";
-const POOL = "0x0000000000000000000000000000000000000002";
+// The two contracts as deployed on Arc testnet, lowercase.
+const MANDATE = "0x708ae0910efaf32b97d0ba9429c4f2bd44988413";
+const POOL = "0x0de9149998ee6caa3577007f31a1803bc49c3f6f";
 
 function main(stream) {
   const logs = [];

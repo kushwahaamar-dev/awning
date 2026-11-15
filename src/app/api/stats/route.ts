@@ -3,6 +3,7 @@ import { after } from "next/server";
 import { fail } from "@/lib/api/respond";
 import { readPool } from "@/lib/chain/server";
 import { covers, getDb, ledger } from "@/lib/db";
+import { streamReport } from "@/lib/ledger/source";
 import { tickIfDue } from "@/lib/tick";
 
 export const maxDuration = 300;
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
       db.select({ total: sum(covers.payout) }).from(covers).where(eq(covers.status, "paid")),
       db.select({ n: count() }).from(ledger).where(eq(ledger.kind, "Blocked")),
     ]);
-    return Response.json({ pool, covers: written.n, paidOut: Number(paid.total ?? 0), refused: refused.n });
+    return Response.json({ pool, covers: written.n, paidOut: Number(paid.total ?? 0), refused: refused.n, feed: streamReport() });
   } catch (error) {
     return fail(error);
   }

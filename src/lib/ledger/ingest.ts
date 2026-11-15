@@ -3,7 +3,7 @@ import { awningMandateAbi, awningPoolAbi } from "../chain/abi";
 import { BLOCK_REASONS, deployBlock, fromUnits, mandateAddress, poolAddress } from "../chain/config";
 import { publicClient } from "../chain/server";
 import { getDb, ledger } from "../db";
-import { usesStreams } from "./source";
+import { streamIsFeeding } from "./source";
 import { desc, sql } from "drizzle-orm";
 
 export type RawLog = Pick<Log<bigint, number, false>, "address" | "topics" | "data" | "blockNumber" | "transactionHash" | "logIndex">;
@@ -115,7 +115,7 @@ async function lastStoredBlock() {
  * the events are still on the chain and the next pass picks them up.
  */
 export async function catchUp({ fresh = false } = {}) {
-  if (usesStreams) return;
+  if (streamIsFeeding()) return;
   await pollChain({ fresh }).catch((error) => console.error("could not read new events from the chain", error));
 }
 
