@@ -64,8 +64,9 @@ export async function POST(request: Request) {
         logIndex: Number(BigInt(log.logIndex)),
       })),
       timestamps,
+      "stream",
     );
-    streamDelivered(logs.length);
+    streamDelivered();
     return Response.json({ stored });
   } catch (error) {
     return fail(error);

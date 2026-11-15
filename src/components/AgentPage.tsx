@@ -238,7 +238,7 @@ function HijackTest() {
   );
 }
 
-type Feed = { on: boolean; heardAt: string | null; deliveries: number; events: number };
+type Feed = { on: boolean; events: number; lastAt: string | null };
 const fetchFeed = async (url: string): Promise<Feed | null> => (await (await fetch(url)).json()).feed ?? null;
 const FRESH_MS = 90_000;
 
@@ -246,13 +246,12 @@ const FRESH_MS = 90_000;
 function FeedSource() {
   const { data: feed } = useSWR("/api/stats#feed", () => fetchFeed("/api/stats"), { refreshInterval: 5_000 });
   if (!feed?.on) return null;
-  if (!feed.heardAt) return <p className="status mt-4">QuickNode Stream connected, waiting for its first delivery</p>;
-  // The page asks again every few seconds, so the server's clock is close enough to the browser's.
-  const live = new Date(feed.heardAt).getTime() > new Date().getTime() - FRESH_MS;
+  if (!feed.lastAt) return <p className="status mt-4">QuickNode Stream connected, waiting for its first event</p>;
+  // The page asks again every few seconds, so the chain's clock is close enough to the browser's.
+  const live = new Date(feed.lastAt).getTime() > new Date().getTime() - FRESH_MS;
   return (
     <p className={`status mt-4 whitespace-normal ${live ? "status-good status-live" : ""}`}>
-      {live ? "Live from a QuickNode Stream" : "Fed by a QuickNode Stream"}: {feed.events} events in {feed.deliveries} deliveries, the last at{" "}
-      {clock(feed.heardAt)}
+      {live ? "Live from a QuickNode Stream" : "Fed by a QuickNode Stream"}: {feed.events} events delivered, the last at {clock(feed.lastAt)}
     </p>
   );
 }

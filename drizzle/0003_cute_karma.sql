@@ -1,0 +1,1 @@
+ALTER TABLE "ledger" ADD COLUMN "via" text DEFAULT 'chain' NOT NULL;

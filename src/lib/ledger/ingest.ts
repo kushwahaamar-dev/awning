@@ -33,7 +33,7 @@ function readable(name: string, args: Record<string, unknown>) {
  * Stores mandate and pool events. Safe to call with logs it has seen before, which matters because
  * QuickNode Streams redelivers on retry and the local poller overlaps on restart.
  */
-export async function ingest(logs: RawLog[], timestamps: Map<bigint, number>) {
+export async function ingest(logs: RawLog[], timestamps: Map<bigint, number>, via: "stream" | "chain" = "chain") {
   // Every event kept here is about one owner; anything else (EIP-712 housekeeping) isn't ledger material.
   const events = parseEventLogs({ abi: [...awningMandateAbi, ...POOL_EVENTS], logs: logs as Log[] }).flatMap((event) => {
     const args = event.args as Record<string, unknown>;
@@ -48,6 +48,7 @@ export async function ingest(logs: RawLog[], timestamps: Map<bigint, number>) {
     blockNumber: Number(event.blockNumber),
     txHash: event.transactionHash as Hex,
     at: new Date((timestamps.get(event.blockNumber!) ?? Date.now() / 1000) * 1000),
+    via,
   }));
 
   const db = await getDb();

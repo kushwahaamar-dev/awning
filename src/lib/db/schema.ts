@@ -56,6 +56,8 @@ export const ledger = pgTable(
     blockNumber: bigint({ mode: "number" }).notNull(),
     txHash: text().notNull(),
     at: timestamp({ withTimezone: true }).notNull(),
+    /** How the event got here first: pushed by the QuickNode Stream, or read from the chain. */
+    via: text().$type<"stream" | "chain">().notNull().default("chain"),
   },
   (t) => [index().on(t.owner, t.blockNumber)],
 );
