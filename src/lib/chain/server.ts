@@ -209,6 +209,8 @@ const LOCAL_GRANT_USD = 5_000;
 // On a public testnet the grant comes out of the operator's own faucet money, so it is small.
 const TESTNET_GRANT_USD = Number(process.env.FAUCET_USD ?? 2);
 const OPERATOR_RESERVE_USD = 1;
+/** What a new visitor is given to try the app with. */
+export const VISITOR_GRANT_USD = isLocalChain ? LOCAL_GRANT_USD : TESTNET_GRANT_USD;
 const GRANTS_PER_HOUR = 30;
 const granted: number[] = [];
 
