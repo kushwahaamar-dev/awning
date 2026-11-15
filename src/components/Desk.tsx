@@ -51,7 +51,16 @@ function readJson<T>(text: string | null): T | null {
   }
 }
 
+/**
+ * The page for one risk. A risk that arrives in the address gets a desk of its own, so coming back
+ * with a different one never shows what was on screen for the last, and Back leads somewhere.
+ */
 export function Desk() {
+  const params = useSearchParams();
+  return <DeskFor key={params.get("exposure") ?? params.get("risk") ?? ""} />;
+}
+
+function DeskFor() {
   const params = useSearchParams();
   const router = useRouter();
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -115,15 +124,14 @@ export function Desk() {
 
   const arrived = useRef(false);
   const arrive = useEffectEvent(() => {
-    if (arrived.current) return;
-    arrived.current = true;
     const asked = params.get("risk")?.trim();
-    router.replace("/app");
-    if (!linked && asked) say(asked);
+    if (arrived.current || linked || !asked) return;
+    arrived.current = true;
+    say(asked);
   });
   useEffect(() => {
-    if (params.size > 0) arrive();
-  }, [params]);
+    arrive();
+  }, []);
 
   const pricingLinked = linked !== null && !linkedQuote.data && !linkedQuote.error;
   const plan = ownPlan ?? linkedQuote.data?.plan ?? null;
@@ -157,6 +165,8 @@ export function Desk() {
   function startOver() {
     clear();
     setBought(null);
+    // A risk in the address belongs to this desk; a clean one starts at the plain address.
+    if (params.size > 0) router.push("/app");
   }
 
   function finish(receipt: Omit<Purchase, "plan">) {
@@ -203,11 +213,7 @@ export function Desk() {
       error={error ?? voice.error}
       unlisted={unlisted}
       onSay={say}
-      onPick={(example: Example) => {
-        setNothingListed(null);
-        setSayError(null);
-        setLinked({ exposure: example.exposure, from: "example" });
-      }}
+      onPick={(example: Example) => router.push(`/app?exposure=${encodeURIComponent(JSON.stringify(example.exposure))}&from=example`)}
       voice={voice}
     />
   );
