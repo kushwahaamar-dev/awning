@@ -64,6 +64,7 @@ function DeskFor() {
   const params = useSearchParams();
   const router = useRouter();
   const [turns, setTurns] = useState<Turn[]>([]);
+  const [draft, setDraft] = useState("");
   const [saying, setSaying] = useState(false);
   // What the sentence was read as. It arrives before the price, so the wait can show it.
   const [heard, setHeard] = useState<{ summary: string | null } | null>(null);
@@ -82,6 +83,7 @@ function DeskFor() {
   async function say(text: string) {
     const next: Turn[] = [...turns, { role: "user", text }];
     setTurns(next);
+    setDraft("");
     setSaying(true);
     setSayError(null);
     setNothingListed(null);
@@ -106,6 +108,9 @@ function DeskFor() {
       }
     } catch (e) {
       setSayError(e instanceof Error ? e.message : String(e));
+      // Their words go back in the box, so trying again is one press and not a second typing.
+      setTurns(turns);
+      setDraft(text);
     } finally {
       setSaying(false);
       setHeard(null);
@@ -155,6 +160,7 @@ function DeskFor() {
 
   function clear() {
     setTurns([]);
+    setDraft("");
     setOwnPlan(null);
     setLinked(null);
     setNothingListed(null);
@@ -212,6 +218,8 @@ function DeskFor() {
       checking={payer !== undefined}
       error={error ?? voice.error}
       unlisted={unlisted}
+      draft={draft}
+      onDraft={setDraft}
       onSay={say}
       onPick={(example: Example) => router.push(`/app?exposure=${encodeURIComponent(JSON.stringify(example.exposure))}&from=example`)}
       voice={voice}

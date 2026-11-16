@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import type { Deviation, Finding } from "@/lib/discover/analyze";
 import { calendarDay, usd } from "@/lib/format";
 
-const W = 720;
-const H = 300;
-const PAD = { top: 16, right: 16, bottom: 30, left: 52 };
+// A phone draws the same days on a squarer field with fewer marks along the bottom,
+// so the dots and the axis stay a size that can be read.
+const DESK = { W: 720, H: 300, PAD: { top: 16, right: 16, bottom: 30, left: 54 }, marks: 8, dot: 3 };
+const PHONE = { W: 360, H: 290, PAD: { top: 12, right: 8, bottom: 28, left: 50 }, marks: 4, dot: 2.5 };
+const narrowQuery = "(width < 40rem)";
+const watchWidth = (changed: () => void) => {
+  const query = matchMedia(narrowQuery);
+  query.addEventListener("change", changed);
+  return () => query.removeEventListener("change", changed);
+};
 
 const signed = (n: number) => `${n < 0 ? "−" : "+"}${usd(Math.abs(Math.round(n)))}`;
 
@@ -24,6 +31,8 @@ function ticks(lo: number, hi: number, about: number) {
  */
 export function SalesChart({ days, finding }: { days: Deviation[]; finding: Finding }) {
   const [hover, setHover] = useState<number | null>(null);
+  const narrow = useSyncExternalStore(watchWidth, () => matchMedia(narrowQuery).matches, () => false);
+  const { W, H, PAD, marks, dot } = narrow ? PHONE : DESK;
 
   const highs = days.map((d) => d.high);
   const [x0, x1] = [Math.min(...highs) - 1, Math.max(...highs) + 1];
@@ -58,7 +67,7 @@ export function SalesChart({ days, finding }: { days: Deviation[]; finding: Find
           <span className="status">Other days</span>
         </span>
       </figcaption>
-      <p className="num mt-1 h-5 text-sm text-muted" aria-live="polite">
+      <p className="num mt-1 min-h-10 text-sm text-muted sm:min-h-5" aria-live="polite">
         {shown
           ? `${calendarDay(shown.day)}: high of ${shown.high}°F, took ${usd(Math.round(shown.amount))}, ${signed(shown.deviation)} against a normal day`
           : "Up is a better day than normal for that weekday and month, down is worse."}
@@ -74,13 +83,13 @@ export function SalesChart({ days, finding }: { days: Deviation[]; finding: Find
         {ticks(-reach, reach, 5).map((tick) => (
           <g key={tick}>
             <line x1={PAD.left} x2={W - PAD.right} y1={y(tick)} y2={y(tick)} className={tick === 0 ? "stroke-edge" : "stroke-line"} strokeWidth={1} />
-            <text x={PAD.left - 8} y={y(tick) + 3.5} textAnchor="end" className="num fill-faint text-[10px]">
+            <text x={PAD.left - 8} y={y(tick) + 3.5} textAnchor="end" className="num fill-faint text-[11px]">
               {tick === 0 ? "normal" : signed(tick)}
             </text>
           </g>
         ))}
-        {ticks(x0, x1, 8).map((tick) => (
-          <text key={tick} x={x(tick)} y={H - 8} textAnchor="middle" className="num fill-faint text-[10px]">
+        {ticks(x0, x1, marks).map((tick) => (
+          <text key={tick} x={x(tick)} y={H - 8} textAnchor="middle" className="num fill-faint text-[11px]">
             {tick}°F
           </text>
         ))}
@@ -90,7 +99,7 @@ export function SalesChart({ days, finding }: { days: Deviation[]; finding: Find
             key={d.day}
             cx={x(d.high)}
             cy={y(d.deviation)}
-            r={hover === i ? 5 : 3}
+            r={hover === i ? dot + 2 : dot}
             className={d.bad ? "fill-accent" : "fill-muted"}
             fillOpacity={d.bad ? 0.9 : 0.45}
           />

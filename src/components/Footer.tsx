@@ -10,9 +10,13 @@ export function Footer() {
         </span>
         <p>Not insurance. Cover is written against exchange-traded contracts and can pay differently from what you lose.</p>
       </div>
-      <p aria-hidden className="wordmark">
-        Awning
-      </p>
+      <div className="wrap">
+        <div className="wordmark-fit">
+          <p aria-hidden className="wordmark">
+            Awning
+          </p>
+        </div>
+      </div>
     </footer>
   );
 }

@@ -1,8 +1,10 @@
+import { isLocalChain } from "../chain/config";
+
 /**
- * In production the ledger is fed by a QuickNode Stream posting to /api/streams.
- * Without one (local chain, tests) the app reads the same logs itself.
+ * In production the ledger is fed by a QuickNode Stream posting to /api/streams. The Stream watches Arc,
+ * so on a local chain, or with no token, the app reads the same logs itself.
  */
-export const usesStreams = Boolean(process.env.QUICKNODE_STREAMS_TOKEN);
+export const usesStreams = Boolean(process.env.QUICKNODE_STREAMS_TOKEN) && !isLocalChain;
 
 // A Stream that is paused, behind, or pointed somewhere else delivers nothing, and the app must not
 // go blind when that happens. Once it has been quiet this long, the app reads the chain itself;

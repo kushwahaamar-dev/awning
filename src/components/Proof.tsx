@@ -29,15 +29,24 @@ function Receipt({ href }: { href: string | null }) {
   );
 }
 
+// Until the chain has answered, each piece holds the room its answer will take, so nothing below it moves when it lands.
+const settle = (ready: boolean) => `transition-opacity duration-300 ${ready ? "" : "opacity-0"}`;
+const WAITING: Timed[] = Array.from({ length: 4 }, (_, i) => ({
+  at: String(i),
+  receipt: null,
+  when: "00 hours ago",
+  note: "An agent tried to pay $0,000.00 to 0x0000…0000. Refused: it is over its owner's limit for a single cover.",
+}));
+
 /** What the contract last said no to, read from the chain: the claim above it, with receipts. */
 export function RecentRefusals({ chain }: { chain: string }) {
   const proof = useProof();
-  if (!proof?.refusals.length) return null;
+  if (proof && !proof.refusals.length) return null;
   return (
-    <div className="mt-10">
+    <div className={`mt-10 ${settle(Boolean(proof))}`} aria-hidden={!proof}>
       <h3 className="title">The last things the contract refused on {chain}</h3>
       <ol className="rows mt-4 border-y border-line">
-        {proof.refusals.map((refusal) => (
+        {(proof?.refusals ?? WAITING).map((refusal) => (
           <li key={refusal.at + refusal.note} className="grid gap-x-6 gap-y-1 py-3.5 sm:grid-cols-[6.5rem_minmax(0,1fr)_auto] sm:items-baseline">
             <span className="text-xs text-faint">{refusal.when}</span>
             <span className="text-soft">{refusal.note}</span>
@@ -49,22 +58,28 @@ export function RecentRefusals({ chain }: { chain: string }) {
   );
 }
 
-/** One cover's path, step by step, each with the last time that step really ran. */
-export function Path({ steps }: { steps: { title: string; body: string; made: string[] }[] }) {
+/** One cover's path, step by step. A step that leaves a trace says when it last really ran. */
+export function Path({ steps }: { steps: { title: string; body: string; made: string[]; traced?: boolean }[] }) {
   const proof = useProof();
   return (
     <ol className="rows border-y border-line">
-      {steps.map(({ title, body, made }) => {
+      {steps.map(({ title, body, made, traced }) => {
         const last = proof?.steps[title as keyof Proof["steps"]];
         return (
-          <li key={title} className="grid items-baseline gap-x-8 gap-y-1 py-5 sm:grid-cols-[6rem_minmax(0,1fr)_minmax(0,17.5rem)]">
+          <li key={title} className="grid items-baseline gap-x-8 gap-y-1 py-5 sm:grid-cols-[6rem_minmax(0,1fr)_minmax(0,18.5rem)]">
             <h3 className="text-lg font-[560]">{title}</h3>
             <p className="text-lg text-muted">{body}</p>
             <div className="sm:text-right">
               <p className="num text-sm text-soft">{made.join(" + ")}</p>
-              {last && (
-                <p className="mt-1 text-xs text-faint">
-                  Last: {last.note}, <span className="whitespace-nowrap">{last.when}</span> <Receipt href={last.receipt} />
+              {traced && (
+                <p className={`mt-1 text-xs text-faint ${settle(Boolean(proof))}`}>
+                  {last ? (
+                    <>
+                      Last: {last.note}, <span className="whitespace-nowrap">{last.when}</span> <Receipt href={last.receipt} />
+                    </>
+                  ) : (
+                    "Not run on this chain yet"
+                  )}
                 </p>
               )}
             </div>

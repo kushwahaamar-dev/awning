@@ -50,10 +50,18 @@ function describeCatalog(catalog: Catalog, today: string) {
 export async function interpret(turns: Turn[], catalog: Catalog, today: string): Promise<Interpretation> {
   const [first, ...rest] = turns;
   // What is listed today travels with the first thing the person said, so every later turn is read against it.
-  return ask({
+  const reading = await ask<Interpretation>({
     system: SYSTEM,
     shape: interpretationSchema,
     maxTokens: 4000,
     turns: [{ role: "user", text: `${describeCatalog(catalog, today)}\n\n${first.text}` }, ...rest],
   });
+  if (reading.exposure) reading.exposure.summary = spokenDates(reading.exposure.summary);
+  return reading;
 }
+
+/** The sentence is read back to a person, so a date the model wrote as 2026-11-17 is said the way they would say it. */
+export const spokenDates = (sentence: string) =>
+  sentence.replace(/\b\d{4}-\d{2}-\d{2}\b/g, (date) =>
+    new Date(`${date}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" }),
+  );

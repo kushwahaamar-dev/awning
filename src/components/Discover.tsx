@@ -30,14 +30,14 @@ function Result({ result, sample, onAgain }: { result: Found; sample: boolean; o
       <button type="button" onClick={onAgain} className="link text-sm">
         Look at different sales
       </button>
+      <h1 className="heading rise mt-6 max-w-4xl">
+        A day at {finding.threshold}°F {side} in {city} costs you about {usd(finding.lossUsd)}.
+      </h1>
       {sample && (
-        <p className="note mt-6 max-w-2xl text-sm">
+        <p className="rise mt-4 max-w-2xl text-lg text-muted" style={order(1)}>
           This is sample data: made-up takings for an ice cream truck, set against {city}&rsquo;s real weather for the past year.
         </p>
       )}
-      <h1 className="heading rise mt-6 max-w-4xl">
-        Days at {finding.threshold}°F {side} in {city} cost you about {usd(finding.lossUsd)}.
-      </h1>
 
       <dl className="rise mt-10 grid border-y border-line md:grid-cols-3 md:divide-x md:divide-line" style={order(1)}>
         {figures.map(({ value, label }) => (

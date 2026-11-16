@@ -21,27 +21,28 @@ const ATTACK = [
   { tried: "Take what's left of today's data allowance", verdict: "Went through", tone: "" },
 ];
 
-// One cover, in the order it happens, and what does each step. Two steps depend on keys this
+// One cover, in the order it happens, and what runs each step. Two steps depend on keys this
 // deployment may not have; the page says what is really running, not what could be.
 const PATH = [
   { title: "Read", body: "Your sentence becomes a structured risk.", made: ["Google Gemini"] },
   { title: "Match", body: "Code picks the market and sizes the position.", made: ["Gemini prediction markets"] },
-  { title: "Check", body: "The agent pays 2¢ for a 31-run forecast to test the price.", made: ["x402"] },
-  { title: "Lock", body: "The pool sets aside the full payout.", made: ["AwningPool", "ERC-4626"] },
-  { title: "Pay", body: "The premium moves only inside your limits. Above your line, you sign.", made: ["AwningMandate", "EIP-712"] },
+  { title: "Check", traced: true, body: "The agent pays 2¢ for a 31-run forecast to test the price.", made: ["x402"] },
+  { title: "Lock", traced: true, body: "The pool sets aside the full payout.", made: ["AwningPool", "ERC-4626"] },
+  { title: "Pay", traced: true, body: "The premium moves only inside your limits. Above your line, you sign.", made: ["AwningMandate", "EIP-712"] },
   {
-    live: { title: "Hedge", body: "The pool takes the same position on Gemini.", made: ["Gemini trading API"] },
+    live: { title: "Hedge", traced: true, body: "The pool takes the same position on Gemini.", made: ["Gemini trading API"] },
     sandbox: {
       title: "Hedge",
+      traced: true,
       body: "The pool places the same position on Gemini's sandbox for oil, gas, metal and crypto cover. The sandbox lists no weather, so that hedge is on paper.",
       made: ["Gemini trading API"],
     },
-    paper: { title: "Hedge", body: "The pool sizes the same position on Gemini. It is filled on paper until trading keys are set.", made: ["Gemini prices"] },
+    paper: { title: "Hedge", traced: true, body: "The pool sizes the same position on Gemini. It is filled on paper until trading keys are set.", made: ["Gemini prices"] },
   }[hedging],
   usesStreams
-    ? { title: "Watch", body: "Every contract event streams into the app.", made: ["QuickNode Streams"] }
+    ? { title: "Watch", traced: true, body: "Every contract event streams into the app.", made: ["QuickNode Streams"] }
     : { title: "Watch", body: "The app reads every contract event from the chain.", made: ["Contract logs"] },
-  { title: "Settle", body: "Gemini resolves the market and the pool pays your vault.", made: ["Arc", "Circle CCTP"] },
+  { title: "Settle", traced: true, body: "Gemini resolves the market and the pool pays your vault.", made: ["Arc", "Circle CCTP"] },
 ];
 
 const FIXED = [
@@ -114,7 +115,7 @@ export function Landing() {
           <span className="block">Say what could go wrong.</span>
           <span className="block">Get paid when it does.</span>
         </h1>
-        <div className="mt-9 grid items-end gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,1fr)_27rem]">
+        <div className="mt-9 grid grid-cols-1 items-end gap-x-16 gap-y-12 xl:grid-cols-[minmax(0,1fr)_27rem]">
           <div>
             <p className="rise max-w-xl text-xl leading-snug text-soft" style={{ "--i": 1 } as React.CSSProperties}>
               Cover for the bad days insurers won&rsquo;t touch. The price comes from prediction markets on the Gemini exchange, and your payout is
@@ -128,11 +129,11 @@ export function Landing() {
                 id="ask"
                 name="risk"
                 autoComplete="off"
-                placeholder="If it’s too cold to sit outside tomorrow, my patio loses $300…"
-                className="min-w-0 grow bg-transparent py-2 text-lg placeholder:text-faint focus:outline-none"
+                placeholder="If it’s too cold to sit outside tomorrow, my patio is out $300…"
+                className="min-w-0 grow bg-transparent py-2 text-lg text-ellipsis placeholder:text-faint focus:outline-none"
               />
               <button type="submit" className="btn btn-primary">
-                Find cover
+                Price cover
               </button>
             </Form>
             <p className="rise mt-4 text-sm text-muted" style={{ "--i": 3 } as React.CSSProperties}>
@@ -147,7 +148,7 @@ export function Landing() {
       </section>
       <LiveFigures />
 
-      <section id="prices" className="mt-32 scroll-mt-14 border-t border-line pt-12">
+      <section id="prices" className="mt-20 scroll-mt-24">
         <div className="grid gap-x-20 gap-y-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
           <h2 className="heading">A bad day has a price</h2>
           <p className="max-w-lg text-xl leading-snug text-muted lg:pt-2">
@@ -162,7 +163,7 @@ export function Landing() {
 
       <Split
         id="limits"
-        title="An agent you can&rsquo;t rob"
+        title="An agent not worth robbing"
         lead={<>Its spending limits are a contract on {chainLabel}. We hand its key to an attacker, and this is what the chain does.</>}
         aside={
           <>
@@ -195,7 +196,7 @@ export function Landing() {
       <Split
         id="built"
         title="How it&rsquo;s built"
-        lead="One cover, from sentence to payout, and what does each step."
+        lead="One cover, from sentence to payout, and what runs each step."
         aside={
           <dl className="rows max-w-md border-y border-line">
             <Fact label="Agent's limits">
@@ -243,7 +244,7 @@ export function Landing() {
       </Split>
 
       <section className="mt-32 border-t border-line pt-24 text-center">
-        <h2 className="display">Say what could go wrong.</h2>
+        <h2 className="display">Price your first bad day.</h2>
         <Link href="/app" className="btn btn-lg btn-primary mt-9">
           Open the app
         </Link>

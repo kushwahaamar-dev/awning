@@ -6,6 +6,7 @@ import { assessBasis } from "./basis";
 import type { Exposure } from "./exposure";
 import { buildCoverage } from "./legs";
 import { cityPrices, liveExamples } from "./examples";
+import { spokenDates } from "./interpret";
 import { findMarket } from "./match";
 import { quoteCover } from "./quote";
 
@@ -218,5 +219,14 @@ describe("cityPrices", () => {
       expect(example.cost / example.payout).toBeGreaterThanOrEqual(0.02);
       expect(example.cost / example.payout).toBeLessThanOrEqual(0.6);
     }
+  });
+});
+
+describe("spokenDates", () => {
+  it("says a machine date the way a person would, and leaves everything else alone", () => {
+    expect(spokenDates("If the daily high in Chicago on 2026-11-17 is 49°F or below, you lose about $300.")).toBe(
+      "If the daily high in Chicago on Tuesday, November 17 is 49°F or below, you lose about $300.",
+    );
+    expect(spokenDates("A cold day tomorrow costs you $300.")).toBe("A cold day tomorrow costs you $300.");
   });
 });

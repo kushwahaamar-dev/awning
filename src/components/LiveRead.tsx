@@ -7,7 +7,7 @@ import type { Example } from "@/lib/hedge/examples";
 import { calendarDay, cents, percent, usd } from "@/lib/format";
 import { fetchExamples } from "./Ask";
 
-// The reading plays out in beats: the sentence is typed, each thing found in it lights up, then the cover and its price.
+// The reading plays out in beats: the sentence is typed, each thing found in it lights up, then the cover, its odds and its price.
 const TICK_MS = 40;
 const CHARS_PER_TICK = 2;
 const BEAT = 9;
@@ -60,6 +60,68 @@ const watchMotion = (changed: () => void) => {
 
 const appear = (shown: boolean) => `transition-opacity duration-300 ${shown ? "" : "opacity-0"}`;
 
+/** One risk, as far as the reading has got: `typed` characters of the sentence, and `beat` steps of what follows. */
+function Reading({ example, typed, beat }: { example: Example; typed: number; beat: number }) {
+  return (
+    <>
+      <p className="flex items-center justify-between gap-4 text-sm text-muted">
+        <span className="status status-good status-live">A risk Gemini is pricing now</span>
+        <span className="num max-[400px]:hidden">{calendarDay(example.day)}</span>
+      </p>
+
+      {/* The whole sentence holds the room it will need, so nothing moves as it is typed over the top. */}
+      <blockquote className="relative mt-4 text-xl leading-snug text-soft">
+        <span className="sr-only">{example.text}</span>
+        <span aria-hidden className="invisible">
+          {example.text}
+        </span>
+        <span aria-hidden className="absolute inset-0">
+          {parts(example).map(({ text, lit, start }) => (
+            <span key={start} className={lit && beat >= 0 ? "text-fg underline decoration-accent decoration-2 underline-offset-[0.28em]" : undefined}>
+              {text.slice(0, Math.max(0, typed - start))}
+            </span>
+          ))}
+          {typed < example.text.length && <span className="caret" />}
+        </span>
+      </blockquote>
+
+      {/* Side by side where there is room; one to a line on a phone, where a long city name would run into its neighbour. */}
+      <dl className="mt-4 grid gap-x-4 gap-y-1.5 border-y border-line py-3.5 sm:grid-cols-[auto_auto_auto] sm:justify-between">
+        {facts(example).map(({ label, value }, i) => (
+          <div key={label} className="max-sm:flex max-sm:items-baseline max-sm:justify-between max-sm:gap-4">
+            <dt className="text-xs text-muted">{label}</dt>
+            <dd className={`num text-sm text-fg sm:mt-1 sm:text-base ${appear(beat > i)}`}>{value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <p className={`title mt-4 ${appear(beat > 3)}`}>
+        Pays {usd(example.payout)} if {example.pays}
+      </p>
+      <dl className="rows mt-3 border-y border-line">
+        <div className="flex items-baseline justify-between gap-6 py-2.5 text-muted">
+          <dt>The market&rsquo;s odds it happens</dt>
+          <dd className={`num text-soft ${appear(beat > 4)}`}>{example.odds === null ? "—" : percent(example.odds)}</dd>
+        </div>
+        <div className="flex items-baseline justify-between gap-6 py-2.5">
+          <dt>What this cover costs</dt>
+          <dd className={`num text-xl text-accent ${appear(beat > 5)}`}>{cents(example.cost)}</dd>
+        </div>
+      </dl>
+      {/* Whatever height a shorter sentence leaves over goes above this row, which stays at the foot of the card. */}
+      <p className="mt-auto flex items-center justify-between gap-4 pt-4">
+        <span className={`text-xs text-faint ${appear(beat > 5)}`}>The {usd(example.payout)} is locked before you pay</span>
+        <Link href={`/app?exposure=${encodeURIComponent(JSON.stringify(example.exposure))}&from=example`} className="btn btn-secondary h-9 shrink-0 px-3 text-sm">
+          Price this cover
+        </Link>
+      </p>
+    </>
+  );
+}
+
+// Tall enough for the longest sentence Gemini's cities make, so the card is one size from the moment the page opens.
+const CARD = "rise panel grid min-h-[33rem] p-5 max-xl:max-w-2xl sm:min-h-[27rem] sm:p-6 xl:min-h-[30.25rem]";
+
 /**
  * The product at work, on the page before anyone clicks: a risk Gemini is pricing this minute,
  * typed out, read into the three facts that pick a market, and priced. It moves on to the next one
@@ -70,9 +132,9 @@ export function LiveRead() {
   const [turn, setTurn] = useState({ index: 0, tick: 0 });
   const waiting = useRef(false);
   const still = useSyncExternalStore(watchMotion, () => matchMedia(motionQuery).matches, () => false);
-  const example = examples.length ? examples[turn.index % examples.length] : null;
-  const typing = example ? Math.ceil(example.text.length / CHARS_PER_TICK) : 0;
-  const length = typing + BEAT * 6 + HOLD;
+  const index = examples.length ? turn.index % examples.length : 0;
+  const typing = examples.length ? Math.ceil(examples[index].text.length / CHARS_PER_TICK) : 0;
+  const length = typing + BEAT * 7 + HOLD;
 
   useEffect(() => {
     if (examples.length === 0 || still) return;
@@ -83,73 +145,35 @@ export function LiveRead() {
     return () => clearInterval(timer);
   }, [examples.length, still, length]);
 
-  if (!example) {
+  if (examples.length === 0) {
     return (
-      <figure className="rise panel min-h-[27.5rem] p-6" style={{ "--i": 3 } as CSSProperties}>
-        <p className="status status-accent status-live">Reading Gemini&rsquo;s prices…</p>
+      <figure className={CARD} style={{ "--i": 3 } as CSSProperties}>
+        <p className="status status-accent status-live self-start">Reading Gemini&rsquo;s prices…</p>
       </figure>
     );
   }
 
   const tick = still ? length : turn.tick;
-  const typed = Math.min(example.text.length, tick * CHARS_PER_TICK);
-  const beat = Math.floor((tick - typing) / BEAT);
 
   return (
     <figure
-      className="rise panel min-h-[27.5rem] p-6"
+      className={CARD}
       style={{ "--i": 3 } as CSSProperties}
       onPointerEnter={() => (waiting.current = true)}
       onPointerLeave={() => (waiting.current = false)}
       onFocus={() => (waiting.current = true)}
       onBlur={() => (waiting.current = false)}
     >
-      <p className="flex items-center justify-between gap-4 text-sm text-muted">
-        <span className="status status-good status-live">A risk Gemini is pricing now</span>
-        <span className="num">{calendarDay(example.day)}</span>
-      </p>
-
-      {/* The whole sentence is always there for a screen reader; what is seen is typed over it. */}
-      <blockquote className="mt-4 min-h-[4.75rem] text-xl leading-snug text-soft">
-        <span className="sr-only">{example.text}</span>
-        <span aria-hidden>
-          {parts(example).map(({ text, lit, start }) => (
-            <span key={start} className={lit && beat >= 0 ? "text-fg underline decoration-accent decoration-2 underline-offset-[0.28em]" : undefined}>
-              {text.slice(0, Math.max(0, typed - start))}
-            </span>
-          ))}
-          {typed < example.text.length && <span className="caret" />}
-        </span>
-      </blockquote>
-
-      <dl className="mt-4 grid grid-cols-3 gap-4 border-y border-line py-3.5">
-        {facts(example).map(({ label, value }, i) => (
-          <div key={label} className={appear(beat > i)}>
-            <dt className="text-xs text-muted">{label}</dt>
-            <dd className="num mt-1 text-sm text-fg sm:text-base">{value}</dd>
-          </div>
-        ))}
-      </dl>
-
-      <p className={`title mt-4 ${appear(beat > 3)}`}>
-        Pays {usd(example.payout)} if {example.pays}
-      </p>
-      <dl className={`rows mt-3 border-y border-line ${appear(beat > 4)}`}>
-        <div className="flex items-baseline justify-between gap-6 py-2.5 text-muted">
-          <dt>The market&rsquo;s odds it happens</dt>
-          <dd className="num text-soft">{example.odds === null ? "—" : percent(example.odds)}</dd>
+      {/* Every risk sits in the same place, the ones not showing unseen, so the card is as tall as the tallest and never changes size. */}
+      {examples.map((example, i) => (
+        <div key={example.text} className={`flex flex-col [grid-area:1/1] ${i === index ? "" : "invisible"}`}>
+          {i === index ? (
+            <Reading example={example} typed={Math.min(example.text.length, tick * CHARS_PER_TICK)} beat={Math.floor((tick - typing) / BEAT)} />
+          ) : (
+            <Reading example={example} typed={example.text.length} beat={-1} />
+          )}
         </div>
-        <div className="flex items-baseline justify-between gap-6 py-2.5">
-          <dt>What this cover costs</dt>
-          <dd className="num text-xl text-accent">{cents(example.cost)}</dd>
-        </div>
-      </dl>
-      <figcaption className={`mt-4 flex items-center justify-between gap-4 ${appear(beat > 4)}`}>
-        <span className="text-xs text-faint">The {usd(example.payout)} is locked before you pay</span>
-        <Link href={`/app?exposure=${encodeURIComponent(JSON.stringify(example.exposure))}&from=example`} className="btn btn-secondary h-9 px-3 text-sm">
-          Price it yourself
-        </Link>
-      </figcaption>
+      ))}
     </figure>
   );
 }

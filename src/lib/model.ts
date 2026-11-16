@@ -6,10 +6,15 @@ export type Turn = { role: "user" | "assistant"; text: string };
 // Google's Gemini models. They share a name with the exchange the markets are on and nothing
 // else, so the key has a variable of its own that can't be mistaken for the exchange's trading key.
 // The first model reads best: given a vague risk it asks rather than inventing a level. On a free
-// key any one model can sit silent for a minute while another answers in a second, so there is a
-// second to turn to and neither is waited on for long.
-const MODELS = process.env.AWNING_MODEL ? [process.env.AWNING_MODEL] : ["gemini-4-hydrogen", "gemini-3.6-flash"];
+// key any one model can refuse for being busy, or sit silent for a minute, while another answers in
+// a second. So there are two more to turn to, none is waited on for long, and a list that was busy
+// all the way down is gone through once more, because busy rarely lasts.
+const MODELS = process.env.AWNING_MODEL ? [process.env.AWNING_MODEL] : ["gemini-4-hydrogen", "gemini-3.6-flash", "gemini-3.5-flash-lite"];
 const PATIENCE_MS = 15_000;
+const ROUNDS = 2;
+const BETWEEN_ROUNDS_MS = 1_200;
+// However the attempts fall, nobody is kept waiting past this.
+const GIVE_UP_MS = 40_000;
 
 type Json = { [key: string]: unknown };
 
@@ -43,27 +48,41 @@ export async function ask<T>({ system, turns, shape, maxTokens }: { system: stri
   if (!apiKey) throw new Error("Reading a typed risk isn't switched on here. Pick one of the examples, or find a risk in your sales.");
   const client = new GoogleGenAI({ apiKey });
 
-  for (const model of MODELS) {
-    try {
-      const reply = await client.interactions.create(
-        {
-          model,
-          system_instruction: system,
-          input: turns.map(({ role, text }) =>
-            role === "user" ? { type: "user_input" as const, content: said(text) } : { type: "model_output" as const, content: said(text) },
-          ),
-          response_format: { type: "text", mime_type: "application/json", schema: replySchema(shape) },
-          generation_config: { max_output_tokens: maxTokens, thinking_level: "low" },
-          // Each request carries everything it needs, so there is nothing for Google to keep between them.
-          store: false,
-        },
-        { timeout: PATIENCE_MS, maxRetries: 0 },
-      );
-      if (reply.status !== "completed" || !reply.output_text) throw new Error(`it stopped early (${reply.status})`);
-      return shape.parse(JSON.parse(reply.output_text));
-    } catch (error) {
-      console.error(`${model} could not answer`, error);
+  const started = Date.now();
+  const left = () => GIVE_UP_MS - (Date.now() - started);
+
+  /** Each model in turn, until one answers or the time is up. */
+  async function goDownTheList(): Promise<T | undefined> {
+    for (const model of MODELS) {
+      if (left() < 2_000) return undefined;
+      try {
+        const reply = await client.interactions.create(
+          {
+            model,
+            system_instruction: system,
+            input: turns.map(({ role, text }) =>
+              role === "user" ? { type: "user_input" as const, content: said(text) } : { type: "model_output" as const, content: said(text) },
+            ),
+            response_format: { type: "text", mime_type: "application/json", schema: replySchema(shape) },
+            generation_config: { max_output_tokens: maxTokens, thinking_level: "low" },
+            // Each request carries everything it needs, so there is nothing for Google to keep between them.
+            store: false,
+          },
+          { timeout: Math.min(PATIENCE_MS, left()), maxRetries: 0 },
+        );
+        if (reply.status !== "completed" || !reply.output_text) throw new Error(`it stopped early (${reply.status})`);
+        return shape.parse(JSON.parse(reply.output_text));
+      } catch (error) {
+        console.error(`${model} could not answer`, error);
+      }
     }
+    return undefined;
+  }
+
+  for (let round = 0; round < ROUNDS && left() > BETWEEN_ROUNDS_MS; round++) {
+    if (round > 0) await new Promise((resolve) => setTimeout(resolve, BETWEEN_ROUNDS_MS));
+    const answer = await goDownTheList();
+    if (answer !== undefined) return answer;
   }
   throw new Error("The model that reads sentences is busy right now. Try again in a moment, or pick one of the examples.");
 }

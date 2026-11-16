@@ -67,6 +67,9 @@ async function createSeller() {
 const globals = globalThis as { awningSeller?: ReturnType<typeof createSeller> };
 const seller = () => (globals.awningSeller ??= createSeller());
 
+/** What the desk charges for one forecast. */
+export const FORECAST_PRICE_USD = 0.02;
+
 /**
  * Serves `produce()` for a per-request USDC payment. Without a payment the answer is 402 and the
  * terms; with one, the work is done first and the money is only taken if it succeeded.

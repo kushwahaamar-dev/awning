@@ -6,9 +6,10 @@ import { clock, day } from "@/lib/format";
 import type { CostPoint } from "@/lib/odds";
 import type { Leg } from "@/lib/hedge/legs";
 
-const W = 480;
-const H = 140;
-const PAD = { top: 12, right: 44, bottom: 22, left: 4 };
+// Close to the size it is shown at, so its labels come out the size they are set.
+const W = 360;
+const H = 124;
+const PAD = { top: 12, right: 40, bottom: 24, left: 4 };
 
 const fetchPoints = async (url: string): Promise<CostPoint[]> => (await (await fetch(url)).json()).points ?? [];
 const centsPerDollar = (cost: number) => `${Math.round(cost * 100)}¢`;
@@ -58,7 +59,7 @@ export function CostChart({ legs }: { legs: Leg[] }) {
         {[0, top / 2, top].map((tick) => (
           <g key={tick}>
             <line x1={PAD.left} x2={W - PAD.right} y1={y(tick)} y2={y(tick)} className="stroke-line" strokeWidth={1} />
-            <text x={W - PAD.right + 6} y={y(tick) + 4} className="num fill-faint text-[10px]">
+            <text x={W - PAD.right + 6} y={y(tick) + 4} className="num fill-faint text-[12px]">
               {centsPerDollar(tick)}
             </text>
           </g>
@@ -73,10 +74,10 @@ export function CostChart({ legs }: { legs: Leg[] }) {
         ) : (
           <circle cx={x(t1)} cy={y(last.cost)} r={3.5} className="fill-accent stroke-bg" strokeWidth={2} />
         )}
-        <text x={PAD.left} y={H - 4} className="num fill-faint text-[10px]">
+        <text x={PAD.left} y={H - 4} className="num fill-faint text-[12px]">
           {clock(points[0].at)}
         </text>
-        <text x={W - PAD.right} y={H - 4} textAnchor="end" className="num fill-faint text-[10px]">
+        <text x={W - PAD.right} y={H - 4} textAnchor="end" className="num fill-faint text-[12px]">
           now
         </text>
       </svg>

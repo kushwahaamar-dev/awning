@@ -24,7 +24,7 @@ export function Storefront() {
   const landing = path === "/";
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-bg/75 backdrop-blur-xl">
-      <div className="wrap flex h-14 items-center gap-4 sm:gap-8">
+      <div className="wrap flex h-14 items-center gap-2 min-[360px]:gap-4 sm:gap-8">
         <Link href="/" aria-label="Awning, home" className="rounded-md">
           <Logo />
         </Link>
@@ -40,14 +40,14 @@ export function Storefront() {
                   key={href}
                   href={href}
                   aria-current={path === href ? "page" : undefined}
-                  className={`rounded-md px-2.5 py-1.5 transition-colors sm:px-3 ${path === href ? "bg-white/[0.07] text-fg" : "text-muted hover:text-fg"}`}
+                  className={`rounded-md px-1.5 py-1.5 transition-colors min-[360px]:px-2.5 sm:px-3 ${path === href ? "bg-white/[0.07] text-fg" : "text-muted hover:text-fg"}`}
                 >
                   {label}
                 </Link>
               ))}
         </nav>
         <span className="ml-auto flex items-center gap-3">
-          <span className="status status-good text-muted max-sm:hidden">{isLocalChain ? "Local test chain" : chain.name}</span>
+          <span className={`status status-good text-muted ${landing ? "max-lg:hidden" : "max-sm:hidden"}`}>{isLocalChain ? "Local test chain" : chain.name}</span>
           {landing && (
             <Link href="/app" className="btn btn-primary h-8 px-3 text-sm">
               Open the app

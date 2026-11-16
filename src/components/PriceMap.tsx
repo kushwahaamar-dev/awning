@@ -1,23 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type CSSProperties } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import useSWR from "swr";
 import type { MapCity } from "@/app/api/map/route";
 import { calendarDay, cents, percent, usd } from "@/lib/format";
 
-const fetchCities = async (url: string): Promise<MapCity[]> => (await (await fetch(url)).json()).cities ?? [];
+const NONE: MapCity[] = [];
+const fetchCities = async (url: string): Promise<MapCity[]> => (await (await fetch(url)).json()).cities ?? NONE;
 
 // The lower 48, drawn flat: degrees of longitude shrunk to what they span at these latitudes.
 const W = 1000;
 const H = 540;
-const WEST = -125.5;
-const EAST = -66;
+// Set a little east of the coast: the Pacific side has room to spare, and the north-east needs it for its labels.
+const WEST = -123.8;
+const EAST = -64.3;
 const NORTH = 50;
 const SOUTH = 24;
 // Anchorage is off this map, so it sits in the corner the way atlases put it.
 const INSET: Record<string, [number, number]> = { ANC: [86, 478] };
-// Enough names to read the dots as a country; the rest are named when pointed at.
+// Cities named even when nothing is priced there, so the dots read as a country.
 const NAMED = new Set(["SEA", "SFO", "LA", "PHX", "DEN", "DFW", "HOU", "MSP", "CHI", "ATL", "MIA", "DCA", "NYC", "BOS", "ANC"]);
 
 const place = ({ code, latitude, longitude }: MapCity): [number, number] =>
@@ -26,43 +28,91 @@ const place = ({ code, latitude, longitude }: MapCity): [number, number] =>
 const radiusOf = (city: MapCity) => (city.example ? 5.5 + Math.min(1, (city.example.odds ?? 0.1) / 0.4) * 5 : 3.5);
 
 type Box = { left: number; top: number; right: number; bottom: number };
+type Spot = { x: number; y: number; anchor: "start" | "end" | "middle"; box: Box };
 const overlaps = (a: Box, b: Box) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+const onTheMap = ({ left, top, right, bottom }: Box) => left >= 4 && right <= W - 4 && top >= 2 && bottom <= H - 2;
+
+function dotBox(city: MapCity): Box {
+  const [x, y] = place(city);
+  const r = radiusOf(city) + 2;
+  return { left: x - r, top: y - r, right: x + r, bottom: y + r };
+}
+
+/** The places a city's label can go, best first: right of its dot, left, above, below, then nudged off each of those. A label is the name, and the price if there is one. */
+function spots(city: MapCity): Spot[] {
+  const [x, y] = place(city);
+  // Clear of the ring drawn round a dot that is being pointed at.
+  const reach = radiusOf(city) + 11;
+  const corner = reach * 0.6;
+  const width = city.city.length * 8.7 + (city.example ? 6 + cents(city.example.cost).length * 9.1 : 0);
+  const from = (left: number, baseline: number): Box => ({ left, top: baseline - 15, right: left + width, bottom: baseline + 5 });
+  const spot = (anchor: Spot["anchor"], at: number, baseline: number): Spot => ({
+    x: at,
+    y: baseline,
+    anchor,
+    box: from(anchor === "start" ? at : anchor === "end" ? at - width : at - width / 2, baseline),
+  });
+  return [
+    spot("start", x + reach, y + 5),
+    spot("end", x - reach, y + 5),
+    spot("middle", x, y - reach - 1),
+    spot("middle", x, y + reach + 12),
+    spot("start", x + reach - 2, y + 15),
+    spot("start", x + reach - 2, y - 5),
+    spot("end", x - reach + 2, y + 15),
+    spot("end", x - reach + 2, y - 5),
+    spot("start", x + corner, y - corner - 3),
+    spot("start", x + corner, y + corner + 12),
+    spot("end", x - corner, y - corner - 3),
+    spot("end", x - corner, y + corner + 12),
+  ];
+}
+
+// Labels keep this much air between them, so two never read as one line.
+const apart = ({ left, top, right, bottom }: Box): Box => ({ left: left - 7, top, right: right + 7, bottom });
 
 /**
- * Which side of its dot each city's label goes, so that no label sits on another label or on a dot.
- * The city being pointed at is placed first, then the named ones, then the rest; a label with no
- * room on either side is left off until its city is pointed at.
+ * Where each city's label sits while nothing is pointed at: on the map, and on no other label or dot.
+ * Priced cities go first. One with no room anywhere goes without until it is pointed at; a price is
+ * never shown without its city's name.
  */
-function labelSides(cities: MapCity[], active: string | undefined) {
-  const dots: Box[] = cities.map((city) => {
-    const [x, y] = place(city);
-    const r = radiusOf(city) + 2;
-    return { left: x - r, top: y - r, right: x + r, bottom: y + r };
-  });
-  const rank = (city: MapCity) => (city.code === active ? 0 : NAMED.has(city.code) ? (city.example ? 1 : 3) : city.example ? 2 : 4);
+function restLabels(cities: MapCity[]) {
+  const dots = cities.map(dotBox);
   const taken: Box[] = [];
-  const sides = new Map<string, "right" | "left">();
+  const placed = new Map<string, Spot>();
+  const rank = (city: MapCity) => (city.example ? (NAMED.has(city.code) ? 0 : 1) : 2);
   for (const city of [...cities].sort((a, b) => rank(a) - rank(b))) {
-    const named = NAMED.has(city.code) || city.code === active || !city.example;
-    if (!city.example && !NAMED.has(city.code) && city.code !== active) continue;
-    const [x, y] = place(city);
-    const reach = radiusOf(city) + 7;
-    const width = (named ? city.city.length * 6.7 : 0) + (city.example ? cents(city.example.cost).length * 7.6 + (named ? 6 : 0) : 0);
+    if (!city.example && !NAMED.has(city.code)) continue;
     const self = cities.indexOf(city);
-    for (const side of ["right", "left"] as const) {
-      const box: Box = side === "right" ? { left: x + reach, top: y - 9, right: x + reach + width, bottom: y + 7 } : { left: x - reach - width, top: y - 9, right: x - reach, bottom: y + 7 };
-      const clear = box.left > 0 && box.right < W && !taken.some((other) => overlaps(box, other)) && !dots.some((dot, i) => i !== self && overlaps(box, dot));
-      if (clear || (city.code === active && side === "right")) {
-        sides.set(city.code, side);
-        taken.push(box);
-        break;
-      }
-    }
+    const spot = spots(city).find(({ box }) => onTheMap(box) && !taken.some((other) => overlaps(apart(box), other)) && !dots.some((dot, i) => i !== self && overlaps(box, dot)));
+    if (!spot) continue;
+    placed.set(city.code, spot);
+    taken.push(spot.box);
   }
-  return sides;
+  return placed;
+}
+
+/** Where the label of a city being pointed at goes when it has no place of its own: on the map, and off the other dots if it can be. */
+function spotFor(city: MapCity, cities: MapCity[]) {
+  const dots = cities.filter((other) => other !== city).map(dotBox);
+  const all = spots(city);
+  return all.find(({ box }) => onTheMap(box) && !dots.some((dot) => overlaps(box, dot))) ?? all.find(({ box }) => onTheMap(box)) ?? all[0];
 }
 
 const quoteLink = (city: MapCity) => `/app?exposure=${encodeURIComponent(JSON.stringify(city.example!.exposure))}&from=example`;
+
+function Label({ city, spot, lit = false }: { city: MapCity; spot: Spot; lit?: boolean }) {
+  return (
+    <text x={spot.x} y={spot.y} textAnchor={spot.anchor} className={lit ? "fill-fg" : "fill-muted"}>
+      {city.city}
+      {city.example && (
+        <tspan dx={6} className={`num ${lit ? "fill-accent" : "fill-soft"}`}>
+          {cents(city.example.cost)}
+        </tspan>
+      )}
+    </text>
+  );
+}
 
 /** What cover for one city's bad day costs, as it would read on a quote. */
 function Reading({ city }: { city: MapCity }) {
@@ -71,7 +121,15 @@ function Reading({ city }: { city: MapCity }) {
     return (
       <>
         <p className="title">{city.city}</p>
-        <p className="mt-3 text-muted">Gemini lists tomorrow&rsquo;s high here, but nothing on it is priced like cover right now: each outcome is either near certain or has no seller.</p>
+        <p className="mt-3 text-muted">
+          Gemini lists tomorrow&rsquo;s high here, but nothing on it is priced like cover right now: each outcome is either near certain or has no
+          seller.
+        </p>
+        <div className="mt-auto pt-5">
+          <Link href="/app" className="btn btn-secondary w-full">
+            Describe a risk of your own
+          </Link>
+        </div>
       </>
     );
   }
@@ -94,54 +152,79 @@ function Reading({ city }: { city: MapCity }) {
           <dd className="num text-xl text-accent">{cents(example.cost)}</dd>
         </div>
       </dl>
-      <Link href={quoteLink(city)} className="btn btn-primary mt-5 w-full">
-        Price cover in {city.city}
-      </Link>
+      <div className="mt-auto pt-5">
+        <Link href={quoteLink(city)} className="btn btn-primary w-full">
+          Price cover in {city.city}
+        </Link>
+      </div>
     </>
   );
 }
 
 /** Every city Gemini lists tomorrow's high for, as a map of what a bad day there costs to cover right now. */
 export function PriceMap() {
-  const { data: cities = [] } = useSWR("/api/map", fetchCities, { revalidateOnFocus: false });
+  const { data: cities = NONE } = useSWR("/api/map", fetchCities, { revalidateOnFocus: false });
   const [picked, setPicked] = useState<string | null>(null);
-  const priced = cities.filter((city) => city.example);
+  const links = useRef(new Map<string, HTMLAnchorElement>());
+  // The labels at rest, and the priced cities from west to east, which is the order the arrow keys walk them in.
+  const { rest, priced } = useMemo(
+    () => ({ rest: restLabels(cities), priced: cities.filter((city) => city.example).sort((a, b) => place(a)[0] - place(b)[0]) }),
+    [cities],
+  );
   // Until someone points at a city, the reading is for the one closest to a one-in-eight day.
   const shown = cities.find((city) => city.code === picked) ?? [...priced].sort((a, b) => Math.abs(a.example!.cost / a.example!.payout - 0.12) - Math.abs(b.example!.cost / b.example!.payout - 0.12))[0];
+  const spot = shown && (rest.get(shown.code) ?? spotFor(shown, cities));
+  // One stop for the Tab key, however many cities there are.
+  const stop = shown?.example ? shown.code : priced[0]?.code;
 
-  const sides = labelSides(cities, shown?.code);
+  function walk(event: KeyboardEvent<SVGSVGElement>) {
+    const step = ({ ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 } as Record<string, number>)[event.key];
+    const at = priced.findIndex((city) => city.code === shown?.code);
+    const next = event.key === "Home" ? priced[0] : event.key === "End" ? priced.at(-1) : step ? priced[(at + step + priced.length) % priced.length] : undefined;
+    if (!next) return;
+    event.preventDefault();
+    setPicked(next.code);
+    links.current.get(next.code)?.focus();
+  }
 
   return (
-    <div className="grid items-center gap-x-14 gap-y-10 lg:grid-cols-[minmax(0,1fr)_22rem]">
-      <svg viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Cities where tomorrow's high can be covered" className="pricemap w-full max-md:hidden">
-        {cities.map((city, i) => {
+    <div className="grid items-center gap-x-14 gap-y-10 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        role="group"
+        aria-label="Cities where tomorrow's high can be covered. The arrow keys move from city to city."
+        className="pricemap w-full max-lg:hidden"
+        onKeyDown={walk}
+      >
+        {cities.map((city) => {
           const [x, y] = place(city);
           const active = shown?.code === city.code;
           const radius = radiusOf(city);
-          const side = sides.get(city.code);
-          const named = NAMED.has(city.code) || active || !city.example;
           const label = city.example ? `${city.city}: ${cents(city.example.cost)} covers ${usd(city.example.payout)}` : `${city.city}: nothing priced as cover right now`;
+          const own = rest.get(city.code);
           const dot = (
-            <g className={city.example ? "priced" : undefined} style={{ "--i": i } as CSSProperties}>
+            <>
               {/* A wide invisible target, so a dot is easy to point at. */}
               <circle cx={x} cy={y} r={16} fill="transparent" />
-              {active && <circle cx={x} cy={y} r={radius + 7} fill="none" className="stroke-fg" strokeWidth={1.25} />}
+              {active && <circle cx={x} cy={y} r={radius + 7} fill="none" className="ring stroke-fg" strokeWidth={1.25} />}
               <circle cx={x} cy={y} r={radius} className={city.example ? "fill-accent" : "fill-faint"} fillOpacity={city.example ? (active ? 1 : 0.85) : 0.45} />
-              {/* Every priced city wears its price where there is room for it, and its name too if it is one that places the map. */}
-              {side && (
-                <text x={side === "right" ? x + radius + 7 : x - radius - 7} y={y + 4} textAnchor={side === "right" ? "start" : "end"} className={`text-[12.5px] ${active ? "fill-fg" : "fill-muted"}`}>
-                  {named && city.city}
-                  {city.example && (
-                    <tspan dx={named ? 6 : 0} className={`num ${active ? "fill-accent" : "fill-soft"}`}>
-                      {cents(city.example.cost)}
-                    </tspan>
-                  )}
-                </text>
-              )}
-            </g>
+              {/* Its label steps aside while the city being pointed at needs the room. */}
+              {own && !active && !(spot && overlaps(own.box, spot.box)) && <Label city={city} spot={own} />}
+            </>
           );
           return city.example ? (
-            <a key={city.code} href={quoteLink(city)} aria-label={label} onPointerEnter={() => setPicked(city.code)} onFocus={() => setPicked(city.code)}>
+            <a
+              key={city.code}
+              ref={(link) => {
+                if (link) links.current.set(city.code, link);
+                else links.current.delete(city.code);
+              }}
+              href={quoteLink(city)}
+              tabIndex={city.code === stop ? 0 : -1}
+              aria-label={label}
+              onPointerEnter={() => setPicked(city.code)}
+              onFocus={() => setPicked(city.code)}
+            >
               {dot}
             </a>
           ) : (
@@ -150,10 +233,23 @@ export function PriceMap() {
             </g>
           );
         })}
+        {/* The city being pointed at is named last, so it is drawn over everything else, in the place its label always has if it has one. */}
+        {shown && spot && (
+          <g aria-hidden className="pointer-events-none">
+            <Label city={shown} spot={spot} lit />
+          </g>
+        )}
       </svg>
 
-      {/* A phone has no room for a map and nothing to point with, so it gets the same prices as a list. */}
-      <ul className="rows border-y border-line md:hidden">
+      {/* A small screen has no room for a map and nothing to point with, so it gets the same prices as a list. */}
+      <ul className="rows border-y border-line lg:hidden">
+        {/* Until the prices arrive the rows hold their room, so the page below doesn't jump when they do. */}
+        {cities.length === 0 &&
+          Array.from({ length: 7 }, (_, i) => (
+            <li key={i} aria-hidden className="invisible py-3.5">
+              $300 if a city&rsquo;s high is 60°F or below
+            </li>
+          ))}
         {priced.slice(0, 7).map((city) => (
           <li key={city.code}>
             <Link href={quoteLink(city)} className="flex items-baseline justify-between gap-4 py-3.5 text-soft">
@@ -166,12 +262,13 @@ export function PriceMap() {
         ))}
       </ul>
 
-      <div className="max-md:hidden">
-        <div className="panel min-h-[19rem] p-6" aria-live="polite">
+      {/* Beside the map on a wide screen; under it, with the note alongside, on a narrower one. */}
+      <div className="max-lg:hidden lg:max-xl:grid lg:max-xl:grid-cols-[22rem_minmax(0,1fr)] lg:max-xl:items-start lg:max-xl:gap-10">
+        <div className="panel flex min-h-[19rem] flex-col p-6" aria-live="polite">
           {shown ? <Reading city={shown} /> : <p className="text-muted">Reading Gemini&rsquo;s prices…</p>}
         </div>
         {cities.length > 0 && (
-          <p className="mt-4 text-sm text-muted">
+          <p className="mt-4 max-w-md text-sm text-muted lg:max-xl:mt-0">
             Point at a city to read its price. <span className="num text-soft">{priced.length}</span> of{" "}
             <span className="num text-soft">{cities.length}</span> have cover priced right now; the grey ones are near certain tomorrow, or have no
             seller.

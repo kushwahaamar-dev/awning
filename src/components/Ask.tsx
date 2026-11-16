@@ -23,10 +23,20 @@ type Props = {
   checking: boolean;
   error: string | null;
   unlisted: { wanted: string | null } | null;
+  /** What is in the box. The desk owns it, so a sentence that couldn't be read comes back to be sent again. */
+  draft: string;
+  onDraft: (text: string) => void;
   onSay: (text: string) => void;
   onPick: (example: Example) => void;
   voice: ReturnType<typeof useVoice>;
 };
+
+// What a risk can be matched to, so nobody has to guess what to type. Checked against Gemini's listings on 2026-11-16.
+const LISTED = [
+  ["Weather", "The daily high in 49 US cities"],
+  ["Prices", "Oil, natural gas, gold, silver and copper, and Bitcoin, Ether, Solana and XRP"],
+  ["Games", "A team winning or losing in football, basketball, hockey or UFC"],
+];
 
 const MIC_LABEL = {
   idle: "Say it",
@@ -42,8 +52,7 @@ function Phase({ state, children }: { state: "done" | "now" | "next"; children: 
   return <li className={`status text-base whitespace-normal ${look}`}>{children}</li>;
 }
 
-export function Ask({ turns, busy, pricing, understood, checking, error, unlisted, onSay, onPick, voice }: Props) {
-  const [draft, setDraft] = useState("");
+export function Ask({ turns, busy, pricing, understood, checking, error, unlisted, draft, onDraft, onSay, onPick, voice }: Props) {
   const [nudged, setNudged] = useState(false);
   const field = useRef<HTMLTextAreaElement>(null);
   // Risks Gemini is pricing sensibly this minute, so the first click always ends in a real quote.
@@ -61,7 +70,6 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
       return;
     }
     onSay(text.trim());
-    setDraft("");
   }
 
   return (
@@ -101,7 +109,7 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
               autoComplete="off"
               value={draft}
               onChange={(e) => {
-                setDraft(e.target.value);
+                onDraft(e.target.value);
                 setNudged(false);
               }}
               onKeyDown={(e) => {
@@ -115,7 +123,8 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
             />
             <div className="flex flex-wrap items-center justify-between gap-3 p-3 pl-5">
               <span aria-live="polite" className={`text-xs ${nudged ? "text-accent" : "text-faint"}`}>
-                {nudged ? "Write what could cost you money first" : "Press Enter to send"}
+                {/* A phone's keyboard has no Enter that sends, so the hint is only for a real one. */}
+                {nudged ? "Write what could cost you money first" : <span className="[@media(pointer:coarse)]:hidden">Press Enter to send</span>}
               </span>
               <span className="flex gap-2">
                 {voice.enabled && (
@@ -131,7 +140,7 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
                   </button>
                 )}
                 <button type="submit" className="btn btn-primary">
-                  Find cover
+                  Price cover
                 </button>
               </span>
             </div>
@@ -179,7 +188,7 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
                         className="group grid w-full grid-cols-[5.5rem_1fr_auto_auto] items-baseline gap-x-3 py-3.5 text-left text-soft transition-colors hover:text-fg max-sm:grid-cols-[1fr_auto_auto]"
                       >
                         <span className="text-sm text-muted max-sm:col-span-3">{example.kind}</span>
-                        <span>{example.text}</span>
+                        <span className="text-pretty">{example.text}</span>
                         <span className="num text-sm text-muted">{cents(example.cost)}</span>
                         <Chevron className="size-4 self-center text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-fg" />
                       </button>
@@ -199,6 +208,15 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
       </section>
       <div className="rise max-lg:hidden" style={order(4)}>
         <Ascii scene="storm" label="Storm clouds over dark hills, lightning coming down" className="fade-soft" />
+        <h2 className="title mt-8">What Gemini lists today</h2>
+        <dl className="rows mt-4 border-y border-line">
+          {LISTED.map(([kind, what]) => (
+            <div key={kind} className="grid grid-cols-[5.5rem_1fr] items-baseline gap-x-6 py-3.5">
+              <dt className="text-sm text-muted">{kind}</dt>
+              <dd className="text-soft">{what}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </div>
   );

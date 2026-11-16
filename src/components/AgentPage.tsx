@@ -176,7 +176,7 @@ function StandingOrders({ account }: { account: Account }) {
 }
 
 function HijackTest() {
-  const { owner, refresh } = useAccount();
+  const { owner, account, refresh } = useAccount();
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ steps: HijackStep[]; taken: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -198,7 +198,9 @@ function HijackTest() {
     <section className="mt-24 grid gap-x-16 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
       <div>
         <h2 className="heading">Test the limits</h2>
-        <p className="mt-3 text-lg text-muted">Hand the agent&rsquo;s key to an attacker and let them try to empty your vault. The transactions are real.</p>
+        <p className="mt-3 text-lg text-muted">
+          Hand the agent&rsquo;s key to an attacker and let them try to empty your vault. Every attempt is a real transaction on {account?.setup.chainName ?? "the chain"}.
+        </p>
         <button type="button" onClick={run} disabled={busy} className="btn btn-lg btn-danger mt-6">
           {busy ? "Attacking…" : "Hijack my agent"}
         </button>
@@ -222,13 +224,18 @@ function HijackTest() {
                     {!step.ok && <p className="mt-0.5 text-sm text-muted">{sentence(REFUSAL[step.reason])}</p>}
                     {step.returned && <p className="mt-0.5 text-sm text-muted">Your limits allowed it, but the pool never offered that cover.</p>}
                   </div>
-                  <span className={`status land shrink-0 ${!step.ok ? "status-bad" : step.returned ? "status-accent" : ""}`} style={order(i)}>
+                  <span className={`status land shrink-0 ${!step.ok ? "status-bad" : step.returned ? "status-accent" : ""}`} style={order(i * 2)}>
                     {!step.ok ? "Refused" : step.returned ? "Sent back" : "Went through"}
                   </span>
                 </li>
               ))}
             </ol>
-            <p className="title border-t border-line px-5 py-5">The attacker got away with {cents(result.taken)}.</p>
+            {/* The answer the whole test is for, landing after the last verdict. */}
+            <div className="land border-t border-line px-5 py-6" style={order(result.steps.length * 2 + 1)}>
+              <p className="text-muted">The attacker got away with</p>
+              <p className="figure mt-2 text-[clamp(2.75rem,5vw,4rem)] leading-none text-accent">{cents(result.taken)}</p>
+              <p className="mt-3 text-muted">Everything else is still in your vault.</p>
+            </div>
           </>
         ) : (
           <p className="px-5 py-10 text-center text-muted">What the contracts say to each attempt shows up here.</p>
