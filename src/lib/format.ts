@@ -19,3 +19,13 @@ export function clock(iso: string) {
 }
 
 export const shortAddress = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+
+/** How long ago something happened, in the largest unit that fits. */
+export function ago(iso: string, now = Date.now()) {
+  const minutes = Math.max(0, Math.round((now - new Date(iso).getTime()) / 60_000));
+  const some = (n: number, unit: string) => `${n} ${unit}${n === 1 ? "" : "s"} ago`;
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return some(minutes, "minute");
+  const hours = Math.round(minutes / 60);
+  return hours < 48 ? some(hours, "hour") : some(Math.round(hours / 24), "day");
+}

@@ -9,6 +9,7 @@ import { Ascii } from "./Ascii";
 import { LiveRead } from "./LiveRead";
 import { LiveFigures } from "./LiveFigures";
 import { PriceMap } from "./PriceMap";
+import { Path, RecentRefusals } from "./Proof";
 import { External } from "./icons";
 
 // What a stolen agent key can do, in the order the test on the agent page tries it.
@@ -188,6 +189,7 @@ export function Landing() {
             ))}
           </ol>
         </div>
+        <RecentRefusals chain={chainLabel} />
       </Split>
 
       <Split
@@ -207,15 +209,7 @@ export function Landing() {
           </dl>
         }
       >
-        <ol className="rows border-y border-line">
-          {PATH.map(({ title, body, made }) => (
-            <li key={title} className="grid items-baseline gap-x-8 gap-y-1 py-5 sm:grid-cols-[6rem_minmax(0,1fr)_auto]">
-              <h3 className="text-lg font-[510]">{title}</h3>
-              <p className="text-lg text-muted">{body}</p>
-              <p className="num text-sm text-soft">{made.join(" + ")}</p>
-            </li>
-          ))}
-        </ol>
+        <Path steps={PATH} />
       </Split>
 
       <Split

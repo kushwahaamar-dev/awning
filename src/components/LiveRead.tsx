@@ -85,7 +85,7 @@ export function LiveRead() {
 
   if (!example) {
     return (
-      <figure className="rise panel min-h-[27.5rem] p-6 max-lg:hidden" style={{ "--i": 3 } as CSSProperties}>
+      <figure className="rise panel min-h-[27.5rem] p-6" style={{ "--i": 3 } as CSSProperties}>
         <p className="status status-accent status-live">Reading Gemini&rsquo;s prices…</p>
       </figure>
     );
@@ -97,7 +97,7 @@ export function LiveRead() {
 
   return (
     <figure
-      className="rise panel min-h-[27.5rem] p-6 max-lg:hidden"
+      className="rise panel min-h-[27.5rem] p-6"
       style={{ "--i": 3 } as CSSProperties}
       onPointerEnter={() => (waiting.current = true)}
       onPointerLeave={() => (waiting.current = false)}
@@ -110,7 +110,8 @@ export function LiveRead() {
       </p>
 
       {/* The whole sentence is always there for a screen reader; what is seen is typed over it. */}
-      <blockquote aria-label={example.text} className="mt-4 min-h-[4.75rem] text-xl leading-snug text-soft">
+      <blockquote className="mt-4 min-h-[4.75rem] text-xl leading-snug text-soft">
+        <span className="sr-only">{example.text}</span>
         <span aria-hidden>
           {parts(example).map(({ text, lit, start }) => (
             <span key={start} className={lit && beat >= 0 ? "text-fg underline decoration-accent decoration-2 underline-offset-[0.28em]" : undefined}>
@@ -125,7 +126,7 @@ export function LiveRead() {
         {facts(example).map(({ label, value }, i) => (
           <div key={label} className={appear(beat > i)}>
             <dt className="text-xs text-muted">{label}</dt>
-            <dd className="num mt-1 text-fg">{value}</dd>
+            <dd className="num mt-1 text-sm text-fg sm:text-base">{value}</dd>
           </div>
         ))}
       </dl>
