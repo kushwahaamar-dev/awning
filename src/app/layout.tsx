@@ -2,15 +2,14 @@ import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
 import { GeistPixelCircle } from "geist/font/pixel";
 import { GeistSans } from "geist/font/sans";
-import { GeistSerif } from "geist/font/serif";
 import { AccountProvider } from "@/components/account";
 import { Footer } from "@/components/Footer";
 import { Storefront } from "@/components/Storefront";
 import "./globals.css";
 
-// The Geist family, each face with one job: Sans for the interface, Serif for the two big lines,
-// Mono for values in running text, Pixel for figures read live from the chain.
-const fonts = [GeistSans, GeistSerif, GeistMono, GeistPixelCircle].map((font) => font.variable).join(" ");
+// The Geist family, each face with one job: Sans for the interface and the big lines, Mono for
+// values in running text, Pixel for figures read live from the chain and for the name at the foot.
+const fonts = [GeistSans, GeistMono, GeistPixelCircle].map((font) => font.variable).join(" ");
 
 export const metadata: Metadata = {
   title: "Awning",

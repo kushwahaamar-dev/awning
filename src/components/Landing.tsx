@@ -125,14 +125,17 @@ function Contract({ address }: { address: string | undefined }) {
 export function Landing() {
   return (
     <>
-      <section className="pt-20 sm:pt-28">
-        <div className="grid items-start gap-x-16 gap-y-12 min-[88rem]:grid-cols-[minmax(0,1fr)_25rem]">
+      <section className="relative isolate pt-20 pb-14 sm:pt-28">
+        <div aria-hidden className="hero-art rise" style={{ "--i": 4 } as React.CSSProperties}>
+          <Ascii scene="street" label="" />
+        </div>
+        <h1 className="display rise">
+          <span className="block">Say what could go wrong.</span>
+          <span className="block">Get paid when it does.</span>
+        </h1>
+        <div className="mt-12 grid items-end gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,1fr)_25rem]">
           <div>
-            <h1 className="display rise">
-              <span className="block lg:whitespace-nowrap">Say what could go wrong.</span>
-              <span className="block lg:whitespace-nowrap">Get paid when it does.</span>
-            </h1>
-            <p className="rise mt-7 max-w-xl text-lg text-muted" style={{ "--i": 1 } as React.CSSProperties}>
+            <p className="rise max-w-xl text-xl leading-snug text-soft" style={{ "--i": 1 } as React.CSSProperties}>
               Cover for the bad days insurers won&rsquo;t touch. The price comes from prediction markets on the Gemini exchange, and your payout is
               locked in USDC on Arc before you pay.
             </p>
@@ -160,9 +163,6 @@ export function Landing() {
           </div>
           <HeroQuote />
         </div>
-        <div aria-hidden className="band rise mt-6" style={{ "--i": 4 } as React.CSSProperties}>
-          <Ascii scene="street" label="" />
-        </div>
       </section>
       <LiveFigures />
 
@@ -176,7 +176,7 @@ export function Landing() {
             // Equal columns, so the three titles sit on one line; the rule between them is drawn in the gap.
             <li key={title} className="relative py-6 md:not-first:before:absolute md:not-first:before:inset-y-0 md:not-first:before:-left-10 md:not-first:before:w-px md:not-first:before:bg-line">
               <div className="flex aspect-[1.75] items-center overflow-hidden">
-                <Ascii scene={scene} label={label} className="fade-soft w-full text-soft" />
+                <Ascii scene={scene} label={label} className="fade-soft w-full" />
               </div>
               <h3 className="title mt-8">{title}</h3>
               <p className="mt-2 max-w-sm text-lg text-muted">{body}</p>

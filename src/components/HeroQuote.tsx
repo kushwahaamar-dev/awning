@@ -29,7 +29,7 @@ export function HeroQuote() {
   ];
 
   return (
-    <figure className="rise panel min-h-[25.5rem] p-6 max-[88rem]:hidden" style={{ "--i": 3 } as CSSProperties}>
+    <figure className="rise panel min-h-[25.5rem] p-6 max-lg:hidden" style={{ "--i": 3 } as CSSProperties}>
       {/* The frame is there from the start; what fills it waits for the real price rather than showing a guess first. */}
       <div aria-busy={!settled} className={`transition-opacity duration-300 ${settled ? "" : "opacity-0"}`}>
         <blockquote className="text-soft">&ldquo;{shown.text}&rdquo;</blockquote>
