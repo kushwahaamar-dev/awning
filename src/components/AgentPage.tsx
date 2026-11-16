@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import useSWR from "swr";
 import { cctpAvailable } from "@/lib/chain/cctp";
 import { setPaused } from "@/lib/chain/device";
@@ -180,6 +180,11 @@ function HijackTest() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ steps: HijackStep[]; taken: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const verdict = useRef<HTMLDivElement>(null);
+  // On a phone the result opens below the button that asked for it, so it is brought into view.
+  useEffect(() => {
+    if (result) verdict.current?.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }, [result]);
 
   async function run() {
     setBusy(true);
@@ -207,7 +212,7 @@ function HijackTest() {
         {error && <p className="note note-bad mt-4 text-sm">{error}</p>}
       </div>
 
-      <div className="panel overflow-hidden">
+      <div ref={verdict} className="panel scroll-mb-6 overflow-hidden">
         <p className="flex items-center gap-2 border-b border-line px-5 py-3 text-xs text-muted">
           <span className="dot text-bad" />
           Attacker, signing with your agent&rsquo;s key

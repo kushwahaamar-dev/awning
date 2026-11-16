@@ -78,16 +78,38 @@ const apart = ({ left, top, right, bottom }: Box): Box => ({ left: left - 7, top
  */
 function restLabels(cities: MapCity[]) {
   const dots = cities.map(dotBox);
-  const taken: Box[] = [];
   const placed = new Map<string, Spot>();
   const rank = (city: MapCity) => (city.example ? (NAMED.has(city.code) ? 0 : 1) : 2);
-  for (const city of [...cities].sort((a, b) => rank(a) - rank(b))) {
-    if (!city.example && !NAMED.has(city.code)) continue;
-    const self = cities.indexOf(city);
-    const spot = spots(city).find(({ box }) => onTheMap(box) && !taken.some((other) => overlaps(apart(box), other)) && !dots.some((dot, i) => i !== self && overlaps(box, dot)));
-    if (!spot) continue;
-    placed.set(city.code, spot);
-    taken.push(spot.box);
+  const wanted = cities.filter((city) => city.example || NAMED.has(city.code)).sort((a, b) => rank(a) - rank(b));
+  // On the map, and clear of every dot but the city's own.
+  const sits = (city: MapCity, { box }: Spot) => onTheMap(box) && !dots.some((dot, i) => cities[i] !== city && overlaps(box, dot));
+  // The labels already down that this one would run into.
+  const inTheWay = ({ box }: Spot) => [...placed].filter(([, other]) => overlaps(apart(box), other.box)).map(([code]) => code);
+  const roomFor = (city: MapCity) => spots(city).find((spot) => sits(city, spot) && inTheWay(spot).length === 0);
+
+  for (const city of wanted) {
+    const spot = roomFor(city);
+    if (spot) placed.set(city.code, spot);
+  }
+  // A city left without a label gets a second chance: where one neighbour's label is all that is in
+  // its way, and that neighbour has somewhere else to go, the neighbour moves over.
+  for (const city of wanted) {
+    if (placed.has(city.code)) continue;
+    for (const spot of spots(city).filter((each) => sits(city, each))) {
+      const [blocker, ...more] = inTheWay(spot);
+      if (!blocker || more.length) continue;
+      const neighbour = cities.find((other) => other.code === blocker)!;
+      const was = placed.get(blocker)!;
+      placed.delete(blocker);
+      placed.set(city.code, spot);
+      const moved = roomFor(neighbour);
+      if (moved) {
+        placed.set(blocker, moved);
+        break;
+      }
+      placed.delete(city.code);
+      placed.set(blocker, was);
+    }
   }
   return placed;
 }
@@ -114,18 +136,20 @@ function Label({ city, spot, lit = false }: { city: MapCity; spot: Spot; lit?: b
   );
 }
 
-/** What cover for one city's bad day costs, as it would read on a quote. */
+/** What cover for one city's bad day costs, as it would read on a quote: the cover, then its price and the way to it. */
 function Reading({ city }: { city: MapCity }) {
   const { example } = city;
   if (!example) {
     return (
       <>
-        <p className="title">{city.city}</p>
-        <p className="mt-3 text-muted">
-          Gemini lists tomorrow&rsquo;s high here, but nothing on it is priced like cover right now: each outcome is either near certain or has no
-          seller.
-        </p>
-        <div className="mt-auto pt-5">
+        <div>
+          <p className="title">{city.city}</p>
+          <p className="mt-3 text-muted">
+            Gemini lists tomorrow&rsquo;s high here, but nothing on it is priced like cover right now: each outcome is either near certain or has
+            no seller.
+          </p>
+        </div>
+        <div className="mt-auto pt-5 lg:max-xl:pt-0">
           <Link href="/app" className="btn btn-secondary w-full">
             Describe a risk of your own
           </Link>
@@ -135,27 +159,31 @@ function Reading({ city }: { city: MapCity }) {
   }
   return (
     <>
-      <p className="flex items-baseline justify-between gap-4 text-sm text-muted">
-        <span>{city.city}</span>
-        <span className="num">{calendarDay(example.day)}</span>
-      </p>
-      <p className="title mt-3">
-        Pays {usd(example.payout)} if {example.pays}
-      </p>
-      <dl className="rows mt-4 border-y border-line">
-        <div className="flex items-baseline justify-between gap-6 py-2.5 text-muted">
-          <dt>The market&rsquo;s odds it happens</dt>
-          <dd className="num text-soft">{example.odds === null ? "—" : percent(example.odds)}</dd>
+      <div>
+        <p className="flex items-baseline justify-between gap-4 text-sm text-muted">
+          <span>{city.city}</span>
+          <span className="num">{calendarDay(example.day)}</span>
+        </p>
+        <p className="title mt-3">
+          Pays {usd(example.payout)} if {example.pays}
+        </p>
+      </div>
+      <div className="mt-4 flex grow flex-col lg:max-xl:mt-0">
+        <dl className="rows border-y border-line">
+          <div className="flex items-baseline justify-between gap-6 py-2.5 text-muted">
+            <dt>The market&rsquo;s odds it happens</dt>
+            <dd className="num text-soft">{example.odds === null ? "—" : percent(example.odds)}</dd>
+          </div>
+          <div className="flex items-baseline justify-between gap-6 py-2.5">
+            <dt>What this cover costs</dt>
+            <dd className="num text-xl text-accent">{cents(example.cost)}</dd>
+          </div>
+        </dl>
+        <div className="mt-auto pt-5">
+          <Link href={quoteLink(city)} className="btn btn-primary w-full">
+            Price cover in {city.city}
+          </Link>
         </div>
-        <div className="flex items-baseline justify-between gap-6 py-2.5">
-          <dt>What this cover costs</dt>
-          <dd className="num text-xl text-accent">{cents(example.cost)}</dd>
-        </div>
-      </dl>
-      <div className="mt-auto pt-5">
-        <Link href={quoteLink(city)} className="btn btn-primary w-full">
-          Price cover in {city.city}
-        </Link>
       </div>
     </>
   );
@@ -246,15 +274,16 @@ export function PriceMap() {
         {/* Until the prices arrive the rows hold their room, so the page below doesn't jump when they do. */}
         {cities.length === 0 &&
           Array.from({ length: 7 }, (_, i) => (
-            <li key={i} aria-hidden className="invisible py-3.5">
-              $300 if a city&rsquo;s high is 60°F or below
+            <li key={i} aria-hidden className="invisible flex items-baseline justify-between gap-4 py-3.5">
+              <span className="text-balance">Pays $300 if San Antonio&rsquo;s high is 60°F or below</span>
+              <span className="num">$00.00</span>
             </li>
           ))}
         {priced.slice(0, 7).map((city) => (
           <li key={city.code}>
             <Link href={quoteLink(city)} className="flex items-baseline justify-between gap-4 py-3.5 text-soft">
-              <span>
-                {usd(city.example!.payout)} if {city.example!.pays}
+              <span className="text-balance">
+                Pays {usd(city.example!.payout)} if {city.example!.pays}
               </span>
               <span className="num text-accent">{cents(city.example!.cost)}</span>
             </Link>
@@ -262,13 +291,13 @@ export function PriceMap() {
         ))}
       </ul>
 
-      {/* Beside the map on a wide screen; under it, with the note alongside, on a narrower one. */}
-      <div className="max-lg:hidden lg:max-xl:grid lg:max-xl:grid-cols-[22rem_minmax(0,1fr)] lg:max-xl:items-start lg:max-xl:gap-10">
-        <div className="panel flex min-h-[19rem] flex-col p-6" aria-live="polite">
+      {/* Beside the map on a wide screen, as a column; under it on a narrower one, lying flat across the width. */}
+      <div className="max-lg:hidden">
+        <div className="panel flex min-h-[19rem] flex-col p-6 lg:max-xl:grid lg:max-xl:min-h-0 lg:max-xl:grid-cols-2 lg:max-xl:items-center lg:max-xl:gap-x-14" aria-live="polite">
           {shown ? <Reading city={shown} /> : <p className="text-muted">Reading Gemini&rsquo;s prices…</p>}
         </div>
         {cities.length > 0 && (
-          <p className="mt-4 max-w-md text-sm text-muted lg:max-xl:mt-0">
+          <p className="mt-4 max-w-md text-sm text-muted lg:max-xl:max-w-none">
             Point at a city to read its price. <span className="num text-soft">{priced.length}</span> of{" "}
             <span className="num text-soft">{cities.length}</span> have cover priced right now; the grey ones are near certain tomorrow, or have no
             seller.

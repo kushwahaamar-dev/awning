@@ -153,7 +153,8 @@ export function Buy({ plan, coverRatio, onBought }: Props) {
         </span>
       </p>
       {problems}
-      <Standing plan={plan} coverRatio={coverRatio} price={price.total} />
+      {/* Not offered in the middle of a purchase, where a second button would appear under the one just pressed. */}
+      {!busy && <Standing plan={plan} coverRatio={coverRatio} price={price.total} />}
     </div>
   );
 }

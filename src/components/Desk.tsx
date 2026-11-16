@@ -124,7 +124,11 @@ function DeskFor() {
     return exposure && { exposure, from: params.get("from") === "example" ? "example" : "sales" };
   });
   // It waits for the account, so an owner with an allowance gets the forecast check like anyone else.
-  const linkedKey = linked && (account || accountError) ? (["/api/plan", linked.exposure, payer] as const) : null;
+  // Then it is priced once, for the account as it stood. A first purchase sets up an allowance on the way,
+  // and asking again at that moment would take the quote off the screen in the middle of buying it.
+  const [pricedFor, setPricedFor] = useState<{ payer: typeof payer } | null>(null);
+  if (linked && !pricedFor && (account || accountError)) setPricedFor({ payer });
+  const linkedKey = linked && pricedFor ? (["/api/plan", linked.exposure, pricedFor.payer] as const) : null;
   const linkedQuote = useSWRImmutable(linkedKey, ([path, exposure, owner]) => post<Planned>(path, { exposure, coverRatio: 1, owner }));
 
   const arrived = useRef(false);
@@ -163,6 +167,7 @@ function DeskFor() {
     setDraft("");
     setOwnPlan(null);
     setLinked(null);
+    setPricedFor(null);
     setNothingListed(null);
     setSayError(null);
     setCoverRatio(1);

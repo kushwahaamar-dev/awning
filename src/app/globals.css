@@ -339,7 +339,7 @@ body {
     /* Faint behind the headline, whose letters the scene's shop signs would otherwise argue with,
        full strength below it and to the right, and gone by the foot of the section. */
     mask-image:
-      linear-gradient(to bottom, rgb(0 0 0 / 0.34) 0, rgb(0 0 0 / 0.34) 32%, #000 50%, #000 72%, transparent 98%),
+      linear-gradient(to bottom, rgb(0 0 0 / 0.2) 0, rgb(0 0 0 / 0.2) 32%, #000 50%, #000 72%, transparent 98%),
       linear-gradient(100deg, rgb(0 0 0 / 0.2) 0, rgb(0 0 0 / 0.24) 40%, #000 68%);
     mask-composite: intersect;
   }
@@ -397,7 +397,8 @@ body {
     font-size: calc(100cqw / 3.232);
     line-height: 1;
     margin-left: -0.038em;
-    padding-bottom: 0.09em;
+    /* Air under the g: a share of the letters on a desk, and never less than a phone's margin. */
+    padding-bottom: max(0.09em, 1.25rem);
     letter-spacing: -0.03em;
     white-space: nowrap;
     user-select: none;

@@ -59,7 +59,11 @@ export function Receipt({ plan: priced, coverRatio, repricing, onCoverChange, on
           <Mark className="size-4 text-accent" />
           Cover
         </span>
-        <span className="num">{day(market.startsAt ?? market.expiresAt)}</span>
+        <span className="flex items-center gap-3">
+          {/* Up here it can come and go as the feed does without moving a line of the quote. */}
+          {live && <span className="status status-good status-live text-xs">Live price</span>}
+          <span className="num">{day(market.startsAt ?? market.expiresAt)}</span>
+        </span>
       </p>
       <h2 className="title mt-5 text-[1.375rem]">
         Pays {usd(quote.payout)} if {coverage.pays}
@@ -79,8 +83,7 @@ export function Receipt({ plan: priced, coverRatio, repricing, onCoverChange, on
       </dl>
       {price ? (
         <p className="mt-3 text-xs text-faint">
-          {live && <span className="status status-good status-live mr-2 align-baseline text-xs">Live</span>}
-          Gemini&rsquo;s price{live ? ", following its feed as you watch" : ""}, including about {cents(price.fees)} in exchange fees.
+          Gemini&rsquo;s price, including about {cents(price.fees)} in exchange fees.
           {forecast && ` Your agent paid ${cents(forecast.paid)} for the ${forecast.members}-run forecast.`}
         </p>
       ) : (

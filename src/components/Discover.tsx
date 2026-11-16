@@ -35,7 +35,7 @@ function Result({ result, sample, onAgain }: { result: Found; sample: boolean; o
       </h1>
       {sample && (
         <p className="rise mt-4 max-w-2xl text-lg text-muted" style={order(1)}>
-          This is sample data: made-up takings for an ice cream truck, set against {city}&rsquo;s real weather for the past year.
+          This is sample data: made-up sales for an ice cream truck, set against {city}&rsquo;s real weather for the past year.
         </p>
       )}
 
