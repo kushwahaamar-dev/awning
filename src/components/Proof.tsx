@@ -31,12 +31,12 @@ function Receipt({ href }: { href: string | null }) {
 
 // Until the chain has answered, each piece holds the room its answer will take, so nothing below it moves when it lands.
 const settle = (ready: boolean) => `transition-opacity duration-300 ${ready ? "" : "opacity-0"}`;
-// The test on the agent page leaves refusals in this pattern, so these stand in for them line for line.
+// The test on the agent page leaves refusals in this pattern, so these stand in for them, unseen, line for line.
 const WAITING: Timed[] = [
-  "An agent tried to draw $0,000.00 as data spending. Refused: it's over today's data allowance.",
-  "An agent tried to pay $0,000.00 to 0x0000…0000. Refused: it's over its owner's limit for a single cover.",
-  "An agent tried to pay $000.00 to 0x0000…0000. Refused: that address isn't on its owner's approved list.",
-  "An agent tried to draw $0,000.00 as data spending. Refused: it's over today's data allowance.",
+  "An agent tried to draw $1,987.15 as data spending. Refused: it's over today's data allowance.",
+  "An agent tried to pay $1,987.15 to 0x9fE4…a6e0. Refused: it's over its owner's limit for a single cover.",
+  "An agent tried to pay $100.00 to 0xBAd0…0Bad. Refused: that address isn't on its owner's approved list.",
+  "An agent tried to draw $1,962.83 as data spending. Refused: it's over today's data allowance.",
 ].map((note, i) => ({ at: String(i), receipt: null, when: "00 hours ago", note }));
 
 /** What the contract last said no to, read from the chain: the claim above it, with receipts. */

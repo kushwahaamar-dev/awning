@@ -293,16 +293,15 @@ export function PriceMap() {
 
       {/* Beside the map on a wide screen, as a column; under it on a narrower one, lying flat across the width. */}
       <div className="max-lg:hidden">
-        <div className="panel flex min-h-[19rem] flex-col p-6 lg:max-xl:grid lg:max-xl:min-h-0 lg:max-xl:grid-cols-2 lg:max-xl:items-center lg:max-xl:gap-x-14" aria-live="polite">
+        <div className="panel flex min-h-[19rem] flex-col p-6 lg:max-xl:grid lg:max-xl:min-h-[12.8125rem] lg:max-xl:grid-cols-2 lg:max-xl:items-center lg:max-xl:gap-x-14" aria-live="polite">
           {shown ? <Reading city={shown} /> : <p className="text-muted">Reading Gemini&rsquo;s prices…</p>}
         </div>
-        {cities.length > 0 && (
-          <p className="mt-4 max-w-md text-sm text-muted lg:max-xl:max-w-none">
-            Point at a city to read its price. <span className="num text-soft">{priced.length}</span> of{" "}
-            <span className="num text-soft">{cities.length}</span> have cover priced right now; the grey ones are near certain tomorrow, or have no
-            seller.
-          </p>
-        )}
+        {/* There from the start, unseen until there are numbers to put in it, so nothing under the map moves when they come. */}
+        <p className={`mt-4 max-w-md text-sm text-muted lg:max-xl:max-w-none ${cities.length ? "" : "invisible"}`}>
+          Point at a city to read its price. <span className="num text-soft">{priced.length}</span> of{" "}
+          <span className="num text-soft">{cities.length}</span> have cover priced right now; the grey ones are near certain tomorrow, or have no
+          seller.
+        </p>
       </div>
     </div>
   );
