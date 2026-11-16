@@ -5,7 +5,7 @@ import { rawEventSchema } from "../gemini/schema";
 import { assessBasis } from "./basis";
 import type { Exposure } from "./exposure";
 import { buildCoverage } from "./legs";
-import { liveExamples } from "./examples";
+import { cityPrices, liveExamples } from "./examples";
 import { findMarket } from "./match";
 import { quoteCover } from "./quote";
 
@@ -205,5 +205,18 @@ describe("liveExamples", () => {
 
   it("offers nothing rather than something that can't be priced", async () => {
     expect(await liveExamples(async () => [])).toEqual([]);
+  });
+});
+
+describe("cityPrices", () => {
+  it("lists every city with a market for a day still to come, priced only where the price reads as cover", async () => {
+    const cities = await cityPrices(list, new Date("2026-11-12T17:00:00Z"));
+    expect(cities.map((c) => c.code)).toContain("AUS");
+    for (const { city, example } of cities) {
+      if (!example) continue;
+      expect(example.exposure.trigger.family === "temperature" && example.exposure.trigger.city).toBe(city);
+      expect(example.cost / example.payout).toBeGreaterThanOrEqual(0.02);
+      expect(example.cost / example.payout).toBeLessThanOrEqual(0.6);
+    }
   });
 });

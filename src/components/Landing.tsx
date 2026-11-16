@@ -5,31 +5,11 @@ import { chainLabel, explorerAddress, mandateAddress, poolAddress } from "@/lib/
 import { shortAddress } from "@/lib/format";
 import { usesStreams } from "@/lib/ledger/source";
 import { hedging } from "@/lib/venue";
-import { Ascii, type Scene } from "./Ascii";
-import { HeroQuote } from "./HeroQuote";
+import { Ascii } from "./Ascii";
+import { LiveRead } from "./LiveRead";
 import { LiveFigures } from "./LiveFigures";
+import { PriceMap } from "./PriceMap";
 import { External } from "./icons";
-
-const STEPS: { scene: Scene; label: string; title: string; body: string }[] = [
-  {
-    scene: "storm",
-    label: "Storm clouds and lightning over dark hills",
-    title: "Say it, or let us find it",
-    body: "Type the thing that costs you money, or upload your sales and Awning works it out.",
-  },
-  {
-    scene: "prices",
-    label: "A price chart, candle by candle",
-    title: "See the price",
-    body: "Awning finds the Gemini market that pays when it happens. A one-in-ten day costs about a tenth of what it pays.",
-  },
-  {
-    scene: "lighthouse",
-    label: "A lighthouse on a cliff at night",
-    title: "Get paid",
-    body: "The payout is locked onchain before you pay, and sent when the market resolves.",
-  },
-];
 
 // What a stolen agent key can do, in the order the test on the agent page tries it.
 const ATTACK = [
@@ -125,7 +105,7 @@ function Contract({ address }: { address: string | undefined }) {
 export function Landing() {
   return (
     <>
-      <section className="relative isolate pt-20 pb-14 sm:pt-28">
+      <section className="relative isolate pt-16 pb-12 sm:pt-20">
         <div aria-hidden className="hero-art rise" style={{ "--i": 4 } as React.CSSProperties}>
           <Ascii scene="street" label="" />
         </div>
@@ -133,7 +113,7 @@ export function Landing() {
           <span className="block">Say what could go wrong.</span>
           <span className="block">Get paid when it does.</span>
         </h1>
-        <div className="mt-12 grid items-end gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,1fr)_25rem]">
+        <div className="mt-9 grid items-end gap-x-16 gap-y-12 lg:grid-cols-[minmax(0,1fr)_27rem]">
           <div>
             <p className="rise max-w-xl text-xl leading-snug text-soft" style={{ "--i": 1 } as React.CSSProperties}>
               Cover for the bad days insurers won&rsquo;t touch. The price comes from prediction markets on the Gemini exchange, and your payout is
@@ -161,28 +141,22 @@ export function Landing() {
               </Link>
             </p>
           </div>
-          <HeroQuote />
+          <LiveRead />
         </div>
       </section>
       <LiveFigures />
 
-      <section id="how" className="mt-32 scroll-mt-14 border-t border-line pt-12">
+      <section id="prices" className="mt-32 scroll-mt-14 border-t border-line pt-12">
         <div className="grid gap-x-20 gap-y-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
-          <h2 className="heading">How it works</h2>
-          <p className="max-w-md text-xl leading-snug text-muted lg:pt-2">Describe the risk, or hand over your sales. The rest is done for you.</p>
+          <h2 className="heading">A bad day has a price</h2>
+          <p className="max-w-lg text-xl leading-snug text-muted lg:pt-2">
+            What it costs, this minute, to cover tomorrow&rsquo;s bad day in every city where Gemini lists the high. The rarer the day, the cheaper
+            the cover.
+          </p>
         </div>
-        <ol className="mt-16 grid gap-x-20 md:grid-cols-3">
-          {STEPS.map(({ scene, label, title, body }) => (
-            // Equal columns, so the three titles sit on one line; the rule between them is drawn in the gap.
-            <li key={title} className="relative py-6 md:not-first:before:absolute md:not-first:before:inset-y-0 md:not-first:before:-left-10 md:not-first:before:w-px md:not-first:before:bg-line">
-              <div className="flex aspect-[1.75] items-center overflow-hidden">
-                <Ascii scene={scene} label={label} className="fade-soft w-full" />
-              </div>
-              <h3 className="title mt-8">{title}</h3>
-              <p className="mt-2 max-w-sm text-lg text-muted">{body}</p>
-            </li>
-          ))}
-        </ol>
+        <div className="mt-12">
+          <PriceMap />
+        </div>
       </section>
 
       <Split

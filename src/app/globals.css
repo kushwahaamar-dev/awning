@@ -341,6 +341,25 @@ body {
     /* On a phone the scene is cropped, not shrunk, so its dots stay the size they are on a desk. */
     width: max(100%, 62rem);
   }
+  /* The mark where the next letter of a sentence will land. */
+  .caret {
+    display: inline-block;
+    width: 0.5ch;
+    height: 1em;
+    margin-left: 1px;
+    vertical-align: -0.14em;
+    background: var(--color-accent);
+    animation: blink 900ms steps(2) infinite;
+  }
+  /* The map's plotting surface, and its priced cities breathing out of step with one another. */
+  .pricemap {
+    background-image: radial-gradient(circle, rgb(255 255 255 / 0.09) 1px, transparent 1.4px);
+    background-size: 1.375rem 1.375rem;
+  }
+  .pricemap .priced .fill-accent {
+    animation: breathe 3.6s ease-in-out infinite;
+    animation-delay: calc(var(--i, 0) * -410ms);
+  }
   /* The name in dots, the width of the window, at the foot of every page. */
   .wordmark {
     font-family: var(--font-geist-pixel-circle), var(--font-geist-mono), monospace;
@@ -398,6 +417,12 @@ body {
   }
 }
 
+@keyframes breathe {
+  50% {
+    fill-opacity: 0.45;
+  }
+}
+
 @keyframes rise {
   from {
     opacity: 0;
@@ -422,7 +447,9 @@ body {
   .rise,
   .land,
   .status-live::before,
-  .btn-recording {
+  .btn-recording,
+  .caret,
+  .pricemap .priced .fill-accent {
     animation: none;
   }
   .btn,

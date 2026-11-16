@@ -12,7 +12,7 @@ const APP = [
 ];
 
 const STORY = [
-  { href: "#how", label: "How it works" },
+  { href: "#prices", label: "Prices" },
   { href: "#limits", label: "Limits" },
   { href: "#built", label: "How it's built" },
   { href: "#checked", label: "What we checked" },

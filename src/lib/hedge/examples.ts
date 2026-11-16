@@ -57,7 +57,12 @@ const sized = (usual: number, budget: number) => (budget >= usual ? usual : (ROU
 
 type Scored = Example & { share: number; subject: string };
 
-function candidate(market: Market, trigger: Trigger, wording: Wording, subject: string, when: string, budget: number): Scored | null {
+type Range = readonly [cheapest: number, dearest: number];
+const WORTH_SHOWING: Range = [CHEAPEST, DEAREST];
+// The map shows every city it can put a fair price on, so it takes likelier and rarer days than an example would.
+const WORTH_MAPPING: Range = [0.02, 0.6];
+
+function candidate(market: Market, trigger: Trigger, wording: Wording, subject: string, when: string, budget: number, [cheapest, dearest] = WORTH_SHOWING): Scored | null {
   const coverage = buildCoverage(market, trigger);
   // An example has to read the same in the quote as it does in the sentence, so the level must be one the market lists.
   if (!coverage || coverage.legs.length === 0 || coverage.snappedTo !== null || trigger.family === "game") return null;
@@ -66,7 +71,7 @@ function candidate(market: Market, trigger: Trigger, wording: Wording, subject: 
   // Someone has to be selling right now, or the example ends in "nobody is quoting this".
   if (!quote.now) return null;
   const share = quote.now.total / quote.payout;
-  if (share < CHEAPEST || share > DEAREST) return null;
+  if (share < cheapest || share > dearest) return null;
 
   const day = marketDay(market);
   const { text, summary } = wording.say(subject, trigger.threshold, when, usd(loss));
@@ -88,7 +93,7 @@ const closest = (a: Scored, b: Scored) => Math.abs(a.share - IDEAL) - Math.abs(b
 const weekday = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "long", timeZone: "UTC" });
 
 /** Every risk on a day still to come that Gemini is selling at a sensible price right now, by kind. */
-async function scan(list: MarketSource, now: Date, budget: number) {
+async function scan(list: MarketSource, now: Date, budget: number, range = WORTH_SHOWING) {
   const [weather, commodities] = await Promise.all([list({ status: "active", category: "Weather" }), list({ status: "active", category: "Commodities" })]);
   const today = easternDate(now);
   const tomorrow = easternDate(new Date(now.getTime() + 86_400_000));
@@ -107,11 +112,11 @@ async function scan(list: MarketSource, now: Date, budget: number) {
       if (outcome.kind !== "range") continue;
       const day = when(marketDay(market));
       if (outcome.hi !== null) {
-        const found = candidate(market, { family: "temperature", city, direction: "below", threshold: outcome.hi }, COLD, city, day, budget);
+        const found = candidate(market, { family: "temperature", city, direction: "below", threshold: outcome.hi }, COLD, city, day, budget, range);
         if (found) cold.push(found);
       }
       if (outcome.lo !== null) {
-        const found = candidate(market, { family: "temperature", city, direction: "above", threshold: outcome.lo }, WARM, city, day, budget);
+        const found = candidate(market, { family: "temperature", city, direction: "above", threshold: outcome.lo }, WARM, city, day, budget, range);
         if (found) warm.push(found);
       }
     }
@@ -124,7 +129,23 @@ async function scan(list: MarketSource, now: Date, budget: number) {
     const found = candidate(oil!, { family: "price", asset: "WTI", direction: "above", threshold: outcome.lo }, FUEL, "oil", when(marketDay(oil!)), budget);
     if (found) fuel.push(found);
   }
-  return { cold: cold.sort(closest), warm: warm.sort(closest), fuel: fuel.sort(closest) };
+  const cities = [...next].map(([city, market]) => ({ city, code: market.subject.family === "temperature" ? market.subject.cityCode : city }));
+  return { cold: cold.sort(closest), warm: warm.sort(closest), fuel: fuel.sort(closest), cities };
+}
+
+/** One city on the map: where Gemini lists tomorrow's high, and the most telling cover there, if any is priced sensibly. */
+export type CityPrice = { city: string; code: string; example: Example | null };
+
+/** Every city with a market for its next full day, each with the cover closest to a one-in-eight day. */
+export async function cityPrices(list: MarketSource, now = new Date(), budget = Infinity): Promise<CityPrice[]> {
+  const { cold, warm, cities } = await scan(list, now, budget, WORTH_MAPPING);
+  const ranked = [...cold, ...warm].sort(closest);
+  return cities.map(({ city, code }) => {
+    const best = ranked.find((c) => c.subject === city);
+    if (!best) return { city, code, example: null };
+    const { kind, text, exposure, pays, day, payout, cost, odds } = best;
+    return { city, code, example: { kind, text, exposure, pays, day, payout, cost, odds } };
+  });
 }
 
 /**
