@@ -81,11 +81,12 @@ export function CashOut({ onClose }: { onClose: () => void }) {
       }}
     >
       <p>Send money out to another chain</p>
-      <p className="mt-1 text-sm text-muted">Circle delivers it. You need nothing on the other chain.</p>
+      <p className="mt-1 text-sm text-muted">Circle delivers it.</p>
 
-      <label htmlFor="cashAmount" className="mt-5 flex items-baseline justify-between gap-4">
+      <label htmlFor="cashAmount" className="mt-5 flex items-center justify-between gap-4">
         <span>How much</span>
-        <span className="flex items-baseline gap-1">
+        {/* The sign sits in the box with the figure, as it does on the allowance. */}
+        <span className="field flex items-baseline gap-1 text-lg">
           <span className="num text-muted">$</span>
           <input
             id="cashAmount"
@@ -96,12 +97,12 @@ export function CashOut({ onClose }: { onClose: () => void }) {
             required
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
-            className="field num w-24 text-right text-lg"
+            className="num w-20 bg-transparent text-right"
           />
         </span>
       </label>
 
-      <label htmlFor="cashChain" className="mt-4 flex items-baseline justify-between gap-4">
+      <label htmlFor="cashChain" className="mt-3 flex items-center justify-between gap-4">
         <span>To</span>
         <select
           id="cashChain"
@@ -117,7 +118,7 @@ export function CashOut({ onClose }: { onClose: () => void }) {
         </select>
       </label>
 
-      <label htmlFor="cashAddress" className="mt-4 block">
+      <label htmlFor="cashAddress" className="mt-3 block">
         Address there
       </label>
       <input
@@ -126,7 +127,7 @@ export function CashOut({ onClose }: { onClose: () => void }) {
         value={address}
         onChange={(e) => setAddress(e.target.value.trim())}
         spellCheck={false}
-        className="field num mt-1 block w-full text-sm"
+        className="field num mt-2 block w-full text-sm"
       />
 
       <p className="mt-4 text-sm text-muted">

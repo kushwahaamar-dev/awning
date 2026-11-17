@@ -20,11 +20,11 @@ export function Fit({ plan }: { plan: CoverPlan }) {
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={basis.fit}
-          className="mt-4 h-1 overflow-hidden rounded-full bg-edge"
+          className="mt-4 h-1.5 overflow-hidden rounded-full bg-pressed"
         >
           <div className={`h-full rounded-full ${basis.level === "loose" ? "bg-bad" : "bg-accent"}`} style={{ width: `${basis.fit}%` }} />
         </div>
-        <div aria-hidden className="mt-2 flex justify-between text-xs text-faint">
+        <div aria-hidden className="mt-2 flex justify-between text-sm text-muted">
           <span>Loosely</span>
           <span>Closely</span>
         </div>

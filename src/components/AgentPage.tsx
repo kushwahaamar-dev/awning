@@ -94,7 +94,6 @@ function Limits({ account }: { account: Account }) {
       <div className="panel p-6 sm:p-8">
         <p className="text-muted">The most a hijacked agent could take right now</p>
         <p className="figure mt-4 text-[clamp(3rem,6vw,4.5rem)] leading-none text-accent">{cents(a.dataLeftToday)}</p>
-        <p className="mt-4 text-muted">The rest can only go to the pool, which returns anything it didn&rsquo;t offer.</p>
         <button type="button" onClick={togglePause} disabled={busy} aria-busy={busy} className={`btn mt-6 ${a.paused ? "btn-primary" : "btn-danger"}`}>
           {busy ? "One moment…" : a.paused ? "Let the agent resume" : "Pause the agent"}
         </button>
@@ -307,7 +306,7 @@ function ActivityFeed({ account }: { account: Account }) {
                 <time dateTime={event.at} className="num text-xs text-faint">
                   {day(event.at).split(", ")[1]}, {clock(event.at)}
                 </time>
-                <span className={refused ? "text-[#ff8a84]" : "text-soft"}>{text}</span>
+                <span className={refused ? "text-bad" : "text-soft"}>{text}</span>
                 {event.explorer && (
                   <a href={event.explorer} target="_blank" rel="noreferrer" className="link flex items-center gap-1 text-xs">
                     receipt <External />
@@ -324,32 +323,32 @@ function ActivityFeed({ account }: { account: Account }) {
 
 export function AgentPage() {
   const { account, error } = useAccount();
-  if (error && !account) return <p className="note note-bad mt-20">{error}</p>;
-  if (!account) return <p className="mt-20 text-muted">Loading your account…</p>;
+  if (error && !account) return <p className="note note-bad mx-auto mt-20 max-w-6xl">{error}</p>;
+  if (!account) return <p className="mx-auto mt-20 max-w-6xl text-muted">Loading your account…</p>;
 
   const ready = hasAllowance(account);
   return (
-    <>
-      <section className="pt-16 sm:pt-24">
+    <div className="mx-auto max-w-6xl">
+      <section className="pt-12 sm:pt-20">
         {/* The same two columns before and after the allowance is set, so the scene doesn't move when it is. */}
         <div className="grid items-start gap-x-14 gap-y-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <div>
-            <h1 className="sign rise">{ready ? "What your agent is allowed to do" : "Give your agent an allowance"}</h1>
-            <p className="rise mt-4 max-w-xl text-lg text-muted" style={order(1)}>
-              A contract on {account.setup.chainName} enforces these limits, even if the agent is fooled or taken over.
+            <h1 className="sign">{ready ? "What your agent is allowed to do" : "Give your agent an allowance"}</h1>
+            <p className="mt-4 max-w-xl text-lg text-muted">
+              A contract on {account.setup.chainName} holds it to these limits, even if it is fooled or taken over.
             </p>
             {!ready && (
-              <div className="rise panel mt-10 p-6 sm:p-8" style={order(2)}>
+              <div className="panel mt-10 p-6 sm:p-8">
                 <AllowanceForm />
               </div>
             )}
           </div>
-          <div className="rise max-lg:hidden" style={order(2)}>
-            <Ascii scene="lock" className="mx-auto max-w-[9rem]" />
+          <div className="max-lg:hidden">
+            <Ascii scene="lock" className="mx-auto max-w-[11rem]" />
           </div>
         </div>
         {ready && (
-          <div className="rise mt-10" style={order(2)}>
+          <div className="mt-10">
             <Limits account={account} />
           </div>
         )}
@@ -357,6 +356,6 @@ export function AgentPage() {
       {ready && <StandingOrders account={account} />}
       {ready && <HijackTest />}
       {(ready || account.activity.length > 0) && <ActivityFeed account={account} />}
-    </>
+    </div>
   );
 }

@@ -6,15 +6,11 @@ import { usd } from "@/lib/format";
 import { post, useAccount, type Account } from "./account";
 
 const FIELDS = [
-  { key: "deposit", label: "Put into your vault", hint: "Premiums leave from here. Payouts land here." },
+  { key: "deposit", label: "Put into your vault", hint: null },
   { key: "perCoverCap", label: "Most it can spend on one cover", hint: null },
   { key: "monthlyCap", label: "Most it can spend on cover in a month", hint: null },
-  { key: "approvalThreshold", label: "Ask me first above", hint: "Anything larger needs your signature." },
-  {
-    key: "dailyDataCap",
-    label: "Daily data budget",
-    hint: "What it pays per request for forecasts. This is the most a hijacked agent could take.",
-  },
+  { key: "approvalThreshold", label: "Ask me first above", hint: null },
+  { key: "dailyDataCap", label: "Daily data budget", hint: "The most a hijacked agent could take." },
 ] as const;
 
 type Key = (typeof FIELDS)[number]["key"];
@@ -55,7 +51,7 @@ export async function fundAndSetUp(owner: string, setup: Account["setup"], first
 }
 
 /**
- * A dollar amount on a line of settings. It reads the way money is written, 2,000 and not 2000, until
+ * A dollar amount in a box of its own. It reads the way money is written, 2,000 and not 2000, until
  * it is being typed in, and the sign stays beside the figure however short the figure is.
  */
 function Dollars({ id, value, onChange }: { id: string; value: number; onChange: (value: number) => void }) {
@@ -63,7 +59,7 @@ function Dollars({ id, value, onChange }: { id: string; value: number; onChange:
   const [typing, setTyping] = useState<string | null>(null);
   const shown = typing ?? value.toLocaleString("en-US", { maximumFractionDigits: 2 });
   return (
-    <span className="field flex min-w-[6.5rem] items-baseline justify-end gap-1 text-lg">
+    <span className="field flex min-w-[7.5rem] items-baseline justify-end gap-1 text-lg">
       <span className="num text-muted">$</span>
       <input
         id={id}
@@ -143,15 +139,16 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
         save();
       }}
     >
-      <div className="rows border-b border-line">
+      {/* Each figure is in a box of its own, so the lines need no rules between them. */}
+      <div className="space-y-3">
         {FIELDS.map(({ key, label, hint }) => (
-          <div key={key} className="py-3.5 first:pt-0">
-            <label htmlFor={key} className="flex items-baseline justify-between gap-4">
-              <span>{label}</span>
-              <Dollars id={key} value={values[key]} onChange={(value) => setEdited({ ...edited, [key]: value })} />
-            </label>
-            {hint && <p className="mt-1 max-w-md text-xs text-faint">{hint}</p>}
-          </div>
+          <label key={key} htmlFor={key} className="flex items-center justify-between gap-4">
+            <span>
+              {label}
+              {hint && <span className="block text-sm text-muted">{hint}</span>}
+            </span>
+            <Dollars id={key} value={values[key]} onChange={(value) => setEdited({ ...edited, [key]: value })} />
+          </label>
         ))}
       </div>
 

@@ -70,7 +70,7 @@ export function Standing({ plan, coverRatio, price, alone = false }: { plan: Cov
           />
         </span>
       </label>
-      <p className="mt-1 text-xs text-faint">Up to your {usd(askFirst)} ask-first line.</p>
+      <p className="mt-1 text-sm text-muted">Up to your {usd(askFirst)} ask-first line.</p>
 
       <label htmlFor="instruction" className="mt-5 block">
         Anything it should know
@@ -82,7 +82,7 @@ export function Standing({ plan, coverRatio, price, alone = false }: { plan: Cov
         value={instruction}
         onChange={(e) => setInstruction(e.target.value)}
         placeholder="Leave it on days the forecast says we’re safe."
-        className="mt-2 block w-full resize-none rounded-lg border border-edge bg-bg px-3.5 py-2.5 placeholder:text-faint focus:border-accent focus:outline-none"
+        className="field mt-2 block w-full resize-none placeholder:text-faint"
       />
 
       <div className="mt-5 flex flex-wrap items-center gap-4">

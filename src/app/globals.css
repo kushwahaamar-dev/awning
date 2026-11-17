@@ -4,7 +4,6 @@
   /* Paper and ink. A page is drawn in the one black. What can be pressed or typed into is a soft shape on the
      paper, so it can be told at a glance from what is only read. */
   --color-bg: #ffffff;
-  --color-panel: #ffffff;
   --color-raised: #f4f4f2;
   --color-pressed: #e8e8e5;
   /* A line not yet drawn, and the rule between rows. */
@@ -376,16 +375,6 @@ body {
     width: 100%;
     padding-inline: var(--gutter);
   }
-  /* The mark where the next letter of a sentence will land. */
-  .caret {
-    display: inline-block;
-    width: 1px;
-    height: 0.9em;
-    margin-left: 0.06em;
-    vertical-align: -0.08em;
-    background: var(--color-fg);
-    animation: blink 900ms steps(2) infinite;
-  }
   /* Something wide and, beside it on a wide screen, an aside: the map and its reading, the allowance and what a
      hijacker could take. */
   @media (width >= 80rem) {
@@ -523,11 +512,6 @@ body {
   .risk:hover .link {
     text-decoration-color: var(--color-fg);
   }
-  /* Content settles into place on load, in order. */
-  .rise {
-    animation: rise 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    animation-delay: calc(var(--i, 0) * 60ms);
-  }
   /* A verdict landing on a row. */
   .land {
     animation: land 260ms cubic-bezier(0.2, 1.2, 0.4, 1) both;
@@ -553,13 +537,6 @@ body {
   }
 }
 
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(0.625rem);
-  }
-}
-
 @keyframes land {
   from {
     opacity: 0;
@@ -574,11 +551,9 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise,
   .land,
   .status-live::before,
   .btn-recording,
-  .caret,
   .drop {
     animation: none;
   }
