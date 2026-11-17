@@ -164,7 +164,7 @@ export function Discover() {
         </form>
         <p className="mt-4 text-sm text-muted">Your sales are read once and never stored.</p>
       </section>
-      <Ascii scene="sky" className="w-full max-lg:hidden" />
+      <Ascii scene="storm" className="w-full max-lg:hidden" />
     </div>
   );
 }

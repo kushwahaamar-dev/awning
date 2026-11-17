@@ -4,7 +4,7 @@ import Link from "next/link";
 const ABOUT = [
   { href: "/#prices", label: "Prices" },
   { href: "/#limits", label: "Limits" },
-  { href: "/#built", label: "How it works" },
+  { href: "/#built", label: "How it’s made" },
 ];
 
 export function Footer() {
