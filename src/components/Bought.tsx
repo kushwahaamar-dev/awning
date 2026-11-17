@@ -22,7 +22,7 @@ export function Bought({ purchase, onAgain }: { purchase: Purchase; onAgain: () 
     { at: when, text: "Gemini resolves the market.", receipt: null },
     {
       at: "After that",
-      text: `If ${plan.coverage.pays}, the ${usd(payout)} goes to your vault. If not, the lock is released. You don't file anything.`,
+      text: `If ${plan.coverage.pays}, the ${usd(payout)} goes to your vault. If not, the lock is released. You don’t file anything.`,
       receipt: null,
     },
   ];
@@ -31,7 +31,7 @@ export function Bought({ purchase, onAgain }: { purchase: Purchase; onAgain: () 
     <div className="grid items-center gap-x-16 gap-y-12 pt-14 sm:pt-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
       <section aria-labelledby="covered" aria-live="polite" className="rise">
         <p className="status status-good">Paid {cents(premium)} from your agent&rsquo;s allowance</p>
-        <h1 id="covered" className="heading mt-4">
+        <h1 id="covered" className="sign mt-4">
           You&rsquo;re covered.
         </h1>
         <p className="mt-4 max-w-2xl text-xl leading-snug text-muted">

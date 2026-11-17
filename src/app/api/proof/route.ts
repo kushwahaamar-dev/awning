@@ -21,8 +21,8 @@ const dollars = (row: Row, key: string) => cents(row.args[key] as number);
 /** A refusal as a passer-by would read it: the wording the owner sees says "your", and this is not theirs. */
 function refusal(row: Row): Trace {
   const { action, amount, counterparty, reason } = row.args;
-  const tried = action === "DrawFloat" ? `draw ${cents(amount as number)} as data spending` : `pay ${cents(amount as number)} to ${shortAddress(counterparty as string)}`;
-  return trace(row, `An agent tried to ${tried}. Refused: ${REFUSAL[reason as BlockReason].replace(/\byour\b/g, "its owner's")}.`);
+  const tried = action === "DrawFloat" ? `draw ${cents(amount as number)} from the data budget` : `pay ${cents(amount as number)} to ${shortAddress(counterparty as string)}`;
+  return trace(row, `An agent tried to ${tried}. Refused: ${REFUSAL[reason as BlockReason].replace(/\byour\b/g, "its owner’s")}.`);
 }
 
 /** Evidence for the landing page: what the contracts last refused, and the latest real run of each step. */
@@ -53,9 +53,9 @@ export async function GET() {
     if (offered) steps.Lock = trace(offered, `${dollars(offered, "payout")} locked`);
     if (opened) steps.Pay = trace(opened, `${dollars(opened, "premium")} premium paid`);
     // A Gemini order id runs to eighteen digits; its tail is enough to tell one from another on a line this short.
-    if (order) steps.Hedge = { at: order.at.toISOString(), receipt: null, note: `Gemini order …${order.id.slice(-6)}` };
+    if (order) steps.Hedge = { at: order.at.toISOString(), receipt: null, note: `Gemini sandbox order ending ${order.id.slice(-6)}` };
     if (streamed.last) steps.Watch = { at: streamed.last.toISOString(), receipt: null, note: `${streamed.n} events delivered` };
-    if (closed) steps.Settle = trace(closed, closed.args.outcome === "Paid" ? `${dollars(closed, "payout")} paid out` : closed.args.outcome === "Refunded" ? "premium returned" : "ended, nothing to pay");
+    if (closed) steps.Settle = trace(closed, closed.args.outcome === "Paid" ? `${dollars(closed, "payout")} paid out` : closed.args.outcome === "Refunded" ? "premium returned" : "ended with nothing to pay");
 
     return Response.json({ refusals: refused.map(refusal), steps } satisfies Proof);
   } catch (error) {

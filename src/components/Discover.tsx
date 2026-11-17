@@ -19,7 +19,7 @@ function Result({ result, sample, onAgain }: { result: Found; sample: boolean; o
   const side = finding.direction === "below" ? "or below" : "or above";
   const figures = [
     { value: usd(finding.lossUsd), label: `lost on a day like that, most likely between ${usd(finding.range[0])} and ${usd(finding.range[1])}` },
-    { value: String(result.perYear), label: `days a year like that, going by the ${finding.days} days in this file` },
+    { value: String(result.perYear), label: `days a year like that, out of the ${finding.days} in this file` },
     { value: usd(result.yearly), label: "a year, if the pattern holds" },
   ];
   // The test shuffles the weather 800 times; if none of those beat the real thing, that is all it can say.
@@ -30,7 +30,7 @@ function Result({ result, sample, onAgain }: { result: Found; sample: boolean; o
       <button type="button" onClick={onAgain} className="link text-sm">
         Look at different sales
       </button>
-      <h1 className="heading rise mt-6 max-w-4xl">
+      <h1 className="sign rise mt-6 max-w-5xl">
         A day at {finding.threshold}°F {side} in {city} costs you about {usd(finding.lossUsd)}.
       </h1>
       {sample && (
@@ -100,13 +100,13 @@ export function Discover() {
   return (
     <div className="grid items-start gap-x-14 gap-y-10 pt-16 sm:pt-24 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
       <section>
-        <h1 className="heading rise">Find the weather that costs you money</h1>
+        <h1 className="sign rise">Find the weather that costs you money</h1>
         <p className="rise mt-4 max-w-xl text-lg text-muted" style={order(1)}>
           Hand over your daily sales. Awning sets them against the weather on each of those days and works out what a bad day costs you.
         </p>
 
         <form
-          className="rise panel mt-8 max-w-2xl p-6"
+          className="rise panel mt-8 p-6"
           style={order(2)}
           onSubmit={(e) => {
             e.preventDefault();
@@ -145,12 +145,19 @@ export function Discover() {
           </label>
 
           <div className="mt-6 flex flex-wrap items-center gap-4">
-            <button type="submit" disabled={!file || busy !== null} className="btn btn-lg btn-primary">
+            <button type="submit" disabled={!file || busy !== null} aria-busy={busy === "file"} className="btn btn-lg btn-primary">
               {busy === "file" ? "Reading a year of weather…" : "Find my risk"}
             </button>
-            <button type="button" onClick={() => run(true)} disabled={busy !== null} className="link">
-              {busy === "sample" ? "Reading a year of weather…" : "Or try it on sample sales"}
-            </button>
+            {/* While the sample runs this is a report of work under way, so it stops looking like something to press. */}
+            {busy === "sample" ? (
+              <span aria-live="polite" className="status status-accent status-live text-base text-fg">
+                Reading a year of weather…
+              </span>
+            ) : (
+              <button type="button" onClick={() => run(true)} disabled={busy !== null} className="link">
+                Or try it on sample sales
+              </button>
+            )}
           </div>
           {error && <p className="note note-bad mt-5 text-sm">{error}</p>}
           {result && !result.found.finding && <p className="note mt-5 text-sm">{result.found.reason}</p>}

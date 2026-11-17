@@ -118,7 +118,7 @@ export function Receipt({ plan: priced, coverRatio, repricing, onCoverChange, on
             The market sees this as near certain, so cover costs as much as it pays.{" "}
             {exposure.recurring ? "Your agent can watch it and buy on the days it’s worth it." : "Try a threshold less likely to be hit."}
           </p>
-          {/* Today's price says nothing about a normal day, so the cap starts from the size of the loss instead. */}
+          {/* Today’s price says nothing about a normal day, so the cap starts from the size of the loss instead. */}
           {exposure.recurring && <Standing plan={plan} coverRatio={coverRatio} price={quote.payout * 0.15} alone />}
           {exposure.recurring && account && !hasAllowance(account) && (
             <Link href="/agent" className="btn btn-secondary mt-3 w-full">

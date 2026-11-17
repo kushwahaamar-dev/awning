@@ -1,17 +1,20 @@
 import type { BlockReason } from "./chain/config";
 import { cents, shortAddress, usd } from "./format";
 
+/** The risk shown in an empty box, wherever someone is asked to describe theirs. */
+export const EXAMPLE_RISK = "If it’s too cold to sit outside tomorrow, my patio is out $300…";
+
 /** Why the mandate refused, completing the sentence "…, but ___". */
 export const REFUSAL: Record<BlockReason, string> = {
   Paused: "the agent is paused",
   Expired: "the allowance has run out",
-  VenueNotAllowed: "that address isn't on your approved list",
-  OverPerHedgeCap: "it's over your limit for a single cover",
+  VenueNotAllowed: "that address isn’t on your approved list",
+  OverPerHedgeCap: "it’s over your limit for a single cover",
   OverPeriodCap: "it would go over your monthly limit",
-  OverDailyFloat: "it's over today's data allowance",
-  ApprovalRequired: "it needed your approval and didn't have it",
+  OverDailyFloat: "it’s over today’s data budget",
+  ApprovalRequired: "it needed your approval and didn’t have it",
   ApprovalExpired: "your approval had expired",
-  InsufficientBalance: "there isn't enough in your vault",
+  InsufficientBalance: "there isn’t enough in your vault",
 };
 
 type Args = Record<string, string | number | boolean>;
@@ -26,7 +29,7 @@ export function describeEvent(kind: string, a: Args): { text: string; refused?: 
       return { text: `You took ${money("amount")} out of your vault.` };
     case "PolicySet":
       return {
-        text: `You set the agent's limits: ${usd(a.floatDailyCap as number)} a day for data, ${usd(a.premiumPerHedgeCap as number)} per cover, ${usd(a.premiumPeriodCap as number)} a month, and your approval above ${usd(a.approvalThreshold as number)}.`,
+        text: `You set the agent’s limits: ${usd(a.floatDailyCap as number)} a day for data, ${usd(a.premiumPerHedgeCap as number)} per cover, ${usd(a.premiumPeriodCap as number)} a month, and your approval above ${usd(a.approvalThreshold as number)}.`,
       };
     case "VenueSet":
       return { text: a.allowed ? `You approved ${shortAddress(a.venue as string)} to receive premiums.` : `You removed ${shortAddress(a.venue as string)} from your approved list.` };

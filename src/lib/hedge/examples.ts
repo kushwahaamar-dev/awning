@@ -29,16 +29,16 @@ const COLD: Wording = {
   kind: "Cold snap",
   loss: 300,
   say: (city, t, when, loss) => ({
-    text: `If ${city}'s high ${when} is ${t}°F or below, my patio is out about ${loss}.`,
-    summary: `You lose about ${loss} on your patio if ${city}'s high ${when} is ${t}°F or below.`,
+    text: `If ${city}’s high ${when} is ${t}°F or below, my patio is out about ${loss}.`,
+    summary: `You lose about ${loss} on your patio if ${city}’s high ${when} is ${t}°F or below.`,
   }),
 };
 const WARM: Wording = {
   kind: "Warm day",
   loss: 400,
   say: (city, t, when, loss) => ({
-    text: `If ${city}'s high ${when} is ${t}°F or above, my soup counter sells about ${loss} less.`,
-    summary: `Your soup counter sells about ${loss} less if ${city}'s high ${when} is ${t}°F or above.`,
+    text: `If ${city}’s high ${when} is ${t}°F or above, my soup counter sells about ${loss} less.`,
+    summary: `Your soup counter sells about ${loss} less if ${city}’s high ${when} is ${t}°F or above.`,
   }),
 };
 const FUEL: Wording = {

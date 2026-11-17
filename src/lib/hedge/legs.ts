@@ -55,7 +55,7 @@ function ranged(market: Market): Ranged[] {
 }
 
 function subjectName({ subject }: Market) {
-  if (subject.family === "temperature") return `${subject.city}'s high`;
+  if (subject.family === "temperature") return `${subject.city}’s high`;
   if (subject.family === "price") return subject.name.replace(/^Oil \((.+)\)$/, "$1 oil");
   return "the result";
 }
@@ -111,7 +111,7 @@ function coverGame(market: Market, team: string, outcome: "wins" | "loses"): Cov
   // A No on the team pays on a loss or a tie, which is what "they didn't win" costs the user.
   return outcome === "wins"
     ? { legs: [leg(contract, "yes")], pays: `the ${contract.outcome.team} win`, snappedTo: null }
-    : { legs: [leg(contract, "no")], pays: `the ${contract.outcome.team} don't win`, snappedTo: null };
+    : { legs: [leg(contract, "no")], pays: `the ${contract.outcome.team} don’t win`, snappedTo: null };
 }
 
 export function buildCoverage(market: Market, trigger: Trigger): Coverage | null {

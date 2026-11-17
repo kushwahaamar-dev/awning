@@ -51,14 +51,14 @@ export function parseSales(text: string): Sale[] {
   const totals = new Map<string, number>();
   for (const row of rows) {
     const at = row.findIndex((cell) => readDay(cell) !== null);
-    if (at < 0) continue; // a header, or a line that isn't a day
+    if (at < 0) continue; // a header, or a line that isn’t a day
     const amount = row.map((cell, i) => (i === at ? null : readAmount(cell))).findLast((value) => value !== null);
     if (amount == null) continue;
     const day = readDay(row[at])!;
     totals.set(day, (totals.get(day) ?? 0) + amount);
   }
 
-  if (totals.size === 0) throw new Error("Couldn't find any rows with a date and an amount. Each row needs both, like 2026-03-14, 1204.50");
+  if (totals.size === 0) throw new Error("Couldn’t find any rows with a date and an amount. Each row needs both, like 2026-03-14, 1204.50");
   if (totals.size > MAX_ROWS) throw new Error("That covers more than four years. Send the most recent year or two.");
   return [...totals].map(([day, amount]) => ({ day, amount })).sort((a, b) => a.day.localeCompare(b.day));
 }

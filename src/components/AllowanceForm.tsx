@@ -12,7 +12,7 @@ const FIELDS = [
   { key: "approvalThreshold", label: "Ask me first above", hint: "Anything larger needs your signature." },
   {
     key: "dailyDataCap",
-    label: "Daily allowance for buying data",
+    label: "Daily data budget",
     hint: "What it pays per request for forecasts. This is the most a hijacked agent could take.",
   },
 ] as const;
@@ -104,6 +104,13 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
   // Until the owner types a figure, each one follows what the wallet can actually fund.
   const values = { ...(wallet !== null && wallet > FEE_RESERVE ? fittedLimits(wallet) : USUAL), ...edited };
   const short = wallet !== null && wallet < values.deposit;
+  // Figures that contradict each other are said so here, before anything is signed.
+  const contradictions = [
+    values.deposit <= 0 && "Put something into the vault: the agent can only spend what is in it.",
+    values.perCoverCap <= 0 && "With nothing allowed for one cover, the agent can’t buy any.",
+    values.perCoverCap > values.monthlyCap && "One cover is allowed more than the whole month is. Raise the month, or lower the cover.",
+    values.dailyDataCap > values.deposit && "The daily data budget is more than the vault would hold.",
+  ].filter((problem): problem is string => Boolean(problem));
 
   async function run(work: () => Promise<void>) {
     setError(null);
@@ -148,16 +155,24 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
         ))}
       </div>
 
+      {contradictions.length > 0 && (
+        <ul role="alert" className="note mt-6 space-y-1 text-sm">
+          {contradictions.map((problem) => (
+            <li key={problem}>{problem}</li>
+          ))}
+        </ul>
+      )}
+      {/* Why the button below can't be pressed yet, and the way to make it so. */}
       {short && (
         <p className="note mt-6 text-sm">
-          This device&rsquo;s wallet holds {usd(wallet)}.{" "}
+          You have {usd(wallet)} in test dollars, less than the {usd(values.deposit)} going into the vault.{" "}
           <button type="button" onClick={getTestDollars} disabled={step !== null} className="link text-fg">
             Get test dollars
           </button>
         </p>
       )}
 
-      <button type="submit" disabled={step !== null || short} className="btn btn-lg btn-primary mt-6">
+      <button type="submit" disabled={step !== null || short || contradictions.length > 0} aria-busy={step !== null} className="btn btn-lg btn-primary mt-6">
         {step ?? "Set allowance"}
       </button>
       {error && (

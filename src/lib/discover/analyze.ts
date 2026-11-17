@@ -146,7 +146,7 @@ export function analyze(input: Day[], seed = 7): Analysis {
   const freedom = days.length - weekdays.count - months.count;
 
   const best = freedom > 0 ? scan(highs, sales, groups, thresholds, minSide, freedom) : null;
-  if (!best) return { finding: null, reason: "The weather didn't vary enough within each month to compare like with like." };
+  if (!best) return { finding: null, reason: "The weather didn’t vary enough within each month to compare like with like." };
 
   const next = random(seed);
   let asStrong = 0;
@@ -161,7 +161,7 @@ export function analyze(input: Day[], seed = 7): Analysis {
   // One file in a hundred with no weather effect at all will still pass this. That is the price of
   // finding real ones, and why the page shows the chance instead of hiding it.
   if (chance > 0.01 || loss < typical * 0.03) {
-    return { finding: null, reason: "There's no clear link between the daily high and your sales in this data." };
+    return { finding: null, reason: "There’s no clear link between the daily high and your sales in this data." };
   }
 
   const direction = best.effect < 0 ? "below" : "above";

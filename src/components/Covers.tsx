@@ -18,7 +18,7 @@ function state(cover: Cover): { label: string; tone: "" | "status-accent" | "sta
     case "refunded":
       return { label: `${cents(cover.payout ?? 0)} returned`, tone: "" };
     case "expired":
-      return { label: "Ended, it didn't happen", tone: "" };
+      return { label: "Ended, it didn’t happen", tone: "" };
     case "blocked":
       return { label: `Refused: ${REFUSAL[cover.note as BlockReason] ?? cover.note}`, tone: "status-bad" };
     default:

@@ -36,7 +36,7 @@ export function useVoice(onHeard: (text: string) => void) {
           if (!res.ok) throw new Error(data.error);
           spoken.current = true;
           if (data.text) onHeard(data.text);
-          else setError("I didn't catch that. Try again a little closer to the microphone.");
+          else setError("I didn’t catch that. Try again a little closer to the microphone.");
         } catch (e) {
           setError(e instanceof Error ? e.message : String(e));
         } finally {

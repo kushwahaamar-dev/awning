@@ -16,7 +16,7 @@ export function Storefront() {
   const path = usePathname();
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-bg/75 backdrop-blur-xl">
-      <div className="wrap flex h-14 items-center gap-2 min-[360px]:gap-4 sm:gap-8">
+      <div className="wrap flex h-14 items-center gap-2 min-[390px]:gap-4 sm:gap-8">
         <Link href="/" aria-label="Awning, home" className="rounded-md">
           <Logo />
         </Link>
@@ -26,7 +26,7 @@ export function Storefront() {
               key={href}
               href={href}
               aria-current={path === href ? "page" : undefined}
-              className={`rounded-md px-1.5 py-1.5 transition-colors min-[360px]:px-2.5 sm:px-3 ${path === href ? "bg-white/[0.07] text-fg" : "text-muted hover:text-fg"}`}
+              className={`rounded-md px-1.5 py-1.5 transition-colors min-[390px]:px-2.5 sm:px-3 ${path === href ? "bg-white/[0.07] text-fg" : "text-muted hover:text-fg"}`}
             >
               {label}
             </Link>

@@ -14,7 +14,7 @@ const fonts = [GeistSans, GeistMono, GeistPixelCircle].map((font) => font.variab
 export const metadata: Metadata = {
   title: "Awning",
   openGraph: { title: "Awning", description: "Say what could go wrong. Get paid when it does.", type: "website" },
-  description: "Cover for the bad days insurers won't touch, priced by Gemini prediction markets and paid out on Arc.",
+  description: "Cover for the bad days insurers won’t touch, priced by Gemini prediction markets and paid out on Arc.",
 };
 
 export const viewport: Viewport = { themeColor: "#08090a" };

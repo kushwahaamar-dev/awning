@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     const to = Number(query.get("to"));
     if (!DESTINATIONS.some((d) => d.domain === to)) return Response.json({ error: "unknown destination" }, { status: 400 });
     const res = await fetch(`${IRIS}/burn/USDC/fees/${ARC_DOMAIN}/${to}?forward=true`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`Circle's fee service responded ${res.status}`);
+    if (!res.ok) throw new Error(`Circle’s fee service responded ${res.status}`);
     const tier = feesSchema.parse(await res.json()).find((f) => f.finalityThreshold === STANDARD_FINALITY);
     if (!tier) throw new Error("Circle quoted no fee for a standard transfer");
     // The top of Circle's range, so the transfer isn't sent back to a slower path if gas moves while it is in flight.

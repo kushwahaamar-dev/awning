@@ -10,7 +10,7 @@ import { useAccount } from "./account";
 
 const fetchFee = async (url: string): Promise<number> => {
   const data = await (await fetch(url)).json();
-  if (typeof data.fee !== "number") throw new Error(data.error ?? "Circle didn't quote a fee.");
+  if (typeof data.fee !== "number") throw new Error(data.error ?? "Circle didn’t quote a fee.");
   return data.fee;
 };
 
@@ -131,7 +131,7 @@ export function CashOut({ onClose }: { onClose: () => void }) {
 
       <p className="mt-4 text-sm text-muted">
         {feeError
-          ? "Circle isn't quoting a delivery fee right now."
+          ? "Circle isn’t quoting a delivery fee right now."
           : fee === undefined
             ? "Asking Circle what delivery costs…"
             : amount > fee

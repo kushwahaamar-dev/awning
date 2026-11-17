@@ -17,7 +17,7 @@ describe("resolution", () => {
     expect(resolution([order("78°F to 79°F", "yes"), order("80°F or above", "yes")], settled)).toBe("happened");
   });
 
-  it("missed when none of the user's sides came in", () => {
+  it("missed when none of the user’s sides came in", () => {
     expect(resolution([order("69°F or below", "yes")], settled)).toBe("missed");
   });
 

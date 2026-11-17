@@ -16,7 +16,7 @@ const words = (node: unknown, found = new Set<string>()): Set<string> => {
 };
 
 describe("replySchema", () => {
-  it("restates the risk's shape in the schema words Google enforces", () => {
+  it("restates the risk’s shape in the schema words Google enforces", () => {
     const schema = replySchema(interpretationSchema);
     const used = words(schema);
     for (const unsupported of ["oneOf", "const", "exclusiveMinimum", "$schema"]) expect(used.has(unsupported)).toBe(false);

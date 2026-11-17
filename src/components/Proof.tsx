@@ -33,19 +33,19 @@ function Receipt({ href }: { href: string | null }) {
 const settle = (ready: boolean) => `transition-opacity duration-300 ${ready ? "" : "opacity-0"}`;
 // The test on the agent page leaves refusals in this pattern, so these stand in for them, unseen, line for line.
 const WAITING: Timed[] = [
-  "An agent tried to draw $1,987.15 as data spending. Refused: it's over today's data allowance.",
-  "An agent tried to pay $1,987.15 to 0x9fE4…a6e0. Refused: it's over its owner's limit for a single cover.",
-  "An agent tried to pay $100.00 to 0xBAd0…0Bad. Refused: that address isn't on its owner's approved list.",
-  "An agent tried to draw $1,962.83 as data spending. Refused: it's over today's data allowance.",
+  "An agent tried to draw $1,987.15 from the data budget. Refused: it’s over today’s data budget.",
+  "An agent tried to pay $1,987.15 to 0x9fE4…a6e0. Refused: it’s over its owner’s limit for a single cover.",
+  "An agent tried to pay $100.00 to 0xBAd0…0Bad. Refused: that address isn’t on its owner’s approved list.",
+  "An agent tried to draw $1,962.83 from the data budget. Refused: it’s over today’s data budget.",
 ].map((note, i) => ({ at: String(i), receipt: null, when: "00 hours ago", note }));
 
 /** What the contract last said no to, read from the chain: the claim above it, with receipts. */
-export function RecentRefusals({ chain }: { chain: string }) {
+export function RecentRefusals() {
   const proof = useProof();
   if (proof && !proof.refusals.length) return null;
   return (
     <div className={`mt-10 ${settle(Boolean(proof))}`} aria-hidden={!proof}>
-      <h3 className="title">The last things the contract refused on {chain}</h3>
+      <h3 className="title">What the contract refused most recently</h3>
       <ol className="rows mt-4 border-y border-line">
         {(proof?.refusals ?? WAITING).map((refusal) => (
           <li key={refusal.at + refusal.note} className="grid gap-x-6 gap-y-1 py-3.5 sm:grid-cols-[6.5rem_minmax(0,1fr)_auto] sm:items-baseline">

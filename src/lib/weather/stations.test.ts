@@ -14,7 +14,7 @@ describe("stationFor", () => {
     expect(sfo.longitude).toBeCloseTo(-122.37, 1);
   });
 
-  it("knows the stations that don't follow the airport-code rule", async () => {
+  it("knows the stations that don’t follow the airport-code rule", async () => {
     expect((await stationFor("CHI")).name).toMatch(/Midway/);
     expect((await stationFor("NYC")).name).toMatch(/Central Park/);
     expect((await stationFor("LA")).id).toBe("KLAX");

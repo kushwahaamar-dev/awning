@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { calendarDay, typeset } from "../format";
 import { ask, type Turn } from "../model";
 import type { Catalog } from "./catalog";
 import { exposureSchema } from "./exposure";
@@ -56,12 +57,14 @@ export async function interpret(turns: Turn[], catalog: Catalog, today: string):
     maxTokens: 4000,
     turns: [{ role: "user", text: `${describeCatalog(catalog, today)}\n\n${first.text}` }, ...rest],
   });
-  if (reading.exposure) reading.exposure.summary = spokenDates(reading.exposure.summary);
+  // What the model writes is read back on the page, so it is set the way the page sets everything else.
+  if (reading.exposure) {
+    reading.exposure.summary = typeset(spokenDates(reading.exposure.summary));
+    if (reading.exposure.proxyNote) reading.exposure.proxyNote = typeset(reading.exposure.proxyNote);
+  }
+  if (reading.question) reading.question = typeset(reading.question);
   return reading;
 }
 
-/** The sentence is read back to a person, so a date the model wrote as 2026-11-17 is said the way they would say it. */
-export const spokenDates = (sentence: string) =>
-  sentence.replace(/\b\d{4}-\d{2}-\d{2}\b/g, (date) =>
-    new Date(`${date}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" }),
-  );
+/** A date the model wrote as 2026-11-17, said the way the rest of the page says a day. */
+export const spokenDates = (sentence: string) => sentence.replace(/\b\d{4}-\d{2}-\d{2}\b/g, (date) => calendarDay(date));

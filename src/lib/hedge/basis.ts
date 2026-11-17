@@ -1,4 +1,6 @@
+import { calendarDay } from "../format";
 import type { Market } from "../gemini/market";
+import { knownStation } from "../weather/stations";
 import type { Exposure } from "./exposure";
 import type { Coverage } from "./legs";
 import { marketDay } from "./match";
@@ -15,7 +17,8 @@ const WIDE_SPREAD = 0.15;
 function settlementNote(market: Market): string {
   const { subject } = market;
   if (subject.family === "temperature") {
-    const where = subject.station ?? `the official ${subject.city} station`;
+    // Our own table's name for the station where we have one: Gemini's wording of it repeats the state.
+    const where = knownStation(subject.cityCode)?.name ?? subject.station ?? `the official ${subject.city} station`;
     return `Settles on the high recorded at ${where}, not at your address.`;
   }
   if (subject.family === "price") {
@@ -35,18 +38,23 @@ export function assessBasis(exposure: Exposure, market: Market, coverage: Covera
 
   const { trigger } = exposure;
   if (coverage.snappedTo !== null && trigger.family !== "game") {
-    const unit = market.unit === "$" ? "$" : "";
-    const suffix = market.unit === "°F" ? "°F" : "";
-    const gap = Math.abs(coverage.snappedTo - trigger.threshold) / Math.max(Math.abs(trigger.threshold), 1);
+    const level = (n: number) => (market.unit === "$" ? `$${n}` : `${n}${market.unit === "°F" ? "°F" : ""}`);
+    // A level that starts sooner than the risk pays on days that cost nothing; one that starts later misses days that do.
+    const sooner = (trigger.direction === "below") === coverage.snappedTo > trigger.threshold;
     notes.push(
-      `The market's steps put the start of cover at ${unit}${coverage.snappedTo}${suffix} instead of your ${unit}${trigger.threshold}${suffix}.`,
+      `Cover starts at ${level(coverage.snappedTo)}, not your ${level(trigger.threshold)}: that is the nearest level Gemini lists. ${
+        sooner ? "It will also pay on days that don’t cost you, and is priced for that." : "The days in between will cost you without paying."
+      }`,
     );
-    fit -= Math.min(20, 5 + Math.round(gap * 200));
+    // Three points a degree: three degrees off is still close, eight is partly, fifteen is a different risk.
+    // A price is judged by how far off it is in proportion.
+    const gap = Math.abs(coverage.snappedTo - trigger.threshold);
+    fit -= trigger.family === "temperature" ? Math.min(60, Math.round(gap * 3)) : Math.min(60, 5 + Math.round((gap / Math.max(Math.abs(trigger.threshold), 1)) * 200));
   }
 
   const day = marketDay(market);
   if (exposure.on && day !== exposure.on) {
-    notes.push(`The nearest listed market is for ${day}, not ${exposure.on}.`);
+    notes.push(`The nearest listed market is for ${calendarDay(day)}, not ${calendarDay(exposure.on)}.`);
     fit -= 15;
   }
 

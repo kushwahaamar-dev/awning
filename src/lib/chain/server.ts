@@ -239,7 +239,7 @@ export async function fundVisitor(owner: Address): Promise<number> {
   const hourAgo = Date.now() - 3_600_000;
   while (granted.length && granted[0] < hourAgo) granted.shift();
   if (fromUnits(spare) < TESTNET_GRANT_USD + OPERATOR_RESERVE_USD || granted.length >= GRANTS_PER_HOUR) {
-    throw new Error(`The demo's test dollars have run out for now. Send ${chain.name} USDC to ${owner} from faucet.circle.com, then come back.`);
+    throw new Error(`The demo’s test dollars have run out for now. Send ${chain.name} USDC to ${owner} from faucet.circle.com, then come back.`);
   }
   granted.push(Date.now());
   await mined(await signers().venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "transfer", args: [owner, toUnits(TESTNET_GRANT_USD)] }));

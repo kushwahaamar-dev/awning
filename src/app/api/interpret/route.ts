@@ -4,6 +4,7 @@ import { getDb, gaps } from "@/lib/db";
 import { listMarkets } from "@/lib/gemini/client";
 import { getCatalog } from "@/lib/hedge/catalog";
 import { interpret } from "@/lib/hedge/interpret";
+import { easternDate } from "@/lib/hedge/match";
 
 const bodySchema = z.object({
   turns: z.array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().min(1).max(2000) })).min(1).max(12),
@@ -15,8 +16,9 @@ export async function POST(request: Request) {
 
   try {
     const catalog = await getCatalog(listMarkets);
-    const today = new Date().toISOString().slice(0, 10);
-    const result = await interpret(body.turns, catalog, today);
+    // Today on the US east coast, where Gemini dates its markets. By the world's clock it is already tomorrow
+    // there every evening, and "tomorrow" would be read a day late.
+    const result = await interpret(body.turns, catalog, easternDate(new Date()));
 
     if (result.status === "unlisted" && result.wanted) {
       const db = await getDb();

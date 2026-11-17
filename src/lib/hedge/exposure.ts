@@ -21,7 +21,7 @@ export const triggerSchema = z.discriminatedUnion("family", [
 ]);
 
 export const exposureSchema = z.object({
-  summary: z.string().describe("One plain sentence restating the risk back to the person, addressed to them as 'you' and 'your'. Say any date the way a person would ('tomorrow', 'on Tuesday', 'on November 17'), never as 2026-11-17"),
+  summary: z.string().describe("One plain sentence restating the risk back to the person, addressed to them as 'you' and 'your'. Say any date the way a person would ('tomorrow', 'on Tuesday', 'on November 17'), never as 2026-11-17. State a level exactly as the trigger has it: a threshold of 44 with direction below is 'at 44°F or below', never 'below 45°F'"),
   trigger: triggerSchema,
   lossUsd: z.number().positive().describe("What the event costs the user, in US dollars"),
   on: z.string().nullable().describe("ISO date (YYYY-MM-DD) the risk applies to, or null for the next listed market"),
@@ -29,7 +29,7 @@ export const exposureSchema = z.object({
   proxyNote: z
     .string()
     .nullable()
-    .describe("If the listed market only approximates the user's real risk, one sentence saying how. Otherwise null."),
+    .describe("If the listed market only approximates the user’s real risk, one sentence saying how. Otherwise null."),
 });
 
 export type Trigger = z.infer<typeof triggerSchema>;

@@ -21,6 +21,9 @@ type Props = { plan: CoverPlan; coverRatio: number; onBought: (receipt: Omit<Pur
 export function Buy({ plan, coverRatio, onBought }: Props) {
   const { owner, account, refresh } = useAccount();
   const [step, setStep] = useState<string | null>(null);
+  // A first purchase sets up the allowance on its way. It goes on looking like a first purchase until it is done,
+  // so the words under the button don't change while it is working.
+  const [first, setFirst] = useState(false);
   const [choosing, setChoosing] = useState(false);
   const [pending, setPending] = useState<CoverTerms | null>(null);
   const [refused, setRefused] = useState<BlockReason | null>(null);
@@ -56,7 +59,7 @@ export function Buy({ plan, coverRatio, onBought }: Props) {
   async function buy() {
     // Asking for terms has the pool lock the payout, so the money is there before any premium moves.
     const terms = await post<CoverTerms>("/api/covers/quote", { owner, exposure: plan.exposure, coverRatio });
-    // Within the allowance the agent just acts. Above the owner's line it has to come back and ask.
+    // Within the allowance the agent just acts. Above the amount the owner set it has to come back and ask.
     if (terms.needsApproval) setPending(terms);
     else await open(terms, null);
   }
@@ -67,13 +70,16 @@ export function Buy({ plan, coverRatio, onBought }: Props) {
       if (pending) await open(pending, await signApproval(pending));
     });
   // A first purchase: test dollars, a vault, limits to fit, and then the cover, without leaving the quote.
-  const setUpAndBuy = () =>
-    run("Setting up your agent…", async () => {
+  const setUpAndBuy = async () => {
+    setFirst(true);
+    await run("Setting up your agent…", async () => {
       await fundAndSetUp(owner!, setup, price.total, setStep);
       await refresh();
       setStep("Locking your payout…");
       await buy();
     });
+    setFirst(false);
+  };
 
   const problems = (
     <>
@@ -95,10 +101,10 @@ export function Buy({ plan, coverRatio, onBought }: Props) {
     return (
       <div className="mt-6 border-t border-line pt-5">
         <p className="font-[510]">
-          {cents(pending.premium)} is above your {usd(allowance.approvalThreshold)} line, so the agent needs your go-ahead.
+          {cents(pending.premium)} is above the {usd(allowance.approvalThreshold)} you asked to approve yourself, so the agent needs your go-ahead.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-4">
-          <button type="button" onClick={approve} disabled={busy} className="btn btn-lg btn-primary">
+          <button type="button" onClick={approve} disabled={busy} aria-busy={busy} className="btn btn-lg btn-primary">
             {step ?? `Approve ${cents(pending.premium)}`}
           </button>
           <button type="button" onClick={() => setPending(null)} disabled={busy} className="link">
@@ -110,7 +116,7 @@ export function Buy({ plan, coverRatio, onBought }: Props) {
     );
   }
 
-  if (!hasAllowance(account)) {
+  if (!hasAllowance(account) || first) {
     if (choosing) {
       return (
         <div className="mt-6 border-t border-line pt-5">
@@ -121,7 +127,7 @@ export function Buy({ plan, coverRatio, onBought }: Props) {
     }
     return (
       <div className="mt-5">
-        <button type="button" onClick={setUpAndBuy} disabled={busy} className="btn btn-lg btn-primary w-full">
+        <button type="button" onClick={setUpAndBuy} disabled={busy} aria-busy={busy} className="btn btn-lg btn-primary w-full">
           {step ?? `Buy cover for ${cents(price.total)}`}
         </button>
         <p className="mt-3 text-xs text-muted">
@@ -143,7 +149,7 @@ export function Buy({ plan, coverRatio, onBought }: Props) {
           This is over your {usd(allowance.perCoverCap)} limit for one cover and will be refused. Cover less, or raise the limit under Your agent.
         </p>
       )}
-      <button type="button" onClick={start} disabled={busy} className="btn btn-lg btn-primary w-full">
+      <button type="button" onClick={start} disabled={busy} aria-busy={busy} className="btn btn-lg btn-primary w-full">
         {step ?? `Buy cover for ${cents(price.total)}`}
       </button>
       <p className="mt-3 flex gap-2 text-xs text-muted">

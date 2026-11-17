@@ -6,6 +6,7 @@ import useSWR from "swr";
 import { cents } from "@/lib/format";
 import type { Example } from "@/lib/hedge/examples";
 import type { Turn } from "@/lib/hedge/interpret";
+import { EXAMPLE_RISK } from "@/lib/words";
 import { Ascii } from "./Ascii";
 import { Chevron, Mic } from "./icons";
 import type { useVoice } from "./voice";
@@ -46,12 +47,6 @@ const MIC_LABEL = {
 
 const order = (i: number) => ({ "--i": i }) as CSSProperties;
 
-/** One step of the wait for a quote: done, happening now, or still to come. */
-function Phase({ state, children }: { state: "done" | "now" | "next"; children: string }) {
-  const look = { done: "status-good text-muted", now: "status-accent status-live text-fg", next: "text-faint" }[state];
-  return <li className={`status text-base whitespace-normal ${look}`}>{children}</li>;
-}
-
 export function Ask({ turns, busy, pricing, understood, checking, error, unlisted, draft, onDraft, onSay, onPick, voice }: Props) {
   const [nudged, setNudged] = useState(false);
   const field = useRef<HTMLTextAreaElement>(null);
@@ -59,7 +54,10 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
   const { data: examples = [] } = useSWR("/api/examples", fetchExamples, { revalidateOnFocus: false });
   const question = turns.at(-1)?.role === "assistant" ? turns.at(-1)!.text : null;
   const said = turns.filter((t) => t.role === "user").map((t) => t.text);
-  const fresh = turns.length === 0;
+  // While a sentence is being read it is in the box, so only what came before it is listed above.
+  const earlier = busy ? said.slice(0, -1) : said;
+  // Nothing has been asked back yet: the first sentence is still being written, or read.
+  const opening = turns.every((t) => t.role === "user") && turns.length <= 1;
 
   function submit(text: string) {
     if (busy) return;
@@ -75,89 +73,93 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
   return (
     <div className="grid items-start gap-x-14 gap-y-10 pt-16 sm:pt-24 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
       <section>
-        <h1 className="heading rise">What could go wrong for your business?</h1>
+        <h1 className="sign rise">What could go wrong for your business?</h1>
         <p className="rise mt-4 text-lg text-muted" style={order(1)}>
           Say it the way you&rsquo;d tell a friend. You see the price before you spend anything.
         </p>
 
-        {said.length > 0 && (
+        {earlier.length > 0 && (
           <ol className="mt-8 space-y-2 border-l border-edge pl-4 text-lg text-soft">
-            {said.map((text, i) => (
+            {earlier.map((text, i) => (
               <li key={i}>{text}</li>
             ))}
           </ol>
         )}
         {question && <p className="title mt-6">{question}</p>}
 
-        {!busy && (
-          <form
-            className="composer rise mt-8"
-            style={order(2)}
-            onSubmit={(e) => {
-              e.preventDefault();
-              submit(draft);
+        {/* The box stays where it is while its sentence is read and priced: the words stay in it and the wait is told under them. */}
+        <form
+          className="composer rise mt-8"
+          style={order(2)}
+          aria-busy={busy}
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit(draft);
+          }}
+        >
+          <label htmlFor="risk" className="sr-only">
+            {question ?? "Describe the risk"}
+          </label>
+          <textarea
+            id="risk"
+            name="risk"
+            ref={field}
+            rows={3}
+            autoComplete="off"
+            readOnly={busy}
+            value={busy ? (said.at(-1) ?? understood ?? "") : draft}
+            onChange={(e) => {
+              onDraft(e.target.value);
+              setNudged(false);
             }}
-          >
-            <label htmlFor="risk" className="sr-only">
-              {question ?? "Describe the risk"}
-            </label>
-            <textarea
-              id="risk"
-              name="risk"
-              ref={field}
-              rows={3}
-              autoComplete="off"
-              value={draft}
-              onChange={(e) => {
-                onDraft(e.target.value);
-                setNudged(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  submit(draft);
-                }
-              }}
-              placeholder={question ? "Your answer…" : "If it’s too cold to sit outside, my patio…"}
-              className="block w-full resize-none bg-transparent px-5 pt-4 pb-1 text-lg leading-relaxed placeholder:text-faint focus:outline-none"
-            />
-            <div className="flex flex-wrap items-center justify-between gap-3 p-3 pl-5">
-              <span aria-live="polite" className={`text-xs ${nudged ? "text-accent" : "text-faint"}`}>
-                {/* A phone's keyboard has no Enter that sends, so the hint is only for a real one. */}
-                {nudged ? "Write what could cost you money first" : <span className="[@media(pointer:coarse)]:hidden">Press Enter to send</span>}
-              </span>
-              <span className="flex gap-2">
-                {voice.enabled && (
-                  <button
-                    type="button"
-                    onClick={voice.state === "recording" ? voice.stop : voice.start}
-                    disabled={voice.state === "transcribing"}
-                    aria-pressed={voice.state === "recording"}
-                    className={`btn ${voice.state === "recording" ? "btn-recording" : "btn-secondary"}`}
-                  >
-                    <Mic />
-                    {MIC_LABEL[voice.state]}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                submit(draft);
+              }
+            }}
+            placeholder={question ? "Your answer…" : EXAMPLE_RISK}
+            className="block w-full resize-none bg-transparent px-5 pt-4 pb-1 text-lg leading-relaxed placeholder:text-faint focus:outline-none"
+          />
+          <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 p-3 pl-5">
+            {busy ? (
+              <p aria-live="polite" className="status status-accent status-live text-sm whitespace-normal text-fg">
+                <span>
+                  {!pricing
+                    ? "Reading your sentence…"
+                    : checking
+                      ? "Finding the market on Gemini, and buying a forecast to check its price…"
+                      : "Finding the market on Gemini and pricing it…"}
+                  {said.length > 0 && <span className="text-faint"> This can take up to a minute.</span>}
+                </span>
+              </p>
+            ) : (
+              <>
+                <span aria-live="polite" className={`text-xs ${nudged ? "text-accent" : "text-faint"}`}>
+                  {/* A phone’s keyboard has no Enter that sends, so the hint is only for a real one. */}
+                  {nudged ? "Write what could cost you money first" : <span className="[@media(pointer:coarse)]:hidden">Press Enter to send</span>}
+                </span>
+                <span className="flex gap-2">
+                  {voice.enabled && (
+                    <button
+                      type="button"
+                      onClick={voice.state === "recording" ? voice.stop : voice.start}
+                      disabled={voice.state === "transcribing"}
+                      aria-pressed={voice.state === "recording"}
+                      className={`btn ${voice.state === "recording" ? "btn-recording" : "btn-secondary"}`}
+                    >
+                      <Mic />
+                      {MIC_LABEL[voice.state]}
+                    </button>
+                  )}
+                  <button type="submit" className="btn btn-primary">
+                    Price cover
                   </button>
-                )}
-                <button type="submit" className="btn btn-primary">
-                  Price cover
-                </button>
-              </span>
-            </div>
-          </form>
-        )}
-        {busy && (
-          <div className="mt-8" aria-live="polite">
-            <ol className="grid gap-2.5">
-              {said.length > 0 && <Phase state={pricing ? "done" : "now"}>{pricing ? "Read your sentence" : "Reading your sentence…"}</Phase>}
-              {understood && <li className="ml-[0.1875rem] border-l border-edge py-0.5 pl-[1.0625rem] text-soft">{understood}</li>}
-              <Phase state={pricing ? "now" : "next"}>
-                {checking ? "Finding the market on Gemini, and buying a forecast to check its price…" : "Finding the market on Gemini and pricing it…"}
-              </Phase>
-            </ol>
-            {said.length > 0 && <p className="mt-5 text-sm text-faint">This can take up to a minute.</p>}
+                </span>
+              </>
+            )}
           </div>
-        )}
+        </form>
         {error && (
           <p role="alert" className="note note-bad mt-5">
             {error}
@@ -174,8 +176,9 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
           </div>
         )}
 
-        {fresh && !busy && (
-          <div className="rise mt-10" style={order(3)}>
+        {/* The examples keep their place through a first wait, out of reach, so nothing under the box moves. */}
+        {opening && (
+          <div className={`rise mt-10 transition-opacity ${busy ? "opacity-40" : ""}`} style={order(3)} inert={busy}>
             {examples.length > 0 && (
               <>
                 <p className="text-sm text-muted">Or start from one Gemini is pricing right now</p>
@@ -198,7 +201,7 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
               </>
             )}
             <p className="mt-5 text-sm text-muted">
-              Not sure what costs you?{" "}
+              Not sure what&rsquo;s costing you?{" "}
               <Link href="/find" className="link">
                 Find it in your sales
               </Link>

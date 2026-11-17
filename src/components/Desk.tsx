@@ -22,7 +22,7 @@ type Planned = { plan: CoverPlan | null };
 /** A risk that arrives already worked out, and where it came from. */
 type Linked = { exposure: Exposure; from: "sales" | "example" };
 
-const CAME_FROM = { sales: "Found in your sales", example: "An example, at Gemini’s price right now" } as const;
+const CAME_FROM = { sales: "Found in your sales", example: "An example, priced by Gemini right now" } as const;
 const order = (i: number) => ({ "--i": i }) as CSSProperties;
 
 /** The quote as one sentence, for reading aloud. */

@@ -58,11 +58,11 @@ describe("analyze", () => {
     expect(result.finding && "days" in result ? result.days.filter((d) => d.bad).length : 0).toBe(badDays);
   });
 
-  it("finds nothing in sales that don't depend on the weather", () => {
+  it("finds nothing in sales that don’t depend on the weather", () => {
     for (const seed of [3, 4, 5, 6]) expect(analyze(year({ seed })).finding).toBeNull();
   });
 
-  it("isn't fooled by a business that is simply busier in summer", () => {
+  it("isn’t fooled by a business that is simply busier in summer", () => {
     // Sales follow the season, so they rise with temperature across the year, but within any
     // month a warmer day is no better than a cooler one.
     for (const seed of [7, 8, 9]) expect(analyze(year({ seed, monthly: 0.3 })).finding).toBeNull();

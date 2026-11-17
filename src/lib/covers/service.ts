@@ -107,7 +107,7 @@ export async function quoteCover(input: {
     if (!(error instanceof PoolFull)) throw error;
     // The pool said no before anything was sent, so there is nothing onchain to tidy.
     await db.delete(covers).where(eq(covers.id, terms.id));
-    throw new CoverError("The pool can't back a payout that large on this market right now. Cover less of the loss.");
+    throw new CoverError("The pool can’t back a payout that large on this market right now. Cover less of the loss.");
   }
   return terms;
 }
@@ -115,7 +115,7 @@ export async function quoteCover(input: {
 export async function coverOwner(id: Hex): Promise<Address> {
   const db = await getDb();
   const [cover] = await db.select({ owner: covers.owner }).from(covers).where(eq(covers.id, id));
-  if (!cover) throw new CoverError("That quote doesn't exist.");
+  if (!cover) throw new CoverError("That quote doesn’t exist.");
   return cover.owner as Address;
 }
 

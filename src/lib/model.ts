@@ -10,7 +10,8 @@ export type Turn = { role: "user" | "assistant"; text: string };
 // a second. So there are two more to turn to, none is waited on for long, and a list that was busy
 // all the way down is gone through once more, because busy rarely lasts.
 const MODELS = process.env.AWNING_MODEL ? [process.env.AWNING_MODEL] : ["gemini-4-hydrogen", "gemini-3.6-flash", "gemini-3.5-flash-lite"];
-const PATIENCE_MS = 15_000;
+// A model that is going to answer does so in a few seconds; one that hasn't by now is stuck, and the next is asked.
+const PATIENCE_MS = 9_000;
 const ROUNDS = 2;
 const BETWEEN_ROUNDS_MS = 1_200;
 // However the attempts fall, nobody is kept waiting past this.
@@ -45,7 +46,7 @@ const said = (text: string) => [{ type: "text" as const, text }];
 /** One question to the language model, answered as data of a known shape. */
 export async function ask<T>({ system, turns, shape, maxTokens }: { system: string; turns: Turn[]; shape: z.ZodType<T>; maxTokens: number }): Promise<T> {
   const apiKey = process.env.GOOGLE_AI_API_KEY?.trim();
-  if (!apiKey) throw new Error("Reading a typed risk isn't switched on here. Pick one of the examples, or find a risk in your sales.");
+  if (!apiKey) throw new Error("Reading a typed risk isn’t switched on here. Pick one of the examples, or find a risk in your sales.");
   const client = new GoogleGenAI({ apiKey });
 
   const started = Date.now();

@@ -30,5 +30,5 @@ export async function requireOwner(request: Request, owner: Address) {
 
   // Through the chain client, so a smart-account owner (ERC-1271) verifies the same way an ordinary key does.
   const valid = await publicClient.verifyMessage({ address: owner, message: sessionMessage(owner, session.expires), signature: session.signature });
-  if (!valid) throw new Unauthorized("The session signature doesn't match this account.");
+  if (!valid) throw new Unauthorized("The session signature doesn’t match this account.");
 }

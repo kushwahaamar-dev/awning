@@ -7,7 +7,7 @@ import type { Example } from "@/lib/hedge/examples";
 import { calendarDay, cents, percent, usd } from "@/lib/format";
 import { fetchExamples } from "./Ask";
 
-// The reading plays out in beats: the sentence is typed, each thing found in it lights up, then the cover, its odds and its price.
+// The reading plays out in beats: the sentence is typed, each thing found in it lights up, then the market's odds, the price, and the cover.
 const TICK_MS = 40;
 const CHARS_PER_TICK = 2;
 const BEAT = 9;
@@ -36,8 +36,8 @@ function parts({ text, exposure: { trigger, lossUsd } }: Example): Part[] {
   return out;
 }
 
-/** The same sentence as the three facts a market can be matched on. */
-function facts({ exposure: { trigger, lossUsd } }: Example) {
+/** The same sentence as the three facts a market can be matched on, then what the market makes of it: its odds and the price. */
+function figures({ exposure: { trigger, lossUsd }, odds, cost }: Example) {
   const happens =
     trigger.family === "temperature"
       ? { where: trigger.city, when: `high ${trigger.direction === "below" ? "≤" : "≥"} ${trigger.threshold}°F` }
@@ -45,9 +45,11 @@ function facts({ exposure: { trigger, lossUsd } }: Example) {
         ? { where: trigger.asset, when: `price ${trigger.direction === "below" ? "≤" : "≥"} ${usd(trigger.threshold)}` }
         : { where: trigger.team, when: trigger.outcome === "loses" ? "they lose" : "they win" };
   return [
-    { label: "Where", value: happens.where },
-    { label: "Happens if", value: happens.when },
-    { label: "You lose", value: usd(lossUsd) },
+    { label: "Where", value: happens.where, tone: "text-fg" },
+    { label: "Happens if", value: happens.when, tone: "text-fg" },
+    { label: "You lose", value: usd(lossUsd), tone: "text-fg" },
+    { label: "The market’s odds", value: odds === null ? "—" : percent(odds), tone: "text-fg" },
+    { label: "This cover costs", value: cents(cost), tone: "text-accent" },
   ];
 }
 
@@ -88,7 +90,7 @@ function Reading({ example, all, typed, beat }: { example: Example; all: Example
         <span className="num max-[400px]:hidden">{calendarDay(example.day)}</span>
       </p>
 
-      <blockquote className="mt-4 text-xl leading-snug text-soft">
+      <blockquote className="mt-4 text-xl leading-snug text-soft lg:text-[1.625rem] lg:leading-[1.28]">
         <span className="sr-only">{example.text}</span>
         <Held versions={all.map((each) => each.text)}>
           <span aria-hidden>
@@ -102,42 +104,33 @@ function Reading({ example, all, typed, beat }: { example: Example; all: Example
         </Held>
       </blockquote>
 
-      {/* Side by side where there is room; one to a line on a phone, where a long city name would run into its neighbour. */}
-      <dl className="mt-4 grid gap-x-4 gap-y-1.5 border-y border-line py-3.5 sm:grid-cols-[auto_auto_auto] sm:justify-between">
-        {facts(example).map(({ label, value }, i) => (
+      {/* What was read out of the sentence and what the market makes of it. Five across where there is room;
+          one to a line on a phone, where a long city name would run into its neighbour. */}
+      <dl className="mt-5 grid gap-x-6 gap-y-1.5 border-y border-line py-3.5 sm:grid-cols-[auto_auto_auto] sm:justify-between sm:gap-y-4 lg:grid-cols-[auto_auto_auto_auto_auto]">
+        {figures(example).map(({ label, value, tone }, i) => (
           <div key={label} className="max-sm:flex max-sm:items-baseline max-sm:justify-between max-sm:gap-4">
-            <dt className="text-xs text-muted">{label}</dt>
-            <dd className={`num text-sm text-fg sm:mt-1 sm:text-base ${appear(beat > i)}`}>{value}</dd>
+            <dt className="text-xs whitespace-nowrap text-muted">{label}</dt>
+            <dd className={`num text-sm whitespace-nowrap sm:mt-1 sm:text-base ${tone} ${appear(beat > i)}`}>{value}</dd>
           </div>
         ))}
       </dl>
 
-      <p className={`title mt-4 ${appear(beat > 3)}`}>
-        <Held versions={all.map(paysLine)}>{paysLine(example)}</Held>
-      </p>
-      <dl className="rows mt-3 border-y border-line">
-        <div className="flex items-baseline justify-between gap-6 py-2.5 text-muted">
-          <dt>The market&rsquo;s odds</dt>
-          <dd className={`num text-soft ${appear(beat > 4)}`}>{example.odds === null ? "—" : percent(example.odds)}</dd>
-        </div>
-        <div className="flex items-baseline justify-between gap-6 py-2.5">
-          <dt>What this cover costs</dt>
-          <dd className={`num text-xl text-accent ${appear(beat > 5)}`}>{cents(example.cost)}</dd>
-        </div>
-      </dl>
       {/* Whatever height the card has to spare goes above this row, which stays at its foot. */}
-      <p className="mt-auto flex items-center justify-between gap-4 pt-4">
-        <span className={`text-xs text-balance text-faint ${appear(beat > 5)}`}>The {usd(example.payout)} is locked before you pay</span>
-        <Link href={`/app?exposure=${encodeURIComponent(JSON.stringify(example.exposure))}&from=example`} className="btn btn-secondary h-9 shrink-0 px-3 text-sm">
-          Price cover
+      <div className="mt-auto flex items-center justify-between gap-x-6 gap-y-3 pt-4 max-sm:flex-col max-sm:items-start">
+        <p className={`title min-w-0 ${appear(beat > 5)}`}>
+          <Held versions={all.map(paysLine)}>{paysLine(example)}</Held>
+        </p>
+        {/* The one white button in the opening is for the visitor's own risk; this one prices the example. */}
+        <Link href={`/app?exposure=${encodeURIComponent(JSON.stringify(example.exposure))}&from=example`} className="btn btn-secondary shrink-0">
+          Price this one
         </Link>
-      </p>
+      </div>
     </>
   );
 }
 
-// Tall enough for what loads into it, so the card is one size from the moment the page opens.
-const CARD = "rise panel flex min-h-[33rem] flex-col p-5 max-xl:max-w-2xl sm:min-h-[27rem] sm:p-6 xl:min-h-[30.25rem]";
+// As tall as what loads into it, so the card is one size from the moment the page opens.
+const CARD = "rise panel flex min-h-[29rem] flex-col p-5 max-lg:max-w-2xl sm:min-h-[21.6875rem] sm:p-6 lg:min-h-[18.75rem]";
 
 /**
  * The product at work, on the page before anyone clicks: a risk Gemini is pricing this minute,

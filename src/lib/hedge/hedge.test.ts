@@ -33,7 +33,7 @@ describe("buildCoverage", () => {
     const coverage = buildCoverage(austin, coldDay.trigger)!;
     expect(coverage.legs.map((l) => l.label)).toEqual(["74°F or below", "75°F to 76°F", "77°F to 78°F"]);
     expect(coverage.legs.every((l) => l.side === "yes")).toBe(true);
-    expect(coverage.pays).toBe("Austin's high is 78°F or below");
+    expect(coverage.pays).toBe("Austin’s high is 78°F or below");
     expect(coverage.snappedTo).toBeNull();
   });
 
@@ -62,7 +62,7 @@ describe("buildCoverage", () => {
   it("prices a No leg from the mirrored Yes book", () => {
     const coverage = buildCoverage(game, { family: "game", team: "Texas", outcome: "loses" })!;
     expect(coverage.legs).toMatchObject([{ label: "Texas", side: "no", bid: 0.61, ask: 0.63 }]);
-    expect(coverage.pays).toBe("the Texas Longhorns don't win");
+    expect(coverage.pays).toBe("the Texas Longhorns don’t win");
   });
 
   it("refuses a trigger the market cannot express", () => {
@@ -112,7 +112,7 @@ describe("quoteCover", () => {
     expect(quoteCover(oil, 1500, 1, [0.3]).resting).toMatchObject({ prices: [0.3], premium: 450 });
   });
 
-  it("reports the market's odds from the middle of each leg's book", () => {
+  it("reports the market’s odds from the middle of each leg’s book", () => {
     const quote = quoteCover(buildCoverage(game, { family: "game", team: "Texas", outcome: "loses" })!, 1000);
     expect(quote.marketOdds).toBe(0.62);
   });
@@ -135,32 +135,33 @@ describe("assessBasis", () => {
       lossUsd: 1500,
       on: null,
       recurring: false,
-      proxyNote: "Diesel isn't listed; crude oil moves with it, but not one for one.",
+      proxyNote: "Diesel isn’t listed; crude oil moves with it, but not one for one.",
     };
     const basis = assessBasis(diesel, wti, buildCoverage(wti, diesel.trigger)!);
     expect(basis.level).toBe("loose");
     expect(basis.notes).toContain(diesel.proxyNote);
-    expect(basis.notes.some((n) => n.includes("$87 instead of your $88"))).toBe(true);
+    // $87 starts before the $88 the owner named, so it also pays on days that cost them nothing.
+    expect(basis.notes.some((n) => n.includes("Cover starts at $87, not your $88") && n.includes("also pay on days"))).toBe(true);
     expect(basis.notes.some((n) => n.includes("may not fill"))).toBe(true);
   });
 });
 
 describe("findMarket", () => {
-  it("finds the city's temperature market", async () => {
+  it("finds the city’s temperature market", async () => {
     expect((await findMarket(coldDay, list))?.ticker).toBe(austin.ticker);
   });
 
-  it("finds the asset's ladder and ignores up/down markets on the same asset", async () => {
+  it("finds the asset’s ladder and ignores up/down markets on the same asset", async () => {
     const btc: Exposure = { ...coldDay, trigger: { family: "price", asset: "BTC", direction: "below", threshold: 67000 } };
     expect((await findMarket(btc, list))?.ticker).toBe("BTC2611130700");
   });
 
-  it("finds a team's game by a partial name", async () => {
+  it("finds a team’s game by a partial name", async () => {
     const texas: Exposure = { ...coldDay, trigger: { family: "game", team: "Texas", outcome: "loses" } };
     expect((await findMarket(texas, list))?.ticker).toBe(game.ticker);
   });
 
-  it("treats an evening game as that evening's, not the next UTC day's", async () => {
+  it("treats an evening game as that evening’s, not the next UTC day’s", async () => {
     // Texas vs LSU kicks off at 00:30 UTC on the 15th, which is Saturday the 14th in the US
     const saturday: Exposure = { ...coldDay, on: "2026-11-14", trigger: { family: "game", team: "Texas", outcome: "loses" } };
     const market = (await findMarket(saturday, list))!;
@@ -172,10 +173,19 @@ describe("findMarket", () => {
     const nextMonth: Exposure = { ...coldDay, on: "2026-12-20", trigger: { family: "price", asset: "WTI", direction: "above", threshold: 87 } };
     const market = (await findMarket(nextMonth, list))!;
     const basis = assessBasis(nextMonth, market, buildCoverage(market, nextMonth.trigger)!);
-    expect(basis.notes).toContain("The nearest listed market is for 2026-11-20, not 2026-12-20.");
+    expect(basis.notes).toContain("The nearest listed market is for Friday, Nov 20, not Sunday, Dec 20.");
   });
 
-  it("prices the next full day when no day is named, because today's high is mostly decided", async () => {
+  it("calls a level a few degrees off close, and one far off a different risk", async () => {
+    const market = (await findMarket(coldDay, list))!;
+    const coverage = buildCoverage(market, coldDay.trigger)!;
+    // The owner said 78°F. Cover that starts two degrees away is the same risk; eighteen degrees away is not.
+    const startingAt = (snappedTo: number) => assessBasis(coldDay, market, { ...coverage, snappedTo });
+    expect(startingAt(80).level).toBe("close");
+    expect(startingAt(96).level).toBe("loose");
+  });
+
+  it("prices the next full day when no day is named, because today’s high is mostly decided", async () => {
     const day = austin.subject.family === "temperature" ? austin.subject.day! : "";
     const dayAfter = new Date(new Date(`${day}T12:00:00Z`).getTime() + 86_400_000).toISOString().slice(0, 10);
     const tomorrow: Market = { ...austin, ticker: "WXHIGH-AUS-NEXT", subject: { ...austin.subject, day: dayAfter } as Market["subject"], expiresAt: `${dayAfter}T23:00:00.000Z` };
@@ -204,7 +214,7 @@ describe("liveExamples", () => {
     expect(new Set(examples.map((e) => e.text)).size).toBe(examples.length);
   });
 
-  it("offers nothing rather than something that can't be priced", async () => {
+  it("offers nothing rather than something that can’t be priced", async () => {
     expect(await liveExamples(async () => [])).toEqual([]);
   });
 });
@@ -225,7 +235,7 @@ describe("cityPrices", () => {
 describe("spokenDates", () => {
   it("says a machine date the way a person would, and leaves everything else alone", () => {
     expect(spokenDates("If the daily high in Chicago on 2026-11-17 is 49°F or below, you lose about $300.")).toBe(
-      "If the daily high in Chicago on Tuesday, November 17 is 49°F or below, you lose about $300.",
+      "If the daily high in Chicago on Tuesday, Nov 17 is 49°F or below, you lose about $300.",
     );
     expect(spokenDates("A cold day tomorrow costs you $300.")).toBe("A cold day tomorrow costs you $300.");
   });

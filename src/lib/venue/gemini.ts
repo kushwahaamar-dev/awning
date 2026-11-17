@@ -72,7 +72,7 @@ export const geminiVenue: Venue = {
   async place(orders, mode) {
     const terms = await signed<{ hasAcceptedLatest: boolean }>("GET", "/v1/prediction-markets/terms/status");
     if (!terms.hasAcceptedLatest) {
-      throw new Error("This Gemini account hasn't accepted the prediction market terms yet. Accept them in Gemini once, then try again.");
+      throw new Error("This Gemini account hasn’t accepted the prediction market terms yet. Accept them in Gemini once, then try again.");
     }
 
     const placed: Order[] = [];

@@ -16,7 +16,7 @@ describe.skipIf(!process.env.LIVE)("live: sentence to priced cover", () => {
   }, 60_000);
 
   const cases = [
-    "I run an ice cream truck in Austin. Any day the high stays under 80 I'm out about three hundred bucks.",
+    "I run an ice cream truck in Austin. Any day the high stays under 80 I’m out about three hundred bucks.",
     "My delivery vans burn diesel. If oil goes above 90 dollars a barrel next week it costs me around 1500.",
     "I own a bar near campus in Austin, and if the Longhorns lose this weekend I make about $4,000 less.",
     "If it rains on my farmers market Saturday I lose $800.",

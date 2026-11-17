@@ -29,7 +29,7 @@ const daysAgo = (n: number) => isoDay(new Date(Date.now() - n * 86_400_000));
 async function settlementStation(city: string, list: MarketSource): Promise<Station> {
   const markets = await list({ status: "active", category: "Weather" });
   const market = markets.find((m) => m.subject.family === "temperature" && m.subject.city === city);
-  if (!market || market.subject.family !== "temperature") throw new Error(`Gemini doesn't list a temperature market for ${city}.`);
+  if (!market || market.subject.family !== "temperature") throw new Error(`Gemini doesn’t list a temperature market for ${city}.`);
   return stationFor(market.subject.cityCode);
 }
 
@@ -100,7 +100,7 @@ export async function discover(where: string, sales: Sale[] | null, list: Market
     perYear,
     yearly: perYear * finding.lossUsd,
     exposure: {
-      summary: `You take in about ${usd(finding.lossUsd)} less on any day ${city}'s high is ${finding.threshold}°F or ${finding.direction === "below" ? "below" : "above"}.`,
+      summary: `You take in about ${usd(finding.lossUsd)} less on any day ${city}’s high is ${finding.threshold}°F or ${finding.direction === "below" ? "below" : "above"}.`,
       trigger: { family: "temperature", city, direction: finding.direction, threshold: finding.threshold },
       lossUsd: finding.lossUsd,
       on: null,

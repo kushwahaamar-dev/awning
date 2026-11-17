@@ -60,6 +60,9 @@ const KNOWN: Record<string, Station> = {
   TUS: { id: "KTUS", name: "Tucson International Airport", latitude: 32.1315, longitude: -110.9564, timezone: "America/Phoenix" },
 };
 
+/** The station as this table has it, for a city that is on it. */
+export const knownStation = (cityCode: string): Station | null => KNOWN[cityCode] ?? null;
+
 const looked = new Map<string, Station>();
 
 /** The weather station a city's market settles on, by the city code in the market's ticker. */

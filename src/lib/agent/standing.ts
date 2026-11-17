@@ -132,7 +132,7 @@ async function considerDay(order: Order, day: string, origin: string) {
   } catch (error) {
     // The pool or the market turning the cover down is an answer for the day. Anything else
     // (the model or Gemini being unreachable) is worth another try.
-    if (error instanceof CoverError) return record("skipped", `I decided to buy, but couldn't: ${error.message}`);
+    if (error instanceof CoverError) return record("skipped", `I decided to buy, but couldn’t: ${error.message}`);
     await giveBack();
     throw error;
   }

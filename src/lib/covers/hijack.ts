@@ -1,6 +1,7 @@
 import { toHex, type Address, type Hex } from "viem";
 import { poolAddress } from "../chain/config";
 import { drawFloat, openHedge, readAllowance, rejectPremium, type Attempt } from "../chain/server";
+import { ATTEMPTS } from "./attempts";
 
 const ATTACKER: Address = "0xbad0000000000000000000000000000000000bad";
 const NO_SIGNATURE: Hex = "0x";
@@ -13,7 +14,7 @@ export type HijackStep = { tried: string; amount: number; returned?: true } & At
 /**
  * Plays an attacker who fully controls the agent: same key, no scruples. Nothing here is simulated.
  * Each step is a real transaction signed by the agent, and the contracts decide what happens to it.
- * It costs the owner real money: the last step keeps what is left of the day's data allowance, and
+ * It costs the owner real money: the last step keeps what is left of the day's data budget, and
  * the dollar that goes to the pool and back still counts against the month's cover limit.
  */
 export async function hijack(owner: Address): Promise<{ steps: HijackStep[]; taken: number }> {
@@ -29,13 +30,13 @@ export async function hijack(owner: Address): Promise<{ steps: HijackStep[]; tak
 
   // Small enough to pass every spending cap, so the only thing in the way is who it's going to.
   const quiet = Math.min(allowance.balance, allowance.perCoverCap, allowance.approvalThreshold) || 1;
-  await attempt("Pay a premium to the attacker's own address", quiet, () => premium(randomId(), quiet, ATTACKER));
+  await attempt(ATTEMPTS.ownAddress, quiet, () => premium(randomId(), quiet, ATTACKER));
 
   // The pool is on the owner's list and a dollar is inside every limit, so the mandate has no reason
   // to refuse. The pool never offered this cover, though, and it sends back what it didn't offer.
   const stray = randomId();
   const dollar = Math.min(1, quiet);
-  await attempt("Pay the pool for cover nobody offered", dollar, () => premium(stray, dollar, poolAddress));
+  await attempt(ATTEMPTS.unoffered, dollar, () => premium(stray, dollar, poolAddress));
   const last = steps.at(-1)!;
   if (last.ok) {
     await rejectPremium(owner, stray);
@@ -44,11 +45,11 @@ export async function hijack(owner: Address): Promise<{ steps: HijackStep[]; tak
 
   // Each of these is sized past a limit, so it is refused whatever the balance.
   const tooMuch = Math.max(allowance.balance, allowance.perCoverCap + 1);
-  await attempt("Spend everything on one premium", tooMuch, () => premium(randomId(), tooMuch, poolAddress));
+  await attempt(ATTEMPTS.onePremium, tooMuch, () => premium(randomId(), tooMuch, poolAddress));
   const tooMuchData = Math.max(allowance.balance, allowance.dailyDataCap + 1);
-  await attempt("Draw everything as data spending", tooMuchData, () => drawFloat(owner, tooMuchData, randomId()));
+  await attempt(ATTEMPTS.allData, tooMuchData, () => drawFloat(owner, tooMuchData, randomId()));
   if (allowance.dataLeftToday > 0) {
-    await attempt("Take what's left of today's data allowance", allowance.dataLeftToday, () => drawFloat(owner, allowance.dataLeftToday, randomId()));
+    await attempt(ATTEMPTS.dataLeft, allowance.dataLeftToday, () => drawFloat(owner, allowance.dataLeftToday, randomId()));
   }
 
   return { steps, taken: steps.reduce((sum, s) => sum + (s.ok && !s.returned ? s.amount : 0), 0) };

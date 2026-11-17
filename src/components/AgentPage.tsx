@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import useSWR from "swr";
 import { cctpAvailable } from "@/lib/chain/cctp";
 import { setPaused } from "@/lib/chain/device";
+import { ATTEMPTS } from "@/lib/covers/attempts";
 import type { HijackStep } from "@/lib/covers/hijack";
 import { calendarDay, cents, clock, day, percent, usd } from "@/lib/format";
 import { REFUSAL, describeEvent } from "@/lib/words";
@@ -53,11 +54,11 @@ function Limits({ account }: { account: Account }) {
     { label: "One cover, at most", value: usd(a.perCoverCap) },
     { label: "Cover this month, at most", value: usd(a.monthlyCap), left: `${cents(a.premiumLeftThisMonth)} left` },
     { label: "Asks you first above", value: usd(a.approvalThreshold) },
-    { label: "Data, per day", value: usd(a.dailyDataCap), left: `${cents(a.dataLeftToday)} left today` },
+    { label: "Data budget, per day", value: usd(a.dailyDataCap), left: `${cents(a.dataLeftToday)} left today` },
   ];
 
   return (
-    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+    <div className="wide-and-aside grid items-start gap-x-14 gap-y-5 lg:max-xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
       <div className="panel p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
           <h2 className="title">Allowance</h2>
@@ -94,7 +95,7 @@ function Limits({ account }: { account: Account }) {
         <p className="text-muted">The most a hijacked agent could take right now</p>
         <p className="figure mt-4 text-[clamp(3rem,6vw,4.5rem)] leading-none text-accent">{cents(a.dataLeftToday)}</p>
         <p className="mt-4 text-muted">The rest can only go to the pool, which returns anything it didn&rsquo;t offer.</p>
-        <button type="button" onClick={togglePause} disabled={busy} className={`btn mt-6 ${a.paused ? "btn-primary" : "btn-danger"}`}>
+        <button type="button" onClick={togglePause} disabled={busy} aria-busy={busy} className={`btn mt-6 ${a.paused ? "btn-primary" : "btn-danger"}`}>
           {busy ? "One moment…" : a.paused ? "Let the agent resume" : "Pause the agent"}
         </button>
         {error && <p className="note note-bad mt-4 text-sm">{error}</p>}
@@ -199,14 +200,19 @@ function HijackTest() {
     }
   }
 
+  // What will be tried is on the page before the button is pressed, so pressing it changes what the rows say and not how many there are.
+  // With nothing left of today's data budget there is nothing for the last attempt to take, and the test leaves it out.
+  const planned = Object.values(ATTEMPTS).slice(0, account && account.allowance.dataLeftToday > 0 ? 5 : 4);
+  const ROW = "flex min-h-[4.8125rem] items-start justify-between gap-6 px-5 py-4";
+
   return (
-    <section className="mt-24 grid gap-x-16 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
+    <section className="mt-24 grid gap-x-20 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
       <div>
         <h2 className="heading">Test the limits</h2>
         <p className="mt-3 text-lg text-muted">
           Hand the agent&rsquo;s key to an attacker and let them try to empty your vault. Every attempt is a real transaction on {account?.setup.chainName ?? "the chain"}.
         </p>
-        <button type="button" onClick={run} disabled={busy} className="btn btn-lg btn-danger mt-6">
+        <button type="button" onClick={run} disabled={busy} aria-busy={busy} className="btn btn-lg btn-danger mt-6">
           {busy ? "Attacking…" : "Hijack my agent"}
         </button>
         {error && <p className="note note-bad mt-4 text-sm">{error}</p>}
@@ -221,7 +227,7 @@ function HijackTest() {
           <>
             <ol className="rows">
               {result.steps.map((step, i) => (
-                <li key={step.txHash} className="flex items-start justify-between gap-6 px-5 py-4">
+                <li key={step.txHash} className={ROW}>
                   <div>
                     <p>
                       {step.tried} <span className="num text-muted">{cents(step.amount)}</span>
@@ -243,7 +249,23 @@ function HijackTest() {
             </div>
           </>
         ) : (
-          <p className="px-5 py-10 text-center text-muted">What the contracts say to each attempt shows up here.</p>
+          <>
+            <ol className="rows">
+              {planned.map((tried) => (
+                <li key={tried} className={ROW}>
+                  <p className="text-soft">{tried}</p>
+                  <span className={`status shrink-0 ${busy ? "status-accent status-live" : "text-faint"}`}>{busy ? "Trying…" : "Not tried yet"}</span>
+                </li>
+              ))}
+            </ol>
+            <div className="border-t border-line px-5 py-6">
+              <p className="text-muted">The attacker got away with</p>
+              <p aria-hidden className="figure mt-2 text-[clamp(2.75rem,5vw,4rem)] leading-none text-faint">
+                $-.--
+              </p>
+              <p className="mt-3 text-muted">{busy ? "The contracts are answering each attempt." : "Run the test to find out."}</p>
+            </div>
+          </>
         )}
       </div>
     </section>
@@ -309,11 +331,10 @@ export function AgentPage() {
   return (
     <>
       <section className="pt-16 sm:pt-24">
-        <div
-          className={`grid gap-x-14 gap-y-8 ${ready ? "items-center lg:grid-cols-[minmax(0,1fr)_24rem]" : "items-start lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]"}`}
-        >
+        {/* The same two columns before and after the allowance is set, so the scene doesn't move when it is. */}
+        <div className="grid items-start gap-x-14 gap-y-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <div>
-            <h1 className="heading rise">{ready ? "What your agent is allowed to do" : "Give your agent an allowance"}</h1>
+            <h1 className="sign rise">{ready ? "What your agent is allowed to do" : "Give your agent an allowance"}</h1>
             <p className="rise mt-4 max-w-xl text-lg text-muted" style={order(1)}>
               A contract on {account.setup.chainName} enforces these limits, even if the agent is fooled or taken over.
             </p>

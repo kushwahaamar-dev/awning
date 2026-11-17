@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { DecisionFacts } from "../db/schema";
-import { cents, percent, usd } from "../format";
+import { cents, percent, typeset, usd } from "../format";
 import { ask } from "../model";
 
 export const verdictSchema = z.object({
@@ -50,5 +50,6 @@ function describe({ risk, day, instruction, dailyCap, facts }: Brief) {
 
 /** Has the model decide whether one day's cover is worth buying, and say why in words the owner can read. */
 export async function decide(brief: Brief): Promise<Verdict> {
-  return ask({ system: SYSTEM, shape: verdictSchema, maxTokens: 2000, turns: [{ role: "user", text: describe(brief) }] });
+  const verdict = await ask<Verdict>({ system: SYSTEM, shape: verdictSchema, maxTokens: 2000, turns: [{ role: "user", text: describe(brief) }] });
+  return { ...verdict, reason: typeset(verdict.reason) };
 }

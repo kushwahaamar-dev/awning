@@ -17,7 +17,8 @@ export function Footer() {
           <Mark className="size-4" />
           Awning
         </span>
-        <nav aria-label="About Awning" className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+        {/* Four in a row where they fit, two and two on a narrow phone, never three and one. */}
+        <nav aria-label="About Awning" className="flex flex-wrap gap-x-6 gap-y-2 text-sm max-[389px]:grid max-[389px]:w-full max-[389px]:grid-cols-2">
           {ABOUT.map(({ href, label }) => (
             <Link key={href} href={href} className="text-muted transition-colors hover:text-fg">
               {label}

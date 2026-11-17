@@ -11,7 +11,7 @@ export function day(iso: string) {
 
 /** For a bare calendar date (YYYY-MM-DD), which must not shift when read in a timezone behind UTC. */
 export function calendarDay(date: string) {
-  return new Date(`${date}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
+  return new Date(`${date}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", timeZone: "UTC" });
 }
 
 export function clock(iso: string) {
@@ -29,3 +29,6 @@ export function ago(iso: string, now = Date.now()) {
   const hours = Math.round(minutes / 60);
   return hours < 48 ? some(hours, "hour") : some(Math.round(hours / 24), "day");
 }
+
+/** Apostrophes as type sets them, for text that arrives with a keyboard's straight ones: a model's sentence, a market's title. */
+export const typeset = (text: string) => text.replace(/(?<=[\p{L}\d])'(?=\p{L})/gu, "’").replace(/(?<=s)'(?=[\s.,;:!?]|$)/g, "’");

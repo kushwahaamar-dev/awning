@@ -55,8 +55,11 @@ body {
   background: rgb(242 181 74 / 0.3);
 }
 
-/* A figure typed into a line of settings is marked by the line under it turning amber, not by a box round its digits. */
-.field input:focus-visible {
+/* A figure typed into a line of settings is marked by the line under it turning amber, not by a box round its digits.
+   The box a risk is written in lights its own edge, so the words inside it don't get a second ring. */
+.field input:focus-visible,
+.composer textarea:focus-visible,
+.composer input:focus-visible {
   outline: none;
 }
 
@@ -72,11 +75,23 @@ body {
 
 @layer components {
   /* Type. One family, set heavy, large and very tight, so a line reads as a shape before it reads as words. */
+  /* The page's opening and closing lines are set in the same dots as the scenes and the name at its foot:
+     a lit sign over a shop, not a headline from a template. */
   .display {
-    font-size: clamp(2.875rem, 6.9vw, 6.5rem);
-    font-weight: 620;
-    line-height: 0.94;
-    letter-spacing: -0.048em;
+    font-family: var(--font-geist-pixel-circle), var(--font-geist-mono), ui-monospace, monospace;
+    font-size: clamp(2.375rem, 6.2vw, 7rem);
+    font-weight: 400;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+  /* The line a page opens with inside the app: the same sign, at the size of a heading. */
+  .sign {
+    font-family: var(--font-geist-pixel-circle), var(--font-geist-mono), ui-monospace, monospace;
+    font-size: clamp(1.875rem, 4.2vw, 4rem);
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
     text-wrap: balance;
   }
   .heading {
@@ -147,6 +162,20 @@ body {
     background: var(--color-raised);
     border-color: var(--color-line);
     color: var(--color-faint);
+  }
+  /* A button at work can't be pressed again, but it hasn't gone away: it keeps its colours and says what it is doing. */
+  .btn-primary[aria-busy="true"]:disabled {
+    cursor: progress;
+    background: var(--color-fg);
+    border-color: transparent;
+    color: var(--color-bg);
+    opacity: 0.86;
+  }
+  .btn-secondary[aria-busy="true"]:disabled,
+  .btn-danger[aria-busy="true"]:disabled {
+    cursor: progress;
+    border-color: var(--color-edge);
+    color: var(--color-soft);
   }
   .btn-lg {
     height: 2.875rem;
@@ -251,10 +280,12 @@ body {
   .field:hover {
     border-color: var(--color-muted);
   }
+  /* The line under the figure being typed turns amber and doubles in weight, which is its focus mark. */
   .field:focus,
   .field:focus-within {
     outline: none;
     border-color: var(--color-accent);
+    box-shadow: 0 1px 0 var(--color-accent);
   }
 
   /* Where the risk gets typed or spoken. */
@@ -329,44 +360,17 @@ body {
     pointer-events: none;
     mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 60%, transparent);
   }
-  /* The opening scene, in the page's one colour and behind the words: a wet street under sodium light.
-     It is strongest to the right and dies away to the left and downwards, where the reading is. */
-  .hero-art {
-    position: absolute;
-    z-index: -1;
-    top: -3.5rem;
-    left: calc(50% - 50vw);
-    width: 100vw;
-    height: calc(100% + 3.5rem);
-    overflow: hidden;
-    pointer-events: none;
-    color: var(--color-accent);
-    opacity: 0.62;
-    /* Faint behind the headline, whose letters the scene's shop signs would otherwise argue with,
-       full strength below it and to the right, and gone by the foot of the section. */
-    mask-image:
-      linear-gradient(to bottom, rgb(0 0 0 / 0.2) 0, rgb(0 0 0 / 0.2) 32%, #000 50%, #000 72%, transparent 98%),
-      linear-gradient(100deg, rgb(0 0 0 / 0.2) 0, rgb(0 0 0 / 0.24) 40%, #000 68%);
-    mask-composite: intersect;
+  /* The opening scene: a wet street of small shops, as a strip under the opening words and never behind them.
+     A window of fixed height onto the part of the picture with the shop signs in it. */
+  .band-street {
+    aspect-ratio: auto;
+    height: clamp(9rem, 19vw, 17rem);
+    mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
   }
-  /* In one column the words run most of the width, so the scene keeps to the margin they leave on the right
-     and is barely there behind them. A phone has no margin, so there it is only a trace. */
-  @media (width < 80rem) {
-    .hero-art {
-      opacity: 0.5;
-      mask-image:
-        linear-gradient(to bottom, #000 0, #000 60%, transparent 96%),
-        linear-gradient(100deg, rgb(0 0 0 / 0.16) 0, rgb(0 0 0 / 0.16) 56%, #000 86%);
-    }
-  }
-  @media (width < 40rem) {
-    .hero-art {
-      opacity: 0.09;
-      mask-image: linear-gradient(to bottom, #000 0, #000 60%, transparent 96%);
-    }
-  }
-  .hero-art .ascii {
-    color: inherit;
+  .band-street > * {
+    position: relative;
+    top: 50%;
+    transform: translateY(-44%);
     /* On a phone the scene is cropped, not shrunk, so its dots stay the size they are on a desk. */
     width: max(100%, 62rem);
   }
@@ -380,10 +384,11 @@ body {
     background: var(--color-accent);
     animation: blink 900ms steps(2) infinite;
   }
-  /* The map and, beside it on a wide screen, its reading. The reading starts on the page's third column
-     line, the one the last section's second list starts on: half the wide column, less half the gap between its halves. */
+  /* Something wide and, beside it on a wide screen, an aside: the map and its reading, the allowance and what a
+     hijacker could take. The aside starts on the page's third column line, the one the last section's second
+     list starts on: half the wide column, less half the gap between its halves. */
   @media (width >= 80rem) {
-    .map-and-reading {
+    .wide-and-aside {
       grid-template-columns: minmax(0, 1fr) calc((100% - 5rem) * 0.8 / 2.6 - 1.75rem);
     }
   }

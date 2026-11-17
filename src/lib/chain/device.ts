@@ -77,7 +77,7 @@ export async function setAllowance(s: AllowanceSettings, onStep: (label: string)
     await send({ ...base, address: usdcAddress, abi: usdcAbi, functionName: "approve", args: [mandateAddress, toUnits(s.deposit)] });
     await send({ ...base, ...mandate, functionName: "deposit", args: [toUnits(s.deposit)] });
   }
-  onStep("Setting your agent's limits…");
+  onStep("Setting your agent’s limits…");
   await send({
     ...base,
     ...mandate,

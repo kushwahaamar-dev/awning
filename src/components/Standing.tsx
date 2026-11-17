@@ -81,7 +81,7 @@ export function Standing({ plan, coverRatio, price, alone = false }: { plan: Cov
         maxLength={500}
         value={instruction}
         onChange={(e) => setInstruction(e.target.value)}
-        placeholder="Leave it on days the forecast says we're safe."
+        placeholder="Leave it on days the forecast says we’re safe."
         className="mt-2 block w-full resize-none rounded-lg border border-edge bg-bg px-3.5 py-2.5 placeholder:text-faint focus:border-accent focus:outline-none"
       />
 
