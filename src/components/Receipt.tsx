@@ -71,7 +71,7 @@ export function Receipt({ plan: priced, coverRatio, repricing, onCoverChange, on
       <p className="mt-2 text-sm text-muted">On Gemini&rsquo;s &ldquo;{market.title.replace(/\?$/, "")}&rdquo;</p>
 
       <dl aria-busy={repricing} className={`rows mt-5 border-y border-line transition-opacity ${repricing ? "opacity-40" : ""}`}>
-        {quote.marketOdds !== null && <Line label="The market’s odds it happens" value={percent(quote.marketOdds)} />}
+        {quote.marketOdds !== null && <Line label="The market’s odds" value={percent(quote.marketOdds)} />}
         {forecast && <Line label="A weather model’s odds" value={percent(forecast.odds)} />}
         {price && (
           <>

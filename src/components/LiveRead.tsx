@@ -117,7 +117,7 @@ function Reading({ example, all, typed, beat }: { example: Example; all: Example
       </p>
       <dl className="rows mt-3 border-y border-line">
         <div className="flex items-baseline justify-between gap-6 py-2.5 text-muted">
-          <dt>The market&rsquo;s odds it happens</dt>
+          <dt>The market&rsquo;s odds</dt>
           <dd className={`num text-soft ${appear(beat > 4)}`}>{example.odds === null ? "—" : percent(example.odds)}</dd>
         </div>
         <div className="flex items-baseline justify-between gap-6 py-2.5">

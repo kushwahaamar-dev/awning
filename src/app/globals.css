@@ -55,6 +55,11 @@ body {
   background: rgb(242 181 74 / 0.3);
 }
 
+/* A figure typed into a line of settings is marked by the line under it turning amber, not by a box round its digits. */
+.field input:focus-visible {
+  outline: none;
+}
+
 /* A city on the map reached by keyboard is marked by its ring, not by a box drawn round the dot.
    Out here with the rule it overrides, because nothing inside a layer can. */
 .pricemap a:focus-visible {
@@ -246,7 +251,8 @@ body {
   .field:hover {
     border-color: var(--color-muted);
   }
-  .field:focus {
+  .field:focus,
+  .field:focus-within {
     outline: none;
     border-color: var(--color-accent);
   }
@@ -373,6 +379,13 @@ body {
     vertical-align: -0.14em;
     background: var(--color-accent);
     animation: blink 900ms steps(2) infinite;
+  }
+  /* The map and, beside it on a wide screen, its reading. The reading starts on the page's third column
+     line, the one the last section's second list starts on: half the wide column, less half the gap between its halves. */
+  @media (width >= 80rem) {
+    .map-and-reading {
+      grid-template-columns: minmax(0, 1fr) calc((100% - 5rem) * 0.8 / 2.6 - 1.75rem);
+    }
   }
   /* The map's plotting surface. Its labels carry a rim of the page's black, so they read over the grid and over a dot. */
   .pricemap {

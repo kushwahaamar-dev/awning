@@ -54,6 +54,39 @@ export async function fundAndSetUp(owner: string, setup: Account["setup"], first
   await setAllowance({ agent: setup.agent, venue: setup.venue, ...fittedLimits(wallet, firstPremium) }, onStep);
 }
 
+/**
+ * A dollar amount on a line of settings. It reads the way money is written, 2,000 and not 2000, until
+ * it is being typed in, and the sign stays beside the figure however short the figure is.
+ */
+function Dollars({ id, value, onChange }: { id: string; value: number; onChange: (value: number) => void }) {
+  // What is in the box while the cursor is in it; otherwise the box shows the amount itself.
+  const [typing, setTyping] = useState<string | null>(null);
+  const shown = typing ?? value.toLocaleString("en-US", { maximumFractionDigits: 2 });
+  return (
+    <span className="field flex min-w-[6.5rem] items-baseline justify-end gap-1 text-lg">
+      <span className="num text-muted">$</span>
+      <input
+        id={id}
+        name={id}
+        type="text"
+        inputMode="decimal"
+        autoComplete="off"
+        required
+        value={shown}
+        onFocus={() => setTyping(String(value))}
+        onBlur={() => setTyping(null)}
+        onChange={(e) => {
+          const text = e.target.value.replace(/[^0-9.]/g, "");
+          setTyping(text);
+          onChange(Number(text) || 0);
+        }}
+        style={{ width: `${Math.max(1, shown.length)}ch` }}
+        className="num bg-transparent text-right"
+      />
+    </span>
+  );
+}
+
 /** Funds the vault and sets the limits the mandate will hold the agent to. */
 export function AllowanceForm({ onDone }: { onDone?: () => void }) {
   const { owner, account, refresh } = useAccount();
@@ -108,22 +141,7 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
           <div key={key} className="py-3.5 first:pt-0">
             <label htmlFor={key} className="flex items-baseline justify-between gap-4">
               <span>{label}</span>
-              <span className="flex items-baseline gap-1">
-                <span className="num text-muted">$</span>
-                <input
-                  id={key}
-                  name={key}
-                  type="number"
-                  inputMode="decimal"
-                  autoComplete="off"
-                  min={0}
-                  step="any"
-                  required
-                  value={values[key]}
-                  onChange={(e) => setEdited({ ...edited, [key]: Number(e.target.value) })}
-                  className="field num w-24 text-right text-lg"
-                />
-              </span>
+              <Dollars id={key} value={values[key]} onChange={(value) => setEdited({ ...edited, [key]: value })} />
             </label>
             {hint && <p className="mt-1 max-w-md text-xs text-faint">{hint}</p>}
           </div>

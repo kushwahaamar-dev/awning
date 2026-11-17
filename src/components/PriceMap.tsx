@@ -171,7 +171,7 @@ function Reading({ city }: { city: MapCity }) {
       <div className="mt-4 flex grow flex-col lg:max-xl:mt-0">
         <dl className="rows border-y border-line">
           <div className="flex items-baseline justify-between gap-6 py-2.5 text-muted">
-            <dt>The market&rsquo;s odds it happens</dt>
+            <dt>The market&rsquo;s odds</dt>
             <dd className="num text-soft">{example.odds === null ? "—" : percent(example.odds)}</dd>
           </div>
           <div className="flex items-baseline justify-between gap-6 py-2.5">
@@ -216,7 +216,7 @@ export function PriceMap() {
   }
 
   return (
-    <div className="grid items-center gap-x-14 gap-y-10 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div className="map-and-reading grid items-center gap-x-14 gap-y-10">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="group"
