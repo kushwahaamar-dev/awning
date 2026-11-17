@@ -1,9 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useEffectEvent, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import useSWRImmutable from "swr/immutable";
-import type { Example } from "@/lib/hedge/examples";
 import type { Exposure } from "@/lib/hedge/exposure";
 import type { Interpretation, Turn } from "@/lib/hedge/interpret";
 import type { CoverPlan } from "@/lib/hedge/plan";
@@ -23,7 +22,6 @@ type Planned = { plan: CoverPlan | null };
 type Linked = { exposure: Exposure; from: "sales" | "example" };
 
 const CAME_FROM = { sales: "Found in your sales", example: "An example, priced by Gemini right now" } as const;
-const order = (i: number) => ({ "--i": i }) as CSSProperties;
 
 /** The quote as one sentence, for reading aloud. */
 function spokenQuote({ quote, coverage, basis }: CoverPlan) {
@@ -182,22 +180,20 @@ function DeskFor() {
 
   if (plan) {
     return (
-      <div className="grid items-start gap-x-16 gap-y-10 pt-14 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,29rem)] lg:grid-rows-[auto_1fr]">
-        <div className="rise">
+      <div className="mx-auto grid max-w-6xl items-start gap-x-14 gap-y-10 pt-8 sm:pt-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,27rem)] lg:grid-rows-[auto_1fr]">
+        <div>
           <button type="button" onClick={startOver} className="link text-sm">
             Describe a different risk
           </button>
-          <div className="fade-edges mt-4 flex h-40 items-center overflow-hidden max-sm:h-24">
-            <Ascii scene={sceneFor(plan.exposure.trigger)} className="w-full" />
-          </div>
-          <p className="mt-4 text-sm text-muted">{linked ? CAME_FROM[linked.from] : "You said"}</p>
-          <h1 className="mt-2 max-w-3xl text-[1.75rem] leading-[1.2] tracking-[-0.02em] text-balance">{plan.exposure.summary}</h1>
+          <Ascii scene={sceneFor(plan.exposure.trigger)} className="mt-6 w-full" />
+          <p className="mt-6 text-muted">{linked ? CAME_FROM[linked.from] : "You said"}</p>
+          <h1 className="mt-2 max-w-2xl text-[1.75rem] leading-[1.2] tracking-[-0.02em] text-balance">{plan.exposure.summary}</h1>
         </div>
         {/* In the source it sits between the risk and its small print, which is the order a phone shows them in. */}
-        <div className="rise lg:col-start-2 lg:row-span-2 lg:row-start-1" style={order(1)}>
+        <div className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
           <Receipt plan={plan} coverRatio={coverRatio} repricing={repricing} onCoverChange={changeCover} onBought={finish} />
         </div>
-        <div className="rise lg:col-start-1" style={order(2)}>
+        <div className="lg:col-start-1">
           <Fit plan={plan} />
         </div>
       </div>
@@ -216,7 +212,6 @@ function DeskFor() {
       draft={draft}
       onDraft={setDraft}
       onSay={say}
-      onPick={(example: Example) => router.push(`/app?exposure=${encodeURIComponent(JSON.stringify(example.exposure))}&from=example`)}
       voice={voice}
     />
   );

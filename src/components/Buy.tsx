@@ -130,10 +130,10 @@ export function Buy({ plan, coverRatio, onBought }: Props) {
         <button type="button" onClick={setUpAndBuy} disabled={busy} aria-busy={busy} className="btn btn-lg btn-primary w-full">
           {step ?? `Buy cover for ${cents(price.total)}`}
         </button>
-        <p className="mt-3 text-xs text-muted">
-          Your first purchase also sets up your agent: test dollars in a vault on {setup.chainName}, and spending limits it can&rsquo;t break.{" "}
+        <p className="mt-3 text-sm text-muted">
+          Your first cover also sets up your agent on {setup.chainName}, with test dollars and limits to fit.{" "}
           <button type="button" onClick={() => setChoosing(true)} disabled={busy} className="link">
-            Choose the limits yourself
+            Set the limits yourself
           </button>
         </p>
         {problems}
@@ -152,10 +152,10 @@ export function Buy({ plan, coverRatio, onBought }: Props) {
       <button type="button" onClick={start} disabled={busy} aria-busy={busy} className="btn btn-lg btn-primary w-full">
         {step ?? `Buy cover for ${cents(price.total)}`}
       </button>
-      <p className="mt-3 flex gap-2 text-xs text-muted">
-        <Lock className="mt-0.5 size-3.5 flex-none text-accent" />
+      <p className="mt-3 flex gap-2 text-sm text-muted">
+        <Lock className="mt-1 size-3.5 flex-none text-fg" />
         <span>
-          The pool locks your {usd(quote.payout)} on {setup.chainName} before your premium moves.
+          Your {usd(quote.payout)} is locked on {setup.chainName} before you pay.
         </span>
       </p>
       {problems}

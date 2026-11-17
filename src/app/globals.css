@@ -1,10 +1,12 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Paper and ink. Everything on a page is drawn in the one black; nothing is shaded, raised or rounded. */
+  /* Paper and ink. A page is drawn in the one black. What can be pressed or typed into is a soft shape on the
+     paper, so it can be told at a glance from what is only read. */
   --color-bg: #ffffff;
   --color-panel: #ffffff;
-  --color-raised: #f2f2f2;
+  --color-raised: #f4f4f2;
+  --color-pressed: #e8e8e5;
   /* A line not yet drawn, and the rule between rows. */
   --color-line: #dedede;
   /* The edge of something that takes typing. */
@@ -21,6 +23,7 @@
   --color-ink: #000000;
   --color-good: #17794a;
   --color-bad: #c4281f;
+  --color-bad-wash: #fcecea;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
@@ -72,8 +75,8 @@ body {
   color: var(--color-fg);
 }
 
-/* A figure typed into a line of settings is marked by the line under it doubling in weight, not by a box round its digits.
-   The line a risk is written on does the same, so the words on it don't get a ring as well. */
+/* A box being typed in is marked by its own edge, so the words in it don't get a ring as well.
+   The line a risk is written on at the top of the landing page doubles in weight instead. */
 .field input:focus-visible,
 .composer textarea:focus-visible,
 .composer input:focus-visible,
@@ -141,9 +144,22 @@ body {
     font-variant-numeric: tabular-nums;
   }
 
-  /* Something set apart is boxed by a drawn line. */
+  /* Something set apart sits on a soft shape of its own. */
   .panel {
+    border-radius: 1.25rem;
+    background: var(--color-raised);
+  }
+  /* The cover itself is the one thing drawn in line: a ticket, with the awning's valance along its top. */
+  .ticket {
+    overflow: hidden;
     border: 1px solid var(--color-fg);
+    border-radius: 1.25rem;
+    background: var(--color-bg);
+  }
+  .valance {
+    height: 1.125rem;
+    border-bottom: 1px solid var(--color-fg);
+    background: repeating-linear-gradient(90deg, var(--color-lit) 0 1.75rem, var(--color-bg) 0 3.5rem);
   }
   /* Rows separated by hairlines. */
   .rows > * + * {
@@ -155,14 +171,13 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    height: 2.5rem;
-    padding: 0 1rem;
-    border: 1px solid var(--color-fg);
+    height: 2.75rem;
+    padding: 0 1.25rem;
+    border-radius: 999px;
     font-size: 0.9375rem;
     white-space: nowrap;
     transition:
       background-color 120ms,
-      border-color 120ms,
       color 120ms,
       opacity 120ms,
       scale 100ms;
@@ -170,57 +185,61 @@ body {
   .btn:active:not(:disabled) {
     scale: 0.98;
   }
-  /* A button that can't be pressed yet is an outline of itself. */
+  .btn-lg {
+    height: 3.5rem;
+    padding: 0 1.75rem;
+    font-size: 1.0625rem;
+  }
+  /* The one thing to press on a screen is in ink. Pointed at, it lights up the colour of the awning. */
+  .btn-primary {
+    background: var(--color-fg);
+    color: var(--color-bg);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-lit);
+    color: var(--color-fg);
+  }
+  .btn-secondary {
+    background: var(--color-raised);
+    color: var(--color-fg);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--color-pressed);
+  }
+  .btn-danger,
+  .btn-recording {
+    background: var(--color-bad-wash);
+    color: var(--color-bad);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: var(--color-bad);
+    color: var(--color-bg);
+  }
+  /* A button that can't be pressed yet is a faint shape of itself. */
   .btn:disabled {
     cursor: not-allowed;
-    background: transparent;
-    border-color: var(--color-line);
+    background: var(--color-raised);
     color: var(--color-faint);
   }
   /* A button at work can't be pressed again, but it hasn't gone away: it keeps its ink and says what it is doing. */
   .btn-primary[aria-busy="true"]:disabled {
     cursor: progress;
     background: var(--color-fg);
-    border-color: var(--color-fg);
     color: var(--color-bg);
     opacity: 0.7;
   }
   .btn-secondary[aria-busy="true"]:disabled,
   .btn-danger[aria-busy="true"]:disabled {
     cursor: progress;
-    border-color: var(--color-edge);
     color: var(--color-soft);
   }
-  .btn-lg {
-    height: 3rem;
-    padding: 0 1.5rem;
-  }
-  /* Pointed at, a button swaps its ink and its paper. */
-  .btn-primary {
-    background: var(--color-fg);
-    color: var(--color-bg);
-  }
-  .btn-primary:hover:not(:disabled) {
+  /* On a soft shape, a soft button would disappear into it, so there it is paper. */
+  :is(.panel, .composer, .note) .btn-secondary,
+  :is(.panel, .composer, .note) .btn:disabled:not([aria-busy="true"]) {
     background: var(--color-bg);
-    color: var(--color-fg);
   }
-  .btn-secondary {
-    background: transparent;
-    color: var(--color-fg);
-  }
-  .btn-secondary:hover:not(:disabled) {
-    background: var(--color-fg);
-    color: var(--color-bg);
-  }
-  .btn-danger,
-  .btn-recording {
-    background: transparent;
-    border-color: var(--color-bad);
-    color: var(--color-bad);
-  }
-  .btn-danger:hover:not(:disabled) {
-    background: var(--color-bad);
-    color: var(--color-bg);
+  :is(.panel, .composer, .note) .btn-secondary:hover:not(:disabled) {
+    background: var(--color-pressed);
   }
   .btn-recording {
     animation: pulse 1400ms ease-in-out infinite;
@@ -276,70 +295,80 @@ body {
 
   /* Something the person should read before acting. */
   .note {
-    border-left: 1px solid var(--color-fg);
-    padding-left: 0.875rem;
+    border-radius: 0.875rem;
+    background: var(--color-raised);
+    padding: 0.75rem 1rem;
     color: var(--color-soft);
   }
   .note-bad {
-    border-left-color: var(--color-bad);
+    background: var(--color-bad-wash);
+    color: var(--color-bad);
   }
 
-  /* A value typed straight into a line of settings. */
+  /* A value to type or choose: a box of its own, edged in ink while it is being used. */
   .field {
-    border-bottom: 1px solid var(--color-edge);
-    background: transparent;
-    padding: 0.25rem 0;
-    transition: border-color 120ms;
+    border-radius: 0.75rem;
+    background: var(--color-raised);
+    padding: 0.5rem 0.75rem;
+    transition: box-shadow 120ms;
   }
   .field:hover {
-    border-color: var(--color-fg);
+    box-shadow: inset 0 0 0 1px var(--color-edge);
   }
   .field:focus,
   .field:focus-within {
     outline: none;
-    border-color: var(--color-fg);
-    box-shadow: 0 1px 0 var(--color-fg);
+    box-shadow: inset 0 0 0 1.5px var(--color-fg);
+  }
+  .panel :is(.field, .note:not(.note-bad)) {
+    background: var(--color-bg);
   }
 
-  /* Where the risk gets typed or spoken: a line to write on, not a box to fill. */
+  /* Where the risk gets typed or spoken: the largest box on the screen, and the first thing on it. */
   .composer {
-    position: relative;
-    border-bottom: 1px solid var(--color-fg);
+    border-radius: 1.75rem;
+    background: var(--color-raised);
     transition: box-shadow 150ms;
   }
   .composer:focus-within {
-    box-shadow: 0 1px 0 var(--color-fg);
+    box-shadow: inset 0 0 0 1.5px var(--color-fg);
   }
 
+  /* How much of a loss to cover: a track to slide a knob along, inked as far as the knob has gone. */
   .range {
     appearance: none;
     width: 100%;
-    height: 1.5rem;
+    height: 2rem;
     background: transparent;
     cursor: pointer;
   }
   .range::-webkit-slider-runnable-track {
-    height: 1px;
-    background: linear-gradient(90deg, var(--color-fg) var(--fill), var(--color-edge) var(--fill));
+    height: 0.375rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--color-fg) var(--fill), var(--color-pressed) var(--fill));
   }
   .range::-moz-range-track {
-    height: 1px;
-    background: linear-gradient(90deg, var(--color-fg) var(--fill), var(--color-edge) var(--fill));
+    height: 0.375rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--color-fg) var(--fill), var(--color-pressed) var(--fill));
   }
   .range::-webkit-slider-thumb {
     appearance: none;
-    width: 0.875rem;
-    height: 0.875rem;
-    margin-top: -0.40625rem;
+    box-sizing: border-box;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: -0.5625rem;
+    border: 1.5px solid var(--color-fg);
     border-radius: 50%;
-    background: var(--color-fg);
+    background: var(--color-bg);
   }
   .range::-moz-range-thumb {
-    width: 0.875rem;
-    height: 0.875rem;
-    border: 0;
+    box-sizing: border-box;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 1.5px solid var(--color-fg);
     border-radius: 50%;
-    background: var(--color-fg);
+    background: var(--color-bg);
   }
 
   /* The page's measure: edge to edge, less the margin. */
@@ -494,16 +523,6 @@ body {
   .risk:hover .link {
     text-decoration-color: var(--color-fg);
   }
-  .fade-edges {
-    mask-image:
-      linear-gradient(to bottom, transparent, #000 22%, #000 55%, transparent), linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
-    mask-composite: intersect;
-  }
-  /* Gone by the time it reaches any side of its box, so a scene never ends in a straight edge. */
-  .fade-soft {
-    mask-image: radial-gradient(ellipse closest-side, #000 48%, transparent);
-  }
-
   /* Content settles into place on load, in order. */
   .rise {
     animation: rise 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
