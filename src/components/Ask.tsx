@@ -210,7 +210,7 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
         )}
       </section>
       <div className="rise max-lg:hidden" style={order(4)}>
-        <Ascii scene="storm" label="Storm clouds over dark hills, lightning coming down" className="fade-soft" />
+        <Ascii scene="sky" />
         <h2 className="title mt-8">What Gemini lists today</h2>
         <dl className="rows mt-4 border-y border-line">
           {LISTED.map(([kind, what]) => (

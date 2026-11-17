@@ -7,11 +7,11 @@ import { shortAddress } from "@/lib/format";
 import { usesStreams } from "@/lib/ledger/source";
 import { hedging } from "@/lib/venue";
 import { EXAMPLE_RISK } from "@/lib/words";
+import { Ascii, type Scene } from "./Ascii";
 import { Drawn } from "./Drawn";
-import { LiveFigures } from "./LiveFigures";
-import { LiveRead } from "./LiveRead";
 import { PriceMap } from "./PriceMap";
-import { Path, RecentRefusals } from "./Proof";
+import { LastRefusal } from "./Proof";
+import { Risks } from "./Risks";
 import { Shopfront } from "./Shopfront";
 import { Leg } from "./Trace";
 import { External } from "./icons";
@@ -25,34 +25,31 @@ const ATTACK = [
   { tried: ATTEMPTS.dataLeft, verdict: "Went through", tone: "" },
 ];
 
-// One cover, in the order it happens, and what runs each step. Two steps depend on keys this
-// deployment may not have; the page says what is really running, not what could be.
-const PATH = [
-  { title: "Read", body: "Your sentence becomes a structured risk.", made: ["Google Gemini"] },
-  { title: "Match", body: "Code picks the market and sizes the position.", made: ["Gemini prediction markets"] },
-  { title: "Check", traced: true, body: "The agent pays $0.02 for a 31-run forecast to test the price.", made: ["x402"] },
-  { title: "Lock", traced: true, body: "The pool sets aside the full payout.", made: ["AwningPool", "ERC-4626"] },
-  { title: "Pay", traced: true, body: "The premium moves only inside your limits. Above the amount you set, it asks you first.", made: ["AwningMandate", "EIP-712"] },
+// One cover from start to finish, and what runs each part. Two of the names depend on keys this deployment
+// may not have; the page says what is really running, not what could be. `width` keeps the three pictures'
+// dots near one size, whatever shape each picture is.
+const STEPS: { scene: Scene; width: string; title: string; body: string; made: string[] }[] = [
   {
-    live: { title: "Hedge", traced: true, body: "The pool takes the same position on Gemini.", made: ["Gemini trading API"] },
-    sandbox: {
-      title: "Hedge",
-      traced: true,
-      body: "The pool places the same position on Gemini’s sandbox for oil, gas, metal and crypto cover. The sandbox lists no weather, so the weather hedge is on paper only.",
-      made: ["Gemini trading API"],
-    },
-    paper: { title: "Hedge", traced: true, body: "The pool sizes the same position on Gemini. It is filled on paper until trading keys are set.", made: ["Gemini prices"] },
-  }[hedging],
-  usesStreams
-    ? { title: "Watch", traced: true, body: "Every contract event streams into the app.", made: ["QuickNode Streams"] }
-    : { title: "Watch", body: "The app reads every contract event from the chain.", made: ["Contract logs"] },
-  { title: "Settle", traced: true, body: "Gemini resolves the market and the pool pays your vault.", made: ["Arc", "Circle CCTP"] },
-];
-
-const FIXED = [
-  "An offer could be taken after its deadline.",
-  "Another account could use up an offer’s id and strand its payout.",
-  "Money sent to the pool by mistake counted as the pool’s.",
+    scene: "shop",
+    width: "max-w-[18.5rem]",
+    title: "You say it",
+    body: "A sentence about your shop becomes a risk a market can price.",
+    made: ["Google Gemini"],
+  },
+  {
+    scene: "price",
+    width: "",
+    title: "Gemini prices it",
+    body: "A prediction market on Gemini sets the price. Your agent pays $0.02 for a forecast to check it.",
+    made: ["Gemini prediction markets", "x402", ...(hedging === "paper" ? [] : ["Gemini trading API"])],
+  },
+  {
+    scene: "coin",
+    width: "max-w-[15rem]",
+    title: "It pays itself",
+    body: "The pool locks your payout before you pay, and pays your vault when Gemini resolves the market. There is nothing to file.",
+    made: ["AwningPool (ERC-4626)", "AwningMandate (EIP-712)", usesStreams ? "QuickNode Streams" : "Contract logs", "Circle CCTP on Arc"],
+  },
 ];
 
 const TRUSTED = [
@@ -64,16 +61,6 @@ const TRUSTED = [
   }[hedging],
   "The agent’s key and the pool’s keys share a server.",
 ];
-
-/** A figure in the sign's dots, with the line that says what it counts. */
-function Figure({ value, children }: { value: string; children: ReactNode }) {
-  return (
-    <>
-      <p className="figure text-[clamp(3.5rem,7vw,6.5rem)] leading-none">{value}</p>
-      <p className="copy mt-4 text-muted">{children}</p>
-    </>
-  );
-}
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -92,21 +79,6 @@ function Contract({ address }: { address: string | undefined }) {
     <a href={page} target="_blank" rel="noreferrer" className="link inline-flex items-center gap-1.5">
       {shortAddress(address)} <External />
     </a>
-  );
-}
-
-function List({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div>
-      <h3 className="title">{title}</h3>
-      <ul className="rows mt-5 border-y border-line text-muted">
-        {items.map((item) => (
-          <li key={item} className="copy max-w-none py-4">
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
 
@@ -159,17 +131,26 @@ export function Landing() {
         </p>
       </section>
 
+      {/* From here down each part is a picture first: the bad days themselves, where they are, and what happens to one. */}
       <Leg id="now" from={6} to={3} cover={0}>
-        <LiveRead />
-        <LiveFigures />
+        <h2 className="heading">Bad days, priced right now</h2>
+        <div className="mt-14">
+          <Risks
+            empty={
+              <p className="copy text-muted">
+                Gemini has no bad day worth showing this minute.{" "}
+                <Link href="/app" className="link">
+                  Describe your own
+                </Link>
+              </p>
+            }
+          />
+        </div>
       </Leg>
 
       <Leg id="prices" from={3} to={1} cover={1}>
         <h2 className="heading">A bad day has a price</h2>
-        <p className="copy mt-6 text-muted">
-          What it costs, this minute, to cover tomorrow&rsquo;s bad day in every city where Gemini lists the high. The rarer the day, the cheaper the
-          cover.
-        </p>
+        <p className="copy mt-6 text-muted">What it costs, this minute, to cover tomorrow in every city where Gemini lists the high.</p>
         <div className="mt-14">
           <PriceMap />
         </div>
@@ -182,20 +163,18 @@ export function Landing() {
         cover={2}
         aside={
           <>
-            <Figure value="$2.00">The most they get: one day&rsquo;s data budget. You set it, and $2 is the default.</Figure>
+            <Ascii scene="lock" className="mb-8 w-28" />
+            <p className="figure text-[clamp(3.5rem,7vw,6.5rem)] leading-none">$2.00</p>
+            <p className="copy mt-4 text-muted">The most a thief gets: one day&rsquo;s data budget, and you set it.</p>
             <Link href="/agent" className="btn btn-secondary mt-7">
-              Run it yourself
+              Try to rob it
             </Link>
           </>
         }
       >
         <h2 className="heading">An agent not worth robbing</h2>
-        <p className="copy mt-6 text-muted">Its spending limits are a contract on {chainLabel}. We hand its key to an attacker, and this is what the chain does.</p>
-        <p className="mt-14 flex items-center gap-2 border-b border-fg pb-3 text-muted">
-          <span className="dot text-bad" />
-          Attacker, signing with your agent&rsquo;s key
-        </p>
-        <ol className="rows border-b border-line">
+        <p className="copy mt-6 text-muted">Its spending limits are a contract on {chainLabel}. Hand its key to a thief, and this is what the chain does.</p>
+        <ol className="rows mt-14 border-y border-line">
           {ATTACK.map(({ tried, verdict, tone }) => (
             <li key={tried} className="copy flex max-w-none items-baseline justify-between gap-6 py-4">
               <span>{tried}</span>
@@ -203,7 +182,7 @@ export function Landing() {
             </li>
           ))}
         </ol>
-        <RecentRefusals />
+        <LastRefusal />
       </Leg>
 
       <Leg
@@ -224,20 +203,34 @@ export function Landing() {
           </dl>
         }
       >
-        <h2 className="heading">How it&rsquo;s built</h2>
-        <p className="copy mt-6 text-muted">One cover, from sentence to payout, and what runs each step.</p>
-        <div className="mt-14">
-          <Path steps={PATH} />
-        </div>
-      </Leg>
-
-      <Leg id="checked" from={3} to={6} cover={4} aside={<Figure value="126">Contract tests, with fuzzing and invariant runs on both contracts.</Figure>}>
-        <h2 className="heading">What we checked</h2>
-        <p className="copy mt-6 text-muted">We had it reviewed independently, fixed what was found, and wrote down what is still trusted.</p>
-        <div className="mt-14 grid gap-y-12">
-          <List title="Found in review, now fixed" items={FIXED} />
-          <List title="Still trusted" items={TRUSTED} />
-        </div>
+        <h2 className="heading">One cover, start to finish</h2>
+        <ol className="mt-14 grid gap-x-8 gap-y-14 sm:grid-cols-3">
+          {STEPS.map(({ scene, width, title, body, made }) => (
+            <li key={title}>
+              {/* Three pictures of three shapes, stood on one line. */}
+              <div className="flex items-end sm:h-56">
+                <Ascii scene={scene} className={`w-full ${width}`} />
+              </div>
+              <h3 className="title mt-6">{title}</h3>
+              <p className="copy mt-2 text-muted">{body}</p>
+              <ul className="mt-4 text-sm text-faint">
+                {made.map((name) => (
+                  <li key={name}>{name}</li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ol>
+        <details className="mt-14 border-t border-line pt-4">
+          <summary className="cursor-pointer text-muted transition-colors hover:text-fg">What you still have to trust</summary>
+          <ul className="mt-4 space-y-3 text-muted">
+            {TRUSTED.map((item) => (
+              <li key={item} className="copy max-w-xl">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </details>
       </Leg>
 
       {/* The line ends on another one to act on: the way in. */}

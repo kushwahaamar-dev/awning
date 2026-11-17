@@ -167,7 +167,7 @@ export function Discover() {
         </p>
       </section>
       <div className="rise max-lg:hidden" style={order(4)}>
-        <Ascii scene="snow" label="Snow falling over a pine valley at night" className="fade-soft" />
+        <Ascii scene="sky" />
       </div>
     </div>
   );

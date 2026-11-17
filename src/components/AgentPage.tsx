@@ -345,7 +345,7 @@ export function AgentPage() {
             )}
           </div>
           <div className="rise max-lg:hidden" style={order(2)}>
-            <Ascii scene="lighthouse" label="A lighthouse on a cliff sweeping its beam across a starry night" className="fade-soft" />
+            <Ascii scene="lock" className="mx-auto max-w-[9rem]" />
           </div>
         </div>
         {ready && (

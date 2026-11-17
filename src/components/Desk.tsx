@@ -10,7 +10,7 @@ import type { CoverPlan } from "@/lib/hedge/plan";
 import { cents, usd } from "@/lib/format";
 import { offerPrice } from "@/lib/hedge/quote";
 import { hasAllowance, post, useAccount } from "./account";
-import { Ascii, type Scene } from "./Ascii";
+import { Ascii, sceneFor } from "./Ascii";
 import { Ask } from "./Ask";
 import { Bought, type Purchase } from "./Bought";
 import { Fit } from "./Fit";
@@ -31,16 +31,6 @@ function spokenQuote({ quote, coverage, basis }: CoverPlan) {
   const price = offer ? `costs ${cents(offer.pricing.total)}` : "has no price right now, because nobody is selling that market";
   const caveat = basis.level === "loose" ? " It only loosely tracks your risk, so read the notes before you buy." : "";
   return `Cover that pays ${usd(quote.payout)} if ${coverage.pays} ${price}.${caveat}`;
-}
-
-/** A picture of the thing being covered: cold, heat, a price, or a night on the high street. */
-function sceneFor({ exposure }: CoverPlan): { scene: Scene; label: string } {
-  const { trigger } = exposure;
-  if (trigger.family === "price") return { scene: "prices", label: "A price chart, candle by candle" };
-  if (trigger.family === "game") return { scene: "street", label: "A rainy night on a street of small shops" };
-  return trigger.direction === "below"
-    ? { scene: "snow", label: "Snow falling over a pine valley at night" }
-    : { scene: "sunrise", label: "The sun climbing over the sea" };
 }
 
 function readJson<T>(text: string | null): T | null {
@@ -198,7 +188,7 @@ function DeskFor() {
             Describe a different risk
           </button>
           <div className="fade-edges mt-4 flex h-40 items-center overflow-hidden max-sm:h-24">
-            <Ascii {...sceneFor(plan)} className="w-full" />
+            <Ascii scene={sceneFor(plan.exposure.trigger)} className="w-full" />
           </div>
           <p className="mt-4 text-sm text-muted">{linked ? CAME_FROM[linked.from] : "You said"}</p>
           <h1 className="mt-2 max-w-3xl text-[1.75rem] leading-[1.2] tracking-[-0.02em] text-balance">{plan.exposure.summary}</h1>

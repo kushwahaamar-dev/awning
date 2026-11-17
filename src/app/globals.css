@@ -486,9 +486,13 @@ body {
     user-select: none;
   }
 
-  /* Scenes are printed in the page's ink and dissolve into the paper instead of sitting in a frame. */
+  /* Scenes are printed in dots on the paper, with no frame round them. What a piece doesn't colour is in the page's ink. */
   .ascii {
     color: var(--color-ink);
+  }
+  /* A bad day to pick is a way in from its picture to its price, and pointing anywhere on it inks the line under the price. */
+  .risk:hover .link {
+    text-decoration-color: var(--color-fg);
   }
   .fade-edges {
     mask-image:

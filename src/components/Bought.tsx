@@ -62,7 +62,7 @@ export function Bought({ purchase, onAgain }: { purchase: Purchase; onAgain: () 
         </div>
       </section>
       <div className="rise max-lg:hidden" style={{ "--i": 1 } as CSSProperties}>
-        <Ascii scene="sunrise" label="The sun climbing over the sea" className="fade-soft" />
+        <Ascii scene="shop" />
       </div>
     </div>
   );
