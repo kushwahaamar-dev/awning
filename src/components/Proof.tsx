@@ -44,13 +44,13 @@ export function RecentRefusals() {
   const proof = useProof();
   if (proof && !proof.refusals.length) return null;
   return (
-    <div className={`mt-10 ${settle(Boolean(proof))}`} aria-hidden={!proof}>
+    <div className={`mt-14 ${settle(Boolean(proof))}`} aria-hidden={!proof}>
       <h3 className="title">What the contract refused most recently</h3>
       <ol className="rows mt-4 border-y border-line">
         {(proof?.refusals ?? WAITING).map((refusal) => (
           <li key={refusal.at + refusal.note} className="grid gap-x-6 gap-y-1 py-3.5 sm:grid-cols-[6.5rem_minmax(0,1fr)_auto] sm:items-baseline">
             <span className="text-xs text-faint">{refusal.when}</span>
-            <span className="text-soft">{refusal.note}</span>
+            <span>{refusal.note}</span>
             <Receipt href={refusal.receipt} />
           </li>
         ))}
@@ -68,10 +68,10 @@ export function Path({ steps }: { steps: { title: string; body: string; made: st
         const last = proof?.steps[title as keyof Proof["steps"]];
         return (
           <li key={title} className="grid items-baseline gap-x-8 gap-y-1 py-5 sm:grid-cols-[6rem_minmax(0,1fr)_minmax(0,18.5rem)]">
-            <h3 className="text-lg font-[560]">{title}</h3>
-            <p className="text-lg text-muted">{body}</p>
+            <h3 className="title">{title}</h3>
+            <p className="copy max-w-none text-muted">{body}</p>
             <div className="sm:text-right">
-              <p className="num text-sm text-soft">{made.join(" + ")}</p>
+              <p>{made.join(" + ")}</p>
               {traced && (
                 <p className={`mt-1 text-xs text-faint ${settle(Boolean(proof))}`}>
                   {last ? (

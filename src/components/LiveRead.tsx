@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import useSWR from "swr";
 import type { Example } from "@/lib/hedge/examples";
 import { calendarDay, cents, percent, usd } from "@/lib/format";
@@ -45,11 +45,11 @@ function figures({ exposure: { trigger, lossUsd }, odds, cost }: Example) {
         ? { where: trigger.asset, when: `price ${trigger.direction === "below" ? "≤" : "≥"} ${usd(trigger.threshold)}` }
         : { where: trigger.team, when: trigger.outcome === "loses" ? "they lose" : "they win" };
   return [
-    { label: "Where", value: happens.where, tone: "text-fg" },
-    { label: "Happens if", value: happens.when, tone: "text-fg" },
-    { label: "You lose", value: usd(lossUsd), tone: "text-fg" },
-    { label: "The market’s odds", value: odds === null ? "—" : percent(odds), tone: "text-fg" },
-    { label: "This cover costs", value: cents(cost), tone: "text-accent" },
+    { label: "Where", value: happens.where },
+    { label: "Happens if", value: happens.when },
+    { label: "You lose", value: usd(lossUsd) },
+    { label: "The market’s odds", value: odds === null ? "—" : percent(odds) },
+    { label: "This cover costs", value: cents(cost) },
   ];
 }
 
@@ -85,17 +85,17 @@ function Held({ versions, children }: { versions: string[]; children: ReactNode 
 function Reading({ example, all, typed, beat }: { example: Example; all: Example[]; typed: number; beat: number }) {
   return (
     <>
-      <p className="flex items-center justify-between gap-4 text-sm text-muted">
-        <span className="status status-good status-live">A risk Gemini is pricing now</span>
+      <p className="flex items-center justify-between gap-4 text-muted">
+        <span className="status status-good status-live text-[0.9375rem] text-muted">A risk Gemini is pricing now</span>
         <span className="num max-[400px]:hidden">{calendarDay(example.day)}</span>
       </p>
 
-      <blockquote className="mt-4 text-xl leading-snug text-soft lg:text-[1.625rem] lg:leading-[1.28]">
+      <blockquote className="heading mt-6 normal-case">
         <span className="sr-only">{example.text}</span>
         <Held versions={all.map((each) => each.text)}>
           <span aria-hidden>
             {parts(example).map(({ text, lit, start }) => (
-              <span key={start} className={lit && beat >= 0 ? "text-fg underline decoration-accent decoration-2 underline-offset-[0.28em]" : undefined}>
+              <span key={start} className={lit && beat >= 0 ? "underline decoration-1 underline-offset-[0.18em]" : undefined}>
                 {text.slice(0, Math.max(0, typed - start))}
               </span>
             ))}
@@ -106,22 +106,21 @@ function Reading({ example, all, typed, beat }: { example: Example; all: Example
 
       {/* What was read out of the sentence and what the market makes of it. Five across where there is room;
           one to a line on a phone, where a long city name would run into its neighbour. */}
-      <dl className="mt-5 grid gap-x-6 gap-y-1.5 border-y border-line py-3.5 sm:grid-cols-[auto_auto_auto] sm:justify-between sm:gap-y-4 lg:grid-cols-[auto_auto_auto_auto_auto]">
-        {figures(example).map(({ label, value, tone }, i) => (
+      <dl className="mt-10 grid gap-x-6 gap-y-2 sm:grid-cols-[auto_auto_auto] sm:justify-between sm:gap-y-6 lg:grid-cols-[auto_auto_auto_auto_auto]">
+        {figures(example).map(({ label, value }, i) => (
           <div key={label} className="max-sm:flex max-sm:items-baseline max-sm:justify-between max-sm:gap-4">
-            <dt className="text-xs whitespace-nowrap text-muted">{label}</dt>
-            <dd className={`num text-sm whitespace-nowrap sm:mt-1 sm:text-base ${tone} ${appear(beat > i)}`}>{value}</dd>
+            <dt className="whitespace-nowrap text-muted">{label}</dt>
+            <dd className={`num whitespace-nowrap sm:mt-1 sm:text-xl ${appear(beat > i)}`}>{value}</dd>
           </div>
         ))}
       </dl>
 
-      {/* Whatever height the card has to spare goes above this row, which stays at its foot. */}
-      <div className="mt-auto flex items-center justify-between gap-x-6 gap-y-3 pt-4 max-sm:flex-col max-sm:items-start">
+      {/* Whatever height the reading has to spare goes above this row, which stays at its foot. */}
+      <div className="mt-auto flex items-baseline justify-between gap-x-6 gap-y-3 border-t border-line pt-4 max-sm:flex-col">
         <p className={`title min-w-0 ${appear(beat > 5)}`}>
           <Held versions={all.map(paysLine)}>{paysLine(example)}</Held>
         </p>
-        {/* The one white button in the opening is for the visitor's own risk; this one prices the example. */}
-        <Link href={`/app?exposure=${encodeURIComponent(JSON.stringify(example.exposure))}&from=example`} className="btn btn-secondary shrink-0">
+        <Link href={`/app?exposure=${encodeURIComponent(JSON.stringify(example.exposure))}&from=example`} className="link shrink-0 lowercase">
           Price this one
         </Link>
       </div>
@@ -129,8 +128,8 @@ function Reading({ example, all, typed, beat }: { example: Example; all: Example
   );
 }
 
-// As tall as what loads into it, so the card is one size from the moment the page opens.
-const CARD = "rise panel flex min-h-[29rem] flex-col p-5 max-lg:max-w-2xl sm:min-h-[21.6875rem] sm:p-6 lg:min-h-[18.75rem]";
+// As tall as what loads into it, so the reading is one size from the moment the page opens.
+const CARD = "flex min-h-[29rem] flex-col sm:min-h-[22rem] lg:min-h-[19rem]";
 
 /**
  * The product at work, on the page before anyone clicks: a risk Gemini is pricing this minute,
@@ -157,8 +156,8 @@ export function LiveRead() {
 
   if (!example) {
     return (
-      <figure className={CARD} style={{ "--i": 3 } as CSSProperties}>
-        <p className="status status-accent status-live self-start">Reading Gemini&rsquo;s prices…</p>
+      <figure className={CARD}>
+        <p className="status status-accent status-live self-start text-[0.9375rem] text-muted">Reading Gemini&rsquo;s prices…</p>
       </figure>
     );
   }
@@ -168,7 +167,6 @@ export function LiveRead() {
   return (
     <figure
       className={CARD}
-      style={{ "--i": 3 } as CSSProperties}
       onPointerEnter={() => (waiting.current = true)}
       onPointerLeave={() => (waiting.current = false)}
       onFocus={() => (waiting.current = true)}

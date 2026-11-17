@@ -53,7 +53,7 @@ export function CashOut({ onClose }: { onClose: () => void }) {
       <div className="mt-5 border-t border-line pt-5" aria-live="polite">
         {delivered ? (
           <p>
-            <span className="font-[510]">
+            <span>
               {cents(sent.arrives)} arrived on {sent.to.name}.
             </span>{" "}
             <a href={sent.to.explorer + delivered} target="_blank" rel="noreferrer" className="link">
@@ -62,7 +62,7 @@ export function CashOut({ onClose }: { onClose: () => void }) {
           </p>
         ) : (
           <p className="text-soft">
-            <span className="font-[510] text-fg">On its way to {sent.to.name}.</span> Circle is delivering {cents(sent.arrives)}.
+            <span className="text-fg">On its way to {sent.to.name}.</span> Circle is delivering {cents(sent.arrives)}.
           </p>
         )}
         <button type="button" onClick={onClose} className="link mt-4 text-sm">
@@ -80,7 +80,7 @@ export function CashOut({ onClose }: { onClose: () => void }) {
         send();
       }}
     >
-      <p className="font-[510]">Send money out to another chain</p>
+      <p>Send money out to another chain</p>
       <p className="mt-1 text-sm text-muted">Circle delivers it. You need nothing on the other chain.</p>
 
       <label htmlFor="cashAmount" className="mt-5 flex items-baseline justify-between gap-4">

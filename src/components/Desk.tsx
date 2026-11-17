@@ -201,7 +201,7 @@ function DeskFor() {
             <Ascii {...sceneFor(plan)} className="w-full" />
           </div>
           <p className="mt-4 text-sm text-muted">{linked ? CAME_FROM[linked.from] : "You said"}</p>
-          <h1 className="mt-2 max-w-3xl text-[1.75rem] leading-[1.2] font-[510] tracking-[-0.02em] text-balance">{plan.exposure.summary}</h1>
+          <h1 className="mt-2 max-w-3xl text-[1.75rem] leading-[1.2] tracking-[-0.02em] text-balance">{plan.exposure.summary}</h1>
         </div>
         {/* In the source it sits between the risk and its small print, which is the order a phone shows them in. */}
         <div className="rise lg:col-start-2 lg:row-span-2 lg:row-start-1" style={order(1)}>

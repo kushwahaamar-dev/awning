@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Mark } from "./Logo";
 
-// The landing page's sections, reachable from the foot of any page.
+// The landing page's parts, reachable from the foot of any page.
 const ABOUT = [
   { href: "/#prices", label: "Prices" },
   { href: "/#limits", label: "Limits" },
@@ -11,28 +10,22 @@ const ABOUT = [
 
 export function Footer() {
   return (
-    <footer className="overflow-hidden border-t border-line">
-      <div className="wrap flex flex-wrap items-center justify-between gap-x-10 gap-y-4 py-8">
-        <span className="flex items-center gap-2 text-xs text-muted">
-          <Mark className="size-4" />
-          Awning
-        </span>
+    <footer className="wrap overflow-hidden pt-10">
+      <div className="grid gap-y-6 lg:grid-cols-2">
+        <p className="copy text-muted">Not insurance. Cover is written against exchange-traded contracts and can pay differently from what you lose.</p>
         {/* Four in a row where they fit, two and two on a narrow phone, never three and one. */}
-        <nav aria-label="About Awning" className="flex flex-wrap gap-x-6 gap-y-2 text-sm max-[389px]:grid max-[389px]:w-full max-[389px]:grid-cols-2">
+        <nav aria-label="About Awning" className="flex flex-wrap content-start gap-x-8 gap-y-2 lowercase max-[389px]:grid max-[389px]:grid-cols-2 lg:pl-[var(--gutter)]">
           {ABOUT.map(({ href, label }) => (
             <Link key={href} href={href} className="text-muted transition-colors hover:text-fg">
               {label}
             </Link>
           ))}
         </nav>
-        <p className="basis-full text-xs text-faint">Not insurance. Cover is written against exchange-traded contracts and can pay differently from what you lose.</p>
       </div>
-      <div className="wrap">
-        <div className="wordmark-fit">
-          <p aria-hidden className="wordmark">
-            Awning
-          </p>
-        </div>
+      <div className="wordmark-fit mt-16">
+        <p aria-hidden className="wordmark">
+          awning
+        </p>
       </div>
     </footer>
   );

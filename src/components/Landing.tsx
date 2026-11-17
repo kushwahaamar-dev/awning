@@ -1,17 +1,19 @@
 import Form from "next/form";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { chainLabel, explorerAddress, mandateAddress, poolAddress } from "@/lib/chain/config";
 import { ATTEMPTS } from "@/lib/covers/attempts";
 import { shortAddress } from "@/lib/format";
 import { usesStreams } from "@/lib/ledger/source";
 import { hedging } from "@/lib/venue";
 import { EXAMPLE_RISK } from "@/lib/words";
-import { Ascii } from "./Ascii";
-import { LiveRead } from "./LiveRead";
+import { Drawn } from "./Drawn";
 import { LiveFigures } from "./LiveFigures";
+import { LiveRead } from "./LiveRead";
 import { PriceMap } from "./PriceMap";
 import { Path, RecentRefusals } from "./Proof";
+import { Shopfront } from "./Shopfront";
+import { Leg } from "./Trace";
 import { External } from "./icons";
 
 // What a stolen agent key can do, in the order the test on the agent page tries it, and what the contracts say to each.
@@ -63,25 +65,12 @@ const TRUSTED = [
   "The agent’s key and the pool’s keys share a server.",
 ];
 
-/** A section that uses the width: title, one line and its key figure on the left, the detail on the right. */
-function Split({ id, title, lead, aside, children }: { id: string; title: string; lead: ReactNode; aside: ReactNode; children: ReactNode }) {
-  return (
-    <section id={id} className="mt-32 grid scroll-mt-14 gap-x-20 gap-y-12 border-t border-line pt-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
-      <div className="lg:sticky lg:top-24 lg:self-start">
-        <h2 className="heading">{title}</h2>
-        <p className="mt-5 max-w-md text-xl leading-snug text-muted">{lead}</p>
-        <div className="mt-10">{aside}</div>
-      </div>
-      <div>{children}</div>
-    </section>
-  );
-}
-
-function Figure({ value, tone = "", children }: { value: string; tone?: string; children: ReactNode }) {
+/** A figure in the sign's dots, with the line that says what it counts. */
+function Figure({ value, children }: { value: string; children: ReactNode }) {
   return (
     <>
-      <p className={`figure text-[clamp(3.5rem,7vw,6.5rem)] leading-none ${tone}`}>{value}</p>
-      <p className="mt-4 max-w-sm text-muted">{children}</p>
+      <p className="figure text-[clamp(3.5rem,7vw,6.5rem)] leading-none">{value}</p>
+      <p className="copy mt-4 text-muted">{children}</p>
     </>
   );
 }
@@ -90,7 +79,7 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-6 py-3">
       <dt className="text-muted">{label}</dt>
-      <dd className="num text-sm">{children}</dd>
+      <dd className="num">{children}</dd>
     </div>
   );
 }
@@ -106,106 +95,124 @@ function Contract({ address }: { address: string | undefined }) {
   );
 }
 
+function List({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div>
+      <h3 className="title">{title}</h3>
+      <ul className="rows mt-5 border-y border-line text-muted">
+        {items.map((item) => (
+          <li key={item} className="copy max-w-none py-4">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function Landing() {
   return (
     <>
-      {/* The opening: the sign, then on the page's two columns what it is and where to say yours on the left,
-          and the thing itself at work on the right. Everything below keeps to the same two edges. */}
-      <section className="pt-14 sm:pt-20">
-        <h1 className="display rise">
-          <span className="block">Say what could go wrong.</span>
-          <span className="block">Get paid when it does.</span>
-        </h1>
-        <div className="mt-10 grid grid-cols-1 items-start gap-x-20 gap-y-10 xl:mt-12 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
-          <div>
-            <p className="rise max-w-md text-xl leading-snug text-soft" style={{ "--i": 1 } as React.CSSProperties}>
-              Cover for the bad days insurers won&rsquo;t touch. The price comes from prediction markets on the Gemini exchange, and your payout is
-              locked in USDC on Arc before you pay.
-            </p>
-            <Form action="/app" className="composer rise mt-8 flex max-w-2xl items-center gap-2 p-2 pl-5" style={{ "--i": 2 } as React.CSSProperties}>
-              <label htmlFor="ask" className="sr-only">
-                Describe the risk
-              </label>
-              {/* The prompt in the empty box is a whole example where the box is wide enough and a short one where it isn't, so it is never cut off mid-word. */}
-              <span className="@container relative flex min-w-0 grow">
-                <input id="ask" name="risk" autoComplete="off" placeholder=" " className="peer w-full min-w-0 bg-transparent py-2 text-lg focus:outline-none max-sm:text-base" />
-                <span aria-hidden className="pointer-events-none absolute inset-0 hidden items-center text-lg whitespace-nowrap text-faint peer-placeholder-shown:flex max-sm:text-base">
-                  <span className="@[31rem]:hidden">A cold day costs me $300…</span>
-                  <span className="hidden @[31rem]:inline">{EXAMPLE_RISK}</span>
-                </span>
-              </span>
-              <button type="submit" className="btn btn-primary">
-                Price cover
-              </button>
-            </Form>
-            <p className="rise mt-4 text-sm text-muted" style={{ "--i": 3 } as React.CSSProperties}>
-              Not sure what&rsquo;s costing you?{" "}
-              <Link href="/find" className="link">
-                Find it in your sales
-              </Link>
-            </p>
-          </div>
-          <LiveRead />
-        </div>
-      </section>
-      {/* The street the shops are on, as a strip of its own: nothing is written over it. */}
-      <div aria-hidden className="band band-street rise mt-6" style={{ "--i": 4 } as React.CSSProperties}>
-        <Ascii scene="street" label="" />
-      </div>
-      <LiveFigures />
+      <Drawn />
 
-      {/* It has no rule above it, so it stops a link to it where the ruled sections stop theirs. */}
-      <section id="prices" className="mt-20 scroll-mt-[6.5625rem]">
-        <div className="grid gap-x-20 gap-y-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
-          <h2 className="heading">A bad day has a price</h2>
-          <p className="max-w-lg text-xl leading-snug text-muted lg:pt-2">
-            What it costs, this minute, to cover tomorrow&rsquo;s bad day in every city where Gemini lists the high. The rarer the day, the cheaper
-            the cover.
-          </p>
+      {/* The opening is the shop and one line to write on. Whatever is written on it goes to be priced. */}
+      <section className="flex min-h-[calc(100svh-6.5rem)] flex-col">
+        <div className="grid grow place-items-center py-6">
+          <Shopfront className="max-h-[min(60svh,42rem)] w-full max-w-5xl" />
         </div>
-        <div className="mt-12">
+        <label htmlFor="ask" className="mb-3 text-muted">
+          What could go wrong, and what would it cost you?
+        </label>
+        <Form action="/app" className="ask">
+          {/* The prompt on the empty line is a whole example where the line is long enough and a short one where it isn't, so it is never cut off mid-word. */}
+          <span className="@container relative flex min-w-0 grow">
+            <input id="ask" name="risk" autoComplete="off" placeholder=" " className="peer w-full min-w-0 bg-transparent" />
+            <span aria-hidden className="pointer-events-none absolute inset-0 hidden items-baseline whitespace-nowrap text-faint peer-placeholder-shown:flex">
+              <span className="@[12em]:hidden">A cold day…</span>
+              <span className="hidden @[12em]:inline @[29em]:hidden">A cold day costs me $300…</span>
+              <span className="hidden @[29em]:inline">{EXAMPLE_RISK}</span>
+            </span>
+          </span>
+          <button type="submit" className="link shrink-0 lowercase">
+            Price cover
+          </button>
+        </Form>
+      </section>
+
+      {/* The line written on runs on down the page. Its first stretch passes between the two halves of what Awning does. */}
+      <section data-leg className="leg leg-through" style={{ "--from": 6, "--to": 6 } as CSSProperties}>
+        <p className="text-muted lg:absolute lg:top-5">
+          Not sure what&rsquo;s costing you?{" "}
+          <Link href="/find" className="link whitespace-nowrap">
+            Find it in your sales
+          </Link>
+        </p>
+        <h1 className="display grid gap-y-1 max-lg:mt-12 max-lg:text-[12.4vw] lg:grid-cols-2 [&>*]:whitespace-nowrap [&>:nth-child(even)]:max-lg:text-right [&>:nth-child(even)]:lg:pl-[var(--gutter)]">
+          <span>Say what</span>
+          <span>could go wrong.</span>
+          <span>Get paid</span>
+          <span>when it does.</span>
+        </h1>
+        <p className="copy mt-12 lg:mt-20 lg:ml-[calc(50%+var(--gutter))]">
+          Cover for the bad days insurers won&rsquo;t touch. The price comes from prediction markets on the Gemini exchange, and your payout is locked
+          in USDC on Arc before you pay.
+        </p>
+      </section>
+
+      <Leg id="now" from={6} to={3} cover={0}>
+        <LiveRead />
+        <LiveFigures />
+      </Leg>
+
+      <Leg id="prices" from={3} to={1} cover={1}>
+        <h2 className="heading">A bad day has a price</h2>
+        <p className="copy mt-6 text-muted">
+          What it costs, this minute, to cover tomorrow&rsquo;s bad day in every city where Gemini lists the high. The rarer the day, the cheaper the
+          cover.
+        </p>
+        <div className="mt-14">
           <PriceMap />
         </div>
-      </section>
+      </Leg>
 
-      <Split
+      <Leg
         id="limits"
-        title="An agent not worth robbing"
-        lead={<>Its spending limits are a contract on {chainLabel}. We hand its key to an attacker, and this is what the chain does.</>}
+        from={1}
+        to={5}
+        cover={2}
         aside={
           <>
-            <Figure value="$2.00" tone="text-accent">
-              The most they get: one day&rsquo;s data budget. You set it, and $2 is the default.
-            </Figure>
+            <Figure value="$2.00">The most they get: one day&rsquo;s data budget. You set it, and $2 is the default.</Figure>
             <Link href="/agent" className="btn btn-secondary mt-7">
               Run it yourself
             </Link>
           </>
         }
       >
-        <div className="panel overflow-hidden">
-          <p className="flex items-center gap-2 border-b border-line px-6 py-3.5 text-sm text-muted">
-            <span className="dot text-bad" />
-            Attacker, signing with your agent&rsquo;s key
-          </p>
-          <ol className="rows">
-            {ATTACK.map(({ tried, verdict, tone }) => (
-              <li key={tried} className="flex items-center justify-between gap-6 px-6 py-5 text-lg">
-                <span className="text-soft">{tried}</span>
-                <span className={`status shrink-0 ${tone}`}>{verdict}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
+        <h2 className="heading">An agent not worth robbing</h2>
+        <p className="copy mt-6 text-muted">Its spending limits are a contract on {chainLabel}. We hand its key to an attacker, and this is what the chain does.</p>
+        <p className="mt-14 flex items-center gap-2 border-b border-fg pb-3 text-muted">
+          <span className="dot text-bad" />
+          Attacker, signing with your agent&rsquo;s key
+        </p>
+        <ol className="rows border-b border-line">
+          {ATTACK.map(({ tried, verdict, tone }) => (
+            <li key={tried} className="copy flex max-w-none items-baseline justify-between gap-6 py-4">
+              <span>{tried}</span>
+              <span className={`status shrink-0 ${tone}`}>{verdict}</span>
+            </li>
+          ))}
+        </ol>
         <RecentRefusals />
-      </Split>
+      </Leg>
 
-      <Split
+      <Leg
         id="built"
-        title="How it&rsquo;s built"
-        lead="One cover, from sentence to payout, and what runs each step."
+        from={5}
+        to={3}
+        cover={3}
         aside={
-          <dl className="rows max-w-md border-y border-line">
+          <dl className="rows border-y border-line">
             <Fact label="Agent’s limits">
               <Contract address={mandateAddress} />
             </Fact>
@@ -217,50 +224,28 @@ export function Landing() {
           </dl>
         }
       >
-        <Path steps={PATH} />
-      </Split>
+        <h2 className="heading">How it&rsquo;s built</h2>
+        <p className="copy mt-6 text-muted">One cover, from sentence to payout, and what runs each step.</p>
+        <div className="mt-14">
+          <Path steps={PATH} />
+        </div>
+      </Leg>
 
-      <Split
-        id="checked"
-        title="What we checked"
-        lead="We had it reviewed independently, fixed what was found, and wrote down what is still trusted."
-        aside={<Figure value="126">Contract tests, with fuzzing and invariant runs on both contracts.</Figure>}
-      >
-        <div className="grid gap-x-14 gap-y-12 xl:grid-cols-2">
-          <div>
-            <h3 className="title">Found in review, now fixed</h3>
-            <ul className="rows mt-5 border-y border-line text-lg text-muted">
-              {FIXED.map((item) => (
-                <li key={item} className="py-4">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h3 className="title">Still trusted</h3>
-            <ul className="rows mt-5 border-y border-line text-lg text-muted">
-              {TRUSTED.map((item) => (
-                <li key={item} className="py-4">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
+      <Leg id="checked" from={3} to={6} cover={4} aside={<Figure value="126">Contract tests, with fuzzing and invariant runs on both contracts.</Figure>}>
+        <h2 className="heading">What we checked</h2>
+        <p className="copy mt-6 text-muted">We had it reviewed independently, fixed what was found, and wrote down what is still trusted.</p>
+        <div className="mt-14 grid gap-y-12">
+          <List title="Found in review, now fixed" items={FIXED} />
+          <List title="Still trusted" items={TRUSTED} />
         </div>
-      </Split>
+      </Leg>
 
-      {/* The close sits on the same left edge as everything above it, with the way in at the end of its line. */}
-      <section className="mt-32 border-t border-line pt-16">
-        <div className="flex flex-wrap items-end justify-between gap-x-12 gap-y-8">
-          <h2 className="display">Price your first bad day.</h2>
-          <Link href="/app" className="btn btn-lg btn-primary mb-2">
-            Open the app
-          </Link>
-        </div>
-        <div aria-hidden className="band band-middle -mb-24 mt-4">
-          <Ascii scene="sunrise" label="" />
-        </div>
+      {/* The line ends on another one to act on: the way in. */}
+      <section className="-mx-[var(--gutter)] flex flex-wrap items-baseline justify-between gap-x-12 gap-y-4 border-t border-fg px-[var(--gutter)] pt-6 pb-10">
+        <h2 className="heading">Price your first bad day</h2>
+        <Link href="/app" className="heading link">
+          Open the app
+        </Link>
       </section>
     </>
   );

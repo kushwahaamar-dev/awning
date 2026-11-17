@@ -25,12 +25,12 @@ export function LiveFigures() {
   ];
 
   return (
-    <dl className="grid grid-cols-2 border-y border-line sm:grid-cols-6 lg:grid-cols-5 lg:divide-x lg:divide-line" aria-live="off">
+    <dl className="mt-24 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-6 lg:grid-cols-[auto_auto_auto_auto_auto] lg:justify-between" aria-live="off">
       {/* Five figures: two, two and one across a phone, three and two across a tablet, all five across a desk. */}
       {figures.map(({ label, value }, i) => (
-        <div key={label} className={`py-5 pr-5 lg:col-span-1 lg:px-5 lg:first:pl-0 ${i < 3 ? "sm:col-span-2" : "sm:col-span-3"} ${i === 4 ? "max-sm:col-span-2" : ""}`}>
-          <dt className="text-xs text-muted">{label}</dt>
-          <dd className="figure mt-1 text-[2rem] leading-tight lg:text-[2.75rem]">{value}</dd>
+        <div key={label} className={`lg:col-span-1 ${i < 3 ? "sm:col-span-2" : "sm:col-span-3"} ${i === 4 ? "max-sm:col-span-2" : ""}`}>
+          <dd className="figure text-[2rem] leading-none lg:text-[2.75rem]">{value}</dd>
+          <dt className="mt-2 text-muted">{label}</dt>
         </div>
       ))}
     </dl>

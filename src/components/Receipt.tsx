@@ -28,7 +28,7 @@ function Line({ label, value, strong }: { label: string; value: string; strong?:
   return (
     <div className={`flex items-baseline justify-between gap-6 py-2.5 ${strong ? "text-fg" : "text-muted"}`}>
       <dt>{label}</dt>
-      <dd className={`num ${strong ? "text-xl font-medium text-accent" : "text-soft"}`}>{value}</dd>
+      <dd className={`num ${strong ? "text-xl text-accent" : "text-soft"}`}>{value}</dd>
     </div>
   );
 }
@@ -56,7 +56,7 @@ export function Receipt({ plan: priced, coverRatio, repricing, onCoverChange, on
     <section aria-label="Cover" className="panel p-6 sm:p-7">
       <p className="flex items-center justify-between text-sm text-muted">
         <span className="flex items-center gap-2">
-          <Mark className="size-4 text-accent" />
+          <Mark className="size-4" />
           Cover
         </span>
         <span className="flex items-center gap-3">

@@ -44,7 +44,7 @@ export function Covers() {
           return (
             <li key={cover.id} className="grid gap-x-6 gap-y-2 px-5 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
               <div>
-                <p className="font-[510]">
+                <p>
                   {usd(cover.maxPayout)} if {cover.plan.coverage.pays}
                 </p>
                 <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-sm text-muted">

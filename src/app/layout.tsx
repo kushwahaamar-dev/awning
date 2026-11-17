@@ -7,8 +7,8 @@ import { Footer } from "@/components/Footer";
 import { Storefront } from "@/components/Storefront";
 import "./globals.css";
 
-// The Geist family, each face with one job: Sans for the interface and the big lines, Mono for
-// values in running text, Pixel for figures read live from the chain and for the name at the foot.
+// The Geist family: Sans, at one weight, for every word on a page, and Pixel for the figures read live from
+// the chain, in the dots of the sign over the shop. Mono is only what Pixel falls back to while it loads.
 const fonts = [GeistSans, GeistMono, GeistPixelCircle].map((font) => font.variable).join(" ");
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description: "Cover for the bad days insurers won’t touch, priced by Gemini prediction markets and paid out on Arc.",
 };
 
-export const viewport: Viewport = { themeColor: "#08090a" };
+export const viewport: Viewport = { themeColor: "#ffffff" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

@@ -113,7 +113,7 @@ export function Discover() {
             if (file) run(false);
           }}
         >
-          <label htmlFor="sales" className="block font-[510]">
+          <label htmlFor="sales" className="block">
             Your daily sales
           </label>
           <p className="mt-1 text-sm text-muted">A spreadsheet export with a date and an amount on each row. Two months at least; a year is better.</p>

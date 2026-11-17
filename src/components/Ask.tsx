@@ -87,7 +87,7 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
         )}
         {question && <p className="title mt-6">{question}</p>}
 
-        {/* The box stays where it is while its sentence is read and priced: the words stay in it and the wait is told under them. */}
+        {/* The line written on stays where it is while its sentence is read and priced: the words stay on it and the wait is told under them. */}
         <form
           className="composer rise mt-8"
           style={order(2)}
@@ -119,9 +119,9 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
               }
             }}
             placeholder={question ? "Your answer…" : EXAMPLE_RISK}
-            className="block w-full resize-none bg-transparent px-5 pt-4 pb-1 text-lg leading-relaxed placeholder:text-faint focus:outline-none"
+            className="block w-full resize-none bg-transparent pt-4 pb-1 text-lg leading-relaxed placeholder:text-faint focus:outline-none"
           />
-          <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 p-3 pl-5">
+          <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 py-3">
             {busy ? (
               <p aria-live="polite" className="status status-accent status-live text-sm whitespace-normal text-fg">
                 <span>
@@ -168,7 +168,7 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
 
         {unlisted && (
           <div className="panel mt-5 p-5">
-            <p className="font-[510]">Gemini doesn&rsquo;t list a market for that yet.</p>
+            <p>Gemini doesn&rsquo;t list a market for that yet.</p>
             <p className="mt-1 text-muted">
               {unlisted.wanted && `We’ve noted “${unlisted.wanted}” as one people want. `}
               Today there is cover for daily highs in 49 US cities, oil, gas and metal prices, crypto prices, and game results.

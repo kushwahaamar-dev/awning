@@ -85,7 +85,7 @@ export function Buy({ plan, coverRatio, onBought }: Props) {
     <>
       {refused && (
         <p role="alert" className="note note-bad mt-4 text-sm">
-          <span className="font-[510] text-fg">Your allowance refused this.</span> The agent asked for the premium, but {REFUSAL[refused]}. Nothing
+          <span className="text-fg">Your allowance refused this.</span> The agent asked for the premium, but {REFUSAL[refused]}. Nothing
           was spent.
         </p>
       )}
@@ -100,7 +100,7 @@ export function Buy({ plan, coverRatio, onBought }: Props) {
   if (pending) {
     return (
       <div className="mt-6 border-t border-line pt-5">
-        <p className="font-[510]">
+        <p>
           {cents(pending.premium)} is above the {usd(allowance.approvalThreshold)} you asked to approve yourself, so the agent needs your go-ahead.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-4">
@@ -120,7 +120,7 @@ export function Buy({ plan, coverRatio, onBought }: Props) {
     if (choosing) {
       return (
         <div className="mt-6 border-t border-line pt-5">
-          <p className="mb-5 font-[510]">Set your agent&rsquo;s limits, then buy.</p>
+          <p className="mb-5">Set your agent&rsquo;s limits, then buy.</p>
           <AllowanceForm />
         </div>
       );

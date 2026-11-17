@@ -50,7 +50,7 @@ export function Standing({ plan, coverRatio, price, alone = false }: { plan: Cov
         start();
       }}
     >
-      <p className="font-[510]">Leave this with your agent</p>
+      <p>Leave this with your agent</p>
       <p className="mt-1 text-sm text-muted">Each day it checks the price against a forecast, buys only if it&rsquo;s worth it, and tells you why.</p>
 
       <label htmlFor="dailyCap" className="mt-5 flex items-baseline justify-between gap-4">
