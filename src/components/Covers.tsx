@@ -41,28 +41,32 @@ export function Covers() {
           // The pool's own order on the exchange, when this cover's hedge could really be placed there.
           const hedge = cover.venue === "paper" ? undefined : cover.orders.find((order) => order.id);
           return (
-            <li key={cover.id} className="panel grid gap-x-8 gap-y-3 px-6 py-5 sm:grid-cols-[1fr_auto] sm:items-center">
-              <div>
-                <p className="title">
-                  {usd(cover.maxPayout)} if {cover.plan.coverage.pays}
-                </p>
-                <p className="mt-1 flex flex-wrap items-center gap-x-4 text-sm text-muted">
-                  <span>
-                    {day(cover.plan.market.startsAt ?? cover.expiresAt)}, cost <span className="num text-fg">{cents(cover.premium)}</span>
-                  </span>
-                  {hedge && (
+            <li key={cover.id} className="panel overflow-hidden">
+              {/* The awning is out over a cover that is in force, and in over one that has ended. */}
+              {cover.status === "open" && <div aria-hidden className="valance h-2" />}
+              <div className="grid gap-x-8 gap-y-3 px-6 py-5 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div>
+                  <p className="title">
+                    {usd(cover.maxPayout)} if {cover.plan.coverage.pays}
+                  </p>
+                  <p className="mt-1 flex flex-wrap items-center gap-x-4 text-sm text-muted">
                     <span>
-                      Hedged on {cover.venue === "gemini" ? "Gemini" : "Gemini’s sandbox"}, order <span className="num">{hedge.id}</span>
+                      {day(cover.plan.market.startsAt ?? cover.expiresAt)}, cost <span className="num text-fg">{cents(cover.premium)}</span>
                     </span>
-                  )}
-                  {receipt && (
-                    <a href={receipt} target="_blank" rel="noreferrer" className="link flex items-center gap-1">
-                      receipt <External />
-                    </a>
-                  )}
-                </p>
+                    {hedge && (
+                      <span>
+                        Hedged on {cover.venue === "gemini" ? "Gemini" : "Gemini’s sandbox"}, order <span className="num">{hedge.id}</span>
+                      </span>
+                    )}
+                    {receipt && (
+                      <a href={receipt} target="_blank" rel="noreferrer" className="link flex items-center gap-1">
+                        receipt <External />
+                      </a>
+                    )}
+                  </p>
+                </div>
+                <span className={`status justify-self-start whitespace-normal ${tone}`}>{label}</span>
               </div>
-              <span className={`status justify-self-start whitespace-normal ${tone}`}>{label}</span>
             </li>
           );
         })}

@@ -189,14 +189,16 @@ body {
     padding: 0 1.75rem;
     font-size: 1.0625rem;
   }
-  /* The one thing to press on a screen is in ink. Pointed at, it lights up the colour of the awning. */
+  /* The one thing to press on a screen is the colour of the awning, edged in ink like everything drawn here.
+     Pointed at, it turns to ink. */
   .btn-primary {
-    background: var(--color-fg);
-    color: var(--color-bg);
+    background: var(--color-lit);
+    box-shadow: inset 0 0 0 1px var(--color-fg);
+    color: var(--color-fg);
   }
   .btn-primary:hover:not(:disabled) {
-    background: var(--color-lit);
-    color: var(--color-fg);
+    background: var(--color-fg);
+    color: var(--color-bg);
   }
   .btn-secondary {
     background: var(--color-raised);
@@ -218,13 +220,15 @@ body {
   .btn:disabled {
     cursor: not-allowed;
     background: var(--color-raised);
+    box-shadow: none;
     color: var(--color-faint);
   }
-  /* A button at work can't be pressed again, but it hasn't gone away: it keeps its ink and says what it is doing. */
+  /* A button at work can't be pressed again, but it hasn't gone away: it keeps its colour and says what it is doing. */
   .btn-primary[aria-busy="true"]:disabled {
     cursor: progress;
-    background: var(--color-fg);
-    color: var(--color-bg);
+    background: var(--color-lit);
+    box-shadow: inset 0 0 0 1px var(--color-fg);
+    color: var(--color-fg);
     opacity: 0.7;
   }
   .btn-secondary[aria-busy="true"]:disabled,
@@ -233,11 +237,11 @@ body {
     color: var(--color-soft);
   }
   /* On a soft shape, a soft button would disappear into it, so there it is paper. */
-  :is(.panel, .composer, .note) .btn-secondary,
-  :is(.panel, .composer, .note) .btn:disabled:not([aria-busy="true"]) {
+  :is(.panel, .note) .btn-secondary,
+  :is(.panel, .note) .btn:disabled:not([aria-busy="true"]) {
     background: var(--color-bg);
   }
-  :is(.panel, .composer, .note) .btn-secondary:hover:not(:disabled) {
+  :is(.panel, .note) .btn-secondary:hover:not(:disabled) {
     background: var(--color-pressed);
   }
   .btn-recording {
@@ -323,14 +327,15 @@ body {
     background: var(--color-bg);
   }
 
-  /* Where the risk gets typed or spoken: the largest box on the screen, and the first thing on it. */
+  /* Where the risk gets typed or spoken: the largest thing on the screen and the first, drawn in line like the
+     ticket it leads to. Its line doubles in weight while it is being written in. */
   .composer {
     border-radius: 1.75rem;
-    background: var(--color-raised);
+    box-shadow: inset 0 0 0 1px var(--color-fg);
     transition: box-shadow 150ms;
   }
   .composer:focus-within {
-    box-shadow: inset 0 0 0 1.5px var(--color-fg);
+    box-shadow: inset 0 0 0 2px var(--color-fg);
   }
 
   /* How much of a loss to cover: a track to slide a knob along, inked as far as the knob has gone. */
@@ -507,6 +512,17 @@ body {
   /* Scenes are printed in dots on the paper, with no frame round them. What a piece doesn't colour is in the page's ink. */
   .ascii {
     color: var(--color-ink);
+  }
+  /* Something tried against the agent's limits, set large enough to be read as a line of its own. */
+  .attempt {
+    font-size: clamp(1.1875rem, 2.1vw, 1.875rem);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+  /* What failed is crossed out, by a line drawn through it as far as the reader has got past it. */
+  .struck {
+    background: linear-gradient(currentColor, currentColor) no-repeat 0 58% / calc(var(--passed, 1) * 100%) 1.5px;
   }
   /* A bad day to pick is a way in from its picture to its price, and pointing anywhere on it inks the line under the price. */
   .risk:hover .link {

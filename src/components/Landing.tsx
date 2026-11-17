@@ -16,11 +16,11 @@ import { Leg } from "./Trace";
 
 // What a stolen agent key can do, in the order the test on the agent page tries it, and what the contracts say to each.
 const ATTACK = [
-  { tried: ATTEMPTS.ownAddress, verdict: "Refused", tone: "status-bad" },
-  { tried: ATTEMPTS.unoffered, verdict: "Sent back", tone: "status-accent" },
-  { tried: ATTEMPTS.onePremium, verdict: "Refused", tone: "status-bad" },
-  { tried: ATTEMPTS.allData, verdict: "Refused", tone: "status-bad" },
-  { tried: ATTEMPTS.dataLeft, verdict: "Went through", tone: "" },
+  { tried: ATTEMPTS.ownAddress, verdict: "Refused", tone: "status-bad", failed: true },
+  { tried: ATTEMPTS.unoffered, verdict: "Sent back", tone: "status-accent", failed: true },
+  { tried: ATTEMPTS.onePremium, verdict: "Refused", tone: "status-bad", failed: true },
+  { tried: ATTEMPTS.allData, verdict: "Refused", tone: "status-bad", failed: true },
+  { tried: ATTEMPTS.dataLeft, verdict: "Went through", tone: "", failed: false },
 ];
 
 // What the pool does with cover it has written, said as it really is where this is running.
@@ -143,10 +143,13 @@ export function Landing() {
       >
         <h2 className="heading">An agent not worth robbing</h2>
         <p className="copy mt-6 text-muted">Its spending limits are a contract on {chainLabel}. Hand its key to a thief, and this is what the chain does.</p>
-        <ol className="rows mt-14 border-y border-line">
-          {ATTACK.map(({ tried, verdict, tone }) => (
-            <li key={tried} className="copy flex max-w-none items-baseline justify-between gap-6 py-4">
-              <span>{tried}</span>
+        {/* The attempts are set large and the page's line crosses out each one that failed as the reader comes to it. Only the last is left standing. */}
+        <ol className="mt-14 space-y-5">
+          {ATTACK.map(({ tried, verdict, tone, failed }) => (
+            <li key={tried} data-passed className="flex items-baseline justify-between gap-6">
+              <span className="attempt">
+                <span className={failed ? "struck" : undefined}>{tried}</span>
+              </span>
               <span className={`status shrink-0 ${tone}`}>{verdict}</span>
             </li>
           ))}

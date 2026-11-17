@@ -56,8 +56,8 @@ export function Bought({ purchase, onAgain }: { purchase: Purchase; onAgain: () 
           </Link>
         </div>
       </section>
-      {/* Open for business: the stall under its awning, in the sun. */}
-      <Ascii scene="shop" className="w-full max-lg:order-first" />
+      {/* The moment itself: the awning goes out, and the rain under it stops. */}
+      <Ascii scene="awning" className="w-full max-lg:order-first" />
     </div>
   );
 }

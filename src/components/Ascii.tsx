@@ -29,6 +29,8 @@ type Source = {
   from?: { left: number; top: number };
   /** Dots across one cell. A piece of few, large cells is given two, so its dots match its neighbours'. */
   fine?: 2;
+  /** Drawn on square cells, one dot to a cell, and not on the tall cells of text. */
+  square?: true;
   /** A piece made of lines and not of shading: every stroke is inked, however thin the character that draws it. */
   drawn?: true;
   /** The moment shown to anyone who prefers stillness, for a piece whose first frame isn't its best. */
@@ -36,12 +38,15 @@ type Source = {
 };
 
 const SCENES = {
-  shop: {
-    load: () => import("ascii-magic-art/pieces/lemonade-stand-pour.js"),
-    cols: 84,
-    rows: 38,
-    tone: "shadows",
-    label: "A stall under a striped awning on a sunny day, pouring a glass of lemonade",
+  // Awning's own, made with the library's kit: the others are the library's.
+  awning: {
+    load: () => import("./awning-out"),
+    cols: 120,
+    rows: 66,
+    tone: "lights",
+    square: true,
+    label: "A shop in the rain letting out its striped awning. The rain under it stops, and the ground there is dry.",
+    at: 4,
   },
   cabin: {
     load: () => import("ascii-magic-art/pieces/snowy-cabin.js"),
@@ -126,7 +131,7 @@ function inksOf(piece: Piece) {
 export function Ascii({ scene, className = "" }: { scene: Scene; className?: string }) {
   const box = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const { cols, rows, label } = SCENES[scene];
+  const { cols, rows, label, square }: Source = SCENES[scene];
 
   useEffect(() => {
     const frame = box.current;
@@ -178,7 +183,7 @@ export function Ascii({ scene, className = "" }: { scene: Scene; className?: str
         const width = frame.clientWidth;
         const scale = Math.min(2, devicePixelRatio || 1);
         const cellWide = width / cols;
-        const cellTall = cellWide / CELL_WIDTH;
+        const cellTall = source.square ? cellWide : cellWide / CELL_WIDTH;
         const height = cellTall * rows;
         if (sheet.width !== Math.round(width * scale) || sheet.height !== Math.round(height * scale)) {
           sheet.width = Math.round(width * scale);
@@ -259,7 +264,7 @@ export function Ascii({ scene, className = "" }: { scene: Scene; className?: str
   }, [scene]);
 
   return (
-    <div ref={box} role="img" aria-label={label} className={`ascii ${className}`} style={{ aspectRatio: (cols * CELL_WIDTH) / rows }}>
+    <div ref={box} role="img" aria-label={label} className={`ascii ${className}`} style={{ aspectRatio: square ? cols / rows : (cols * CELL_WIDTH) / rows }}>
       <canvas ref={canvas} aria-hidden className="block size-full" />
     </div>
   );
