@@ -67,6 +67,16 @@ body {
   outline: none;
 }
 
+/* A city on the map reached by keyboard is marked by its ring, not by a box drawn round the dot.
+   Out here with the rule it overrides, because nothing inside a layer can. */
+.pricemap a:focus-visible {
+  outline: none;
+}
+.pricemap a:focus-visible .ring {
+  stroke: var(--color-fg);
+  stroke-width: 2px;
+}
+
 @layer components {
   /* The page's measure: one column, narrow enough to read down without the eye travelling. */
   .wrap {
@@ -380,6 +390,19 @@ body {
     border: 1.5px solid var(--color-fg);
     border-radius: 50%;
     background: var(--color-card);
+  }
+
+  /* The map's plotting surface. Its labels carry a rim of the paper, so they read over the grid and over a dot. */
+  .pricemap {
+    background-image: radial-gradient(circle, rgb(0 0 0 / 0.2) 0.75px, transparent 1.1px);
+    background-size: 1.5rem 1.5rem;
+  }
+  .pricemap text {
+    font-size: 15px;
+    paint-order: stroke;
+    stroke: var(--color-bg);
+    stroke-width: 5px;
+    stroke-linejoin: round;
   }
 
   /* The picture a page opens on. It has no frame: it thins out into the paper on every side. */

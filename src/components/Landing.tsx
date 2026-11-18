@@ -7,7 +7,7 @@ import { usesStreams } from "@/lib/ledger/source";
 import { hedging } from "@/lib/venue";
 import { voiceEnabled } from "@/lib/voice";
 import { BadDays } from "./BadDays";
-import { Prices } from "./Prices";
+import { PriceMap } from "./PriceMap";
 import { LastRefusal } from "./Proof";
 import { Sketch, Stamp, type Picture } from "./Sketch";
 
@@ -131,8 +131,8 @@ export function Landing() {
       <section id="prices" className="section">
         <Head stamp="day">Tomorrow, city by city</Head>
         <p className="copy mt-4">What it costs this minute to cover a bad day tomorrow, where you trade.</p>
-        <div className="mt-4">
-          <Prices />
+        <div className="mt-8">
+          <PriceMap />
         </div>
       </section>
 
