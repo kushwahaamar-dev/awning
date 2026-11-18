@@ -3,28 +3,35 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import type { CoverPlan } from "@/lib/hedge/plan";
-import { cents, day, percent, usd } from "@/lib/format";
+import { ago, cents, day, percent, usd } from "@/lib/format";
 import { offerPrice, quoteCover } from "@/lib/hedge/quote";
 import { hasAllowance, useAccount } from "./account";
 import type { Purchase } from "./Bought";
 import { Buy } from "./Buy";
 import { useLiveLegs } from "./liveLegs";
 import { Standing } from "./Standing";
+import type { Voice } from "./voice";
 
 type Props = {
   plan: CoverPlan;
   coverRatio: number;
   /** A price for the cover level just chosen is on its way, so the figures shown are the old ones. */
   repricing: boolean;
+  /** When Gemini last answered, if this quote was made from what it listed then; null when the price is of this minute. */
+  asOf: string | null;
   onCoverChange: (ratio: number) => void;
   onBought: (receipt: Omit<Purchase, "plan">) => void;
+  /** These three go straight to the buy button, so that buying can also be done, and answered, by voice. */
+  voice?: Voice;
+  onReady?: (act: (() => void) | null) => void;
+  onNotice?: (text: string, asks?: boolean) => void;
 };
 
 const MIN_COVER = 10;
 const STEP = 5;
 
 /** The quote, as a ticket under the awning: what the cover pays, what it costs, how much of the loss to cover, and the way to buy it. */
-export function Receipt({ plan: priced, coverRatio, repricing, onCoverChange, onBought }: Props) {
+export function Receipt({ plan: priced, coverRatio, repricing, asOf, onCoverChange, onBought, voice, onReady, onNotice }: Props) {
   const { account } = useAccount();
   // The quote arrives priced by the server; from then on it follows Gemini's own feed. Only a price
   // that can be bought at once is taken from the feed, because a resting price also leans on the forecast.
@@ -119,6 +126,14 @@ export function Receipt({ plan: priced, coverRatio, repricing, onCoverChange, on
               </Link>
             )}
           </>
+        ) : asOf ? (
+          // Cover is only ever sold at a price Gemini is giving now. Asking for the price again is how it comes back.
+          <div className="note mt-5">
+            <p>Gemini isn&rsquo;t answering right now. This is its price from {ago(asOf)}, and cover can be bought as soon as it is back.</p>
+            <button type="button" onClick={() => onCoverChange(coverRatio)} disabled={repricing} className="btn btn-secondary mt-3">
+              Check again
+            </button>
+          </div>
         ) : backable < MIN_COVER ? (
           <p className="note mt-5">
             The pool has {usd(Math.floor(free))} free right now, too little to back this cover. It grows as backers add to it and as cover expires.
@@ -134,7 +149,7 @@ export function Receipt({ plan: priced, coverRatio, repricing, onCoverChange, on
           </div>
         ) : (
           <div inert={repricing} className={`transition-opacity ${repricing ? "opacity-40" : ""}`}>
-            <Buy plan={plan} coverRatio={coverRatio} onBought={onBought} />
+            <Buy plan={plan} coverRatio={coverRatio} onBought={onBought} voice={voice} onReady={onReady} onNotice={onNotice} />
           </div>
         )}
 

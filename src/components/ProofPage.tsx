@@ -137,7 +137,8 @@ export function ProofPage({ running }: { running: Running }) {
             </Link>
           )}
         </Row>
-        {running.hedging !== "paper" && (
+        {/* Shown once there is an order to point at: a row that says "not yet" claims nothing and proves nothing. */}
+        {running.hedging !== "paper" && proof?.evidence.hedge && (
           <Row label="The pool’s hedge">
             <Evidence of="hedge" proof={proof} />
           </Row>
@@ -217,6 +218,7 @@ export function ProofPage({ running }: { running: Running }) {
         <Part stamp="say" name="ElevenLabs">
           <Row label="Hears the bad day">Scribe, speech to text</Row>
           <Row label="Reads the price back">Flash, text to speech</Row>
+          <Row label="Buys by voice">Say &ldquo;cover it&rdquo; to a quote, and the agent buys</Row>
           <Row label="Try it">
             <Link href="/app" className="link">
               Say it, on Get cover
