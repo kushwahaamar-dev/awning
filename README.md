@@ -1,15 +1,19 @@
 # Awning
 
-**Say what could go wrong. Get paid when it does.**
+**Awning pays you when a bad day hits your business.**
 
-Awning turns a sentence about a business risk into cover priced by Gemini prediction markets. An AI
-agent buys it for you, or keeps buying it every day on its own judgement. Two contracts on Arc hold
-the money: a mandate that limits what the agent can spend, and a pool that locks your whole payout
-before you pay a cent.
+Say the day in a sentence: a cold snap, a heat wave, fuel going up. Awning finds the Gemini
+prediction market that pays when it happens and shows what cover costs. An AI agent buys it for you,
+at a press or at the words "cover it", or keeps buying it every day on its own judgement. Two
+contracts on Arc hold the money: a pool that locks your whole payout before you pay a cent, and a
+mandate that limits what the agent can spend.
 
 **Try it: https://awning-eight.vercel.app** (Arc testnet). Pick one of the examples and press Buy
-cover; the first press gives you test dollars, sets up your agent and buys. The test pool is small,
-so the amounts are too.
+cover, or press the microphone and say the day. The first purchase gives you test dollars, sets up
+your agent and buys. Cover is sized to the test pool, about $50 a time.
+
+**Checking a sponsor's technology?** https://awning-eight.vercel.app/proof lists each one beside the
+latest real transaction, order or event behind it, read from the chain as the page opens.
 
 ![The Awning landing page: “Awning pays you when a bad day hits your business”, a box to name the day in, and a scene of a cabin in the snow with a ruler under it to drag from one bad day to the next](docs/screenshots/landing.jpg)
 
@@ -25,7 +29,7 @@ Built for the University Blockchain Conference 2026 hackathon.
 | --- | --- |
 | Agent's limits | [`AwningMandate`](https://testnet.arcscan.app/address/0x708ae0910eFAf32B97D0bA9429C4F2BD44988413) on Arc testnet |
 | Cover pool | [`AwningPool`](https://testnet.arcscan.app/address/0x0dE9149998eE6CAA3577007f31A1803Bc49C3F6F) on Arc testnet |
-| Tests | 126 contract tests with fuzzing and invariants, 49 engine tests |
+| Tests | 126 contract tests with fuzzing and invariants, 61 engine and app tests |
 | Stack | Next.js 16, React 19, Solidity 0.8.28 (Foundry), viem, Postgres, Google's Gemini model |
 
 ## Contents
@@ -59,10 +63,10 @@ npm run chain                  # local chain with both contracts and a funded po
 npm run dev                    # in a second terminal
 ```
 
-Open http://localhost:3000 and type a risk into the box, or press **Open the app** and pick one of
+Open http://localhost:3000 and type a risk into the box, or go to **Get cover** and pick one of
 the examples, which are read from Gemini's prices that minute. The first time you press **Buy cover**
 it also sets up your agent: test dollars in a vault, and spending limits you can change under
-**Your agent**.
+**My agent**.
 
 `GOOGLE_AI_API_KEY` is the only key you need, and only for typed sentences and the agent's daily decision; a free one from Google AI Studio is enough. (Two things here are called Gemini and they are unrelated: the markets are on the Gemini exchange, and the model that reads a sentence is Google's.) Everything else in `.env.example` is optional: with no
 Gemini trading keys the pool's own hedge fills on paper against Gemini's live prices. The cover
@@ -70,15 +74,30 @@ itself is real either way, locked onchain and paid on Gemini's resolution.
 
 ## What it looks like
 
+**The map.** Every city Gemini lists tomorrow's high for, with what a bad day there costs to cover
+this minute and how the market's odds of it have moved through the day.
+
+![A map of the United States dotted with cities and the price of cover in each; beside it a card for Las Vegas with the market's odds, a line tracing them down from 10% to 5%, the cost, and a button to cover the day](docs/screenshots/map.jpg)
+
 **A quote.** What the cover pays, the market's odds, what it costs, and where a payout could differ
-from your actual loss.
+from your actual loss. The microphone beside the buy button takes "cover it" for an answer.
 
 ![A quote: the bad day in a sentence, and under it a ticket with the awning's stripes along its top saying what the cover pays and what it costs](docs/screenshots/quote.jpg)
 
 **The hijack test.** One button hands the agent's real key to an attacker and sends real
-transactions. The contracts refuse everything except the day's data budget.
+transactions. The contracts refuse everything except the day's data budget. In this run on Arc
+testnet that budget was already spent, so the attacker left with nothing.
 
-![The hijack test: four attempts refused or sent back, and the attacker leaves with $1.98](docs/screenshots/hijack.jpg)
+![The hijack test on Arc testnet: three attempts refused, one sent back, and the attacker gets away with $0.00](docs/screenshots/hijack.jpg)
+
+**The proof page.** For anyone checking that a sponsor's technology is really used: each one, what
+Awning does with it, and the latest real transaction behind that.
+
+![The proof page: Gemini Prediction Markets, Arc, x402, Circle CCTP, QuickNode Streams and ElevenLabs, each with rows of live evidence and receipts](docs/screenshots/proof.jpg)
+
+**Light and dark.** The site follows the device, or the switch in its header.
+
+![The landing page in dark mode](docs/screenshots/landing-dark.jpg)
 
 ## The problem
 
@@ -117,9 +136,11 @@ prompt is a suggestion.
 You can also leave a daily risk with the agent. Each day it looks at that day's price and forecast
 and decides for itself whether the cover is worth buying, inside a cap you set, and writes down why.
 
+None of it needs typing. Press the microphone, say the day, hear the price, say "cover it".
+
 ## Finding the risk in your sales
 
-Most owners can't say what a cold day costs them. **Find a risk** works it out from their own books.
+Most owners can't say what a cold day costs them. **Find my risk** works it out from their own books.
 
 1. Upload a spreadsheet export of daily sales, or try the built-in sample.
 2. Awning looks up the station the city's Gemini market settles on (`src/lib/weather/stations.ts`,
@@ -359,14 +380,20 @@ same tickers as the live exchange, but no weather or sports, so the pool's hedge
 the sandbox lists every contract in it and stays on paper otherwise, and each cover records which.
 The first hedge placed this way, by an ordinary purchase of oil-price cover, was order
 `145853902319270757`: buy 200 Yes of `GEMI-BRENT2611152200-HI92` at $0.20, resting. Without keys
-every hedge fills on paper. Awning also keeps its own record of prices and charts what a dollar of
-each cover has cost over time, and stores the risks people ask about that no market tracks.
+every hedge fills on paper.
+
+Gemini's API has no price history, so Awning keeps its own: every city's temperature market and the
+commodity ladders, every five minutes, for two days. The map draws how the odds of each city's bad
+day have moved through the last day and names the biggest move; a quote charts what a dollar of
+that cover has cost to buy. Awning also keeps each listing Gemini gives. When the API fails, as it
+did for half an hour on 17 November, prices are shown from the last listing with their age, and
+nothing is sold until live prices are back. It stores the risks people ask about that no market
+tracks.
 
 **QuickNode Streams.** The activity ledger is fed by one Stream, `awning-ledger`. On 14 November it
 delivered 13 of the two contracts' events in 11 signed deliveries while a cover was bought and the
-hijack test was run on Arc testnet, and the agent page shows where its events are coming from:
-
-![The agent page on Arc testnet, fed by the Stream](docs/screenshots/stream.jpg)
+hijack test was run on Arc testnet. The agent page says where its events are coming from, and the
+proof page counts the Stream's deliveries.
 
 It delivers to the hosted site's `/api/streams`, and each event records whether the Stream or a chain
 read brought it first. When the Stream has been quiet for 90 seconds (paused, or simply no events) the app reads the same
@@ -385,11 +412,21 @@ logs from the chain itself; both write the same rows, so nothing is counted twic
 - `scripts/replay-streams.mjs` runs the same filter file over a local chain's blocks and posts the
   result, signed the same way, to test the path end to end.
 
-**ElevenLabs.** Scribe (`scribe_v2`) transcribes push-to-talk recordings; Flash (`eleven_flash_v2_5`)
-streams spoken replies: the clarifying question, the quote, the confirmation, and refusals. Replies
-are only spoken after the person has used the microphone. Both calls have been run with a live key:
-a quote was spoken and transcribed back word for word. The microphone button itself has not been
-tried by a person yet.
+**ElevenLabs.** Scribe (`scribe_v2`) transcribes what is said into the microphone; Flash
+(`eleven_flash_v2_5`) speaks the replies: the clarifying question, the quote, the confirmation, and
+refusals. Replies are only spoken after the person has used the microphone.
+
+Cover can be bought without typing or pressing anything but the microphone once. Say the bad day;
+the price is read back and ends "Say cover it to buy."; the microphone opens by itself for the
+answer; a spoken go-ahead does exactly what the buy button would, first-time setup and approval
+step included. A refusal buys nothing and says so, and anything else is priced as a new bad day.
+What counts as a yes is pinned down by a test (`src/components/voice.test.ts`): a sentence that
+merely starts with "cover" is not one.
+
+Run end to end on Arc testnet on 18 November, with recorded speech fed to the browser's microphone:
+the day was said, the price read back, and "cover it" bought a $50 cover. On an account already over
+its monthly limit the same words got the mandate's refusal, read aloud. It has not yet been tried by
+a person at a real microphone.
 
 **x402.** The forecast desk and the agent's buyer use the official `@x402/core` and `@x402/evm`
 packages (v2 protocol, `exact` scheme). The desk settles its own sales.
@@ -412,14 +449,15 @@ can leave a transaction pending.
 
 The app runs on any Node host. On a long-running server it does its background work (settling
 covers, the agent's daily decisions) on a one-minute timer. On a serverless host such as Vercel
-there is no timer, so the same pass runs after a page is served, at most once a minute, and
-`vercel.json` adds a daily cron as a floor. A hosted deployment needs `DATABASE_URL` (Postgres),
+there is no timer, so the same pass runs after a page is served, at most once a minute.
+`/api/wake` runs it for anything that calls, `.github/workflows/wake.yml` calls it every ten
+minutes on the days of the hackathon, and `vercel.json` adds a daily cron as a floor. A hosted deployment needs `DATABASE_URL` (Postgres),
 the chain block of `.env.example`, `GOOGLE_AI_API_KEY`, and a `CRON_SECRET`.
 
 ## Tests
 
 ```bash
-npm test                       # engine, settlement, forecast and sales-analysis logic
+npm test                       # engine, settlement, forecast, sales analysis, and what counts as a spoken yes
 npm run typecheck && npm run lint
 cd contracts && forge test     # 126 tests including fuzz and invariants on both contracts
 FOUNDRY_PROFILE=ci forge test  # the same tests at four times the fuzz depth; takes several minutes
@@ -436,10 +474,10 @@ LIVE=1 npx vitest run src/lib/hedge/live.test.ts   # sentence → priced cover a
 | The agent's daily decisions on standing orders, made by the model | The agent, underwriter and resolver keys sit on one server |
 | x402 payments, settled onchain per request | The forecast desk is run by the same operator as the agent |
 | The forecast data and the odds history | The pool on testnet is seeded by its operator |
-| The analysis of an uploaded sales file, against real weather history | The sample on the Find a risk page is made-up sales over real weather, and says so |
+| The analysis of an uploaded sales file, against real weather history | The sample on the Find my risk page is made-up sales over real weather, and says so |
 | Circle CCTP cash-out, verified on testnet | The paid forecast is a raw model ensemble and can run several degrees off a station; it is not yet corrected |
 | The QuickNode Stream, delivering both contracts' events | The Stream is paused between sessions to save credits; the app then reads logs itself |
-| ElevenLabs speech and transcription, run with a live key | The microphone button has not been tried by a person |
+| ElevenLabs speech and transcription, and buying by voice on Arc testnet | Tested with recorded speech fed to the browser's microphone, not yet by a person at one |
 
 ## Repository layout
 
