@@ -4,11 +4,16 @@ import Link from "next/link";
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import useSWR from "swr";
 import type { MapCity } from "@/app/api/map/route";
-import { calendarDay, cents, percent, usd } from "@/lib/format";
-import { quoteLink, whileEmpty } from "./Risks";
+import { calendarDay, cents, clock, percent, usd } from "@/lib/format";
+import { AsOf, quoteLink, untilFresh, type Priced } from "./Risks";
 
 const NONE: MapCity[] = [];
-const fetchCities = async (url: string): Promise<MapCity[]> => (await (await fetch(url)).json()).cities ?? NONE;
+const fetchCities = async (url: string): Promise<Priced<MapCity>> => {
+  const { cities = NONE, asOf = null } = await (await fetch(url)).json();
+  return { items: cities, asOf };
+};
+/** Every city Gemini lists tomorrow's high for, with what cover costs there. Undefined until they have been read. */
+export const useCities = () => useSWR("/api/map", fetchCities, { revalidateOnFocus: false, refreshInterval: untilFresh }).data;
 
 // The lower 48, drawn flat: degrees of longitude shrunk to what they span at these latitudes.
 const W = 1000;
@@ -205,6 +210,58 @@ function Label({ city, spot, lit = false }: { city: MapCity; spot: Spot; lit?: b
   );
 }
 
+// Drawn at the width of the card beside the map, and scaled with it where the card is wider.
+const TRACE_W = 284;
+const TRACE_H = 44;
+// A day on which the odds hardly moved is drawn as a flat line, not blown up to fill the height.
+const LEAST_SPAN = 0.06;
+
+/** A time earlier today, or yesterday: a trace reaches back a day. */
+const when = (iso: string) => `${clock(iso)}${new Date(iso).toDateString() === new Date().toDateString() ? "" : " yesterday"}`;
+
+/**
+ * How the market's odds of a city's bad day have moved through the last day, from Awning's own record of Gemini's
+ * prices: a line ending at where they stand, and a sentence that says the same. It takes the same room when there
+ * is nothing recorded yet, so the card is one height whichever city it is for.
+ */
+function Trace({ points }: { points: MapCity["trace"] }) {
+  const [first, last] = [points[0], points.at(-1)];
+  if (!first || !last) {
+    return (
+      <>
+        <svg aria-hidden viewBox={`0 0 ${TRACE_W} ${TRACE_H}`} className="mt-2 w-full">
+          <line x1={3} x2={TRACE_W - 3} y1={TRACE_H / 2} y2={TRACE_H / 2} className="stroke-line" strokeWidth={1.5} strokeDasharray="2 6" strokeLinecap="round" />
+        </svg>
+        <p className="mt-1 text-sm">Awning has just begun recording this price.</p>
+      </>
+    );
+  }
+
+  const odds = points.map((point) => point.odds);
+  const middle = (Math.min(...odds) + Math.max(...odds)) / 2;
+  const span = Math.max(LEAST_SPAN, Math.max(...odds) - Math.min(...odds));
+  const [from, to] = [new Date(first.at).getTime(), new Date(last.at).getTime()];
+  const x = (at: string) => 4 + ((new Date(at).getTime() - from) / (to - from || 1)) * (TRACE_W - 8);
+  const y = (chance: number) => 5 + (0.5 - (chance - middle) / span) * (TRACE_H - 10);
+  const line = points.map((point, i) => `${i ? "L" : "M"}${x(point.at).toFixed(1)},${y(point.odds).toFixed(1)}`).join(" ");
+  const moved = Math.round(last.odds * 100) - Math.round(first.odds * 100);
+
+  return (
+    <>
+      <svg aria-hidden viewBox={`0 0 ${TRACE_W} ${TRACE_H}`} className="mt-2 w-full">
+        <path d={line} fill="none" className="stroke-soft" strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
+        <circle cx={x(last.at)} cy={y(last.odds)} r={3.5} className="fill-fg" />
+      </svg>
+      <p className="mt-1 text-sm">{moved === 0 ? `Where they were at ${when(first.at)}` : `${moved > 0 ? "Up" : "Down"} from ${percent(first.odds)} at ${when(first.at)}`}</p>
+    </>
+  );
+}
+
+/** How far a city's odds have moved across its trace, in either direction. */
+const moveOf = ({ trace }: MapCity) => (trace.length ? Math.abs(trace.at(-1)!.odds - trace[0].odds) : 0);
+// A move smaller than this is the market breathing, and not worth a sentence.
+const WORTH_SAYING = 0.03;
+
 /** What cover for one city's bad day costs, as it would read on a quote: the cover on the card, its price and the way to it on the white one inside. */
 function Reading({ city }: { city: MapCity }) {
   const { example } = city;
@@ -222,9 +279,14 @@ function Reading({ city }: { city: MapCity }) {
         {example ? (
           <>
             <dl className="rows">
-              <div className="flex items-baseline justify-between gap-6 pb-2 text-muted">
-                <dt>The market&rsquo;s odds</dt>
-                <dd className="num text-fg">{example.odds === null ? "—" : percent(example.odds)}</dd>
+              <div className="pb-3 text-muted">
+                <div className="flex items-baseline justify-between gap-6">
+                  <dt>The market&rsquo;s odds</dt>
+                  <dd className="num text-fg">{example.odds === null ? "—" : percent(example.odds)}</dd>
+                </div>
+                <dd>
+                  <Trace points={city.trace} />
+                </dd>
               </div>
               <div className="flex items-baseline justify-between gap-6 pt-2">
                 <dt>Covering it costs</dt>
@@ -253,8 +315,8 @@ const fromTelling = ({ example }: MapCity) => Math.abs(example!.cost / example!.
 
 /** Every city Gemini lists tomorrow's high for, as a map of what a bad day there costs to cover right now. */
 export function PriceMap() {
-  const { data } = useSWR("/api/map", fetchCities, { revalidateOnFocus: false, refreshInterval: whileEmpty });
-  const cities = data ?? NONE;
+  const data = useCities();
+  const cities = data?.items ?? NONE;
   const [picked, setPicked] = useState<string | null>(null);
   const links = useRef(new Map<string, HTMLAnchorElement>());
   // The labels at rest, and the priced cities from west to east.
@@ -263,6 +325,8 @@ export function PriceMap() {
     [cities],
   );
   const telling = useMemo(() => [...priced].sort((a, b) => fromTelling(a) - fromTelling(b)), [priced]);
+  // The city whose odds have moved most, when any has moved enough to be worth saying.
+  const mover = useMemo(() => [...priced].sort((a, b) => moveOf(b) - moveOf(a)).find((city) => moveOf(city) >= WORTH_SAYING), [priced]);
   // Until someone points at a city, the reading is for the most telling one.
   const shown = cities.find((city) => city.code === picked) ?? telling[0];
   const spot = shown && (rest.get(shown.code) ?? spotFor(shown, cities));
@@ -283,11 +347,12 @@ export function PriceMap() {
   }
 
   // Gemini answered with nothing at all, which it does when it is having trouble. A map with no cities on it would only look broken.
-  if (data?.length === 0) return <p className="note">Gemini&rsquo;s prices aren&rsquo;t coming through right now. The map fills in by itself when they do.</p>;
+  if (data?.items.length === 0) return <p className="note">Gemini&rsquo;s prices aren&rsquo;t coming through right now. The map fills in by itself when they do.</p>;
 
   return (
     // Beside the map on a wide screen, the reading for the city pointed at; under it on a narrower one, where the map needs the whole width to name its cities.
     <div className="grid items-start gap-x-12 gap-y-6 xl:grid-cols-[minmax(0,1fr)_21rem]">
+      <AsOf asOf={data?.asOf ?? null} className="col-span-full" />
       <div>
         <svg
           viewBox={`0 0 ${W} ${H}`}
@@ -369,13 +434,22 @@ export function PriceMap() {
 
       <div>
         <div className="max-lg:hidden" aria-live="polite">
-          {shown ? <Reading city={shown} /> : <p className="panel min-h-[9.75rem] p-5 text-muted xl:min-h-[17rem]">Reading Gemini&rsquo;s prices…</p>}
+          {shown ? <Reading city={shown} /> : <p className="panel min-h-[12.5rem] p-5 text-muted xl:min-h-[21.75rem]">Reading Gemini&rsquo;s prices…</p>}
         </div>
         {/* There from the start, unseen until there are numbers to put in it, so nothing under the map moves when they come. */}
         <p className={`copy lg:mt-4 ${cities.length ? "" : "invisible"}`}>
           <span className="max-lg:hidden">Point at a city to read its price. </span>
           {priced.length} of the {cities.length} cities Gemini lists have cover priced right now. In the rest, tomorrow is near certain or nobody is selling.
         </p>
+        {mover && (
+          <p className="copy mt-3">
+            Biggest move in the last day: the odds that{" "}
+            <Link href={quoteLink(mover.example!)} className="link">
+              {mover.example!.pays}
+            </Link>{" "}
+            went from <span className="num text-fg">{percent(mover.trace[0].odds)}</span> to <span className="num text-fg">{percent(mover.trace.at(-1)!.odds)}</span>.
+          </p>
+        )}
       </div>
     </div>
   );

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { cents, usd } from "@/lib/format";
-import { kindOf, quoteLink, useExamples } from "./Risks";
+import { ago, cents, usd } from "@/lib/format";
+import { kindOf, quoteLink, useExamples, useExamplesAsOf } from "./Risks";
 import { Scene, type SceneName } from "./Scene";
 import { Sketch } from "./Sketch";
 
@@ -33,6 +33,7 @@ function tintAt(along: number) {
  */
 export function BadDays() {
   const examples = useExamples() ?? [];
+  const asOf = useExamplesAsOf();
   const [at, setAt] = useState(0);
   const [held, setHeld] = useState(false);
   const day = DAYS[at];
@@ -92,7 +93,8 @@ export function BadDays() {
           <p>&ldquo;{example?.text ?? day.typical}&rdquo;</p>
           {example && (
             <p className="mt-1 text-muted">
-              Covering it pays <span className="num text-fg">{usd(example.payout)}</span> and costs <span className="num text-fg">{cents(example.cost)}</span> right now.
+              Covering it pays <span className="num text-fg">{usd(example.payout)}</span> and costs <span className="num text-fg">{cents(example.cost)}</span>{" "}
+              {asOf ? `on Gemini’s prices from ${ago(asOf)}` : "right now"}.
             </p>
           )}
         </div>
