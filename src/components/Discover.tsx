@@ -6,7 +6,7 @@ import useSWR from "swr";
 import type { Discovery } from "@/lib/discover/discover";
 import { usd } from "@/lib/format";
 import { post } from "./account";
-import { Drawing } from "./Drawing";
+import { Sketch } from "./Sketch";
 import { SalesChart } from "./SalesChart";
 
 const fetchCities = async (url: string): Promise<string[]> => (await (await fetch(url)).json()).cities ?? [];
@@ -164,7 +164,7 @@ export function Discover() {
         </form>
         <p className="mt-4 text-sm text-muted">Your sales are read once and never stored.</p>
       </section>
-      <Drawing subject="week" className="w-full max-lg:hidden" />
+      <Sketch of="week" className="w-full max-w-md max-lg:hidden" />
     </div>
   );
 }

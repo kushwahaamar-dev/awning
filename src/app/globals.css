@@ -402,8 +402,7 @@ body {
 
   /* The shop at the top of the page. Its faces are drawn flat and laid into the picture, which would stretch
      their lines with them; every line is held at a hair's width instead. */
-  .shopfront :is(rect, line, path, circle, polygon),
-  .drawing :is(rect, line, path, circle, polygon) {
+  .shopfront :is(rect, line, path, circle, polygon) {
     vector-effect: non-scaling-stroke;
   }
   /* One raindrop: it falls the height its streak has to fall, at the speed every other drop falls at. */

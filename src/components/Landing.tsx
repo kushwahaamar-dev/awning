@@ -3,19 +3,19 @@ import { chainLabel, explorerAddress, mandateAddress, poolAddress } from "@/lib/
 import { ATTEMPTS } from "@/lib/covers/attempts";
 import { usesStreams } from "@/lib/ledger/source";
 import { hedging } from "@/lib/venue";
-import { Drawing, type Subject } from "./Drawing";
 import { HeroAsk } from "./HeroAsk";
 import { PriceMap } from "./PriceMap";
 import { LastRefusal } from "./Proof";
 import { Risks } from "./Risks";
 import { Shopfront } from "./Shopfront";
+import { Sketch, type Picture } from "./Sketch";
 
 // The whole product in three moves. Between them they answer what people ask first: what do I do here, is this
 // insurance, and who pays me.
-const STEPS: { subject: Subject; title: string; body: string }[] = [
-  { subject: "cold", title: "Say it", body: "Any bad day, in your own words, and what it would cost you." },
-  { subject: "ticket", title: "See the price", body: "A market sets it, not an insurer. No forms, no adjuster." },
-  { subject: "coins", title: "Get paid", body: "Your payout is locked before you pay. If the day happens, it arrives by itself." },
+const STEPS: { picture: Picture; title: string; body: string }[] = [
+  { picture: "day", title: "Say it", body: "Any bad day, in your own words, and what it would cost you." },
+  { picture: "price", title: "See the price", body: "A market sets it, not an insurer. No forms, no adjuster." },
+  { picture: "paid", title: "Get paid", body: "Your payout is locked before you pay. If the day happens, it arrives by itself." },
 ];
 
 // What a stolen agent key can do, in the order the test on the agent page tries it, and what the contracts say to each.
@@ -99,10 +99,10 @@ export function Landing() {
 
       <section id="how" className="section band">
         <ol className="inner grid gap-x-10 gap-y-14 md:grid-cols-3">
-          {STEPS.map(({ subject, title, body }, i) => (
+          {STEPS.map(({ picture, title, body }, i) => (
             <li key={title}>
               <div className="flex h-44 items-end sm:h-52">
-                <Drawing subject={subject} className="h-full" />
+                <Sketch of={picture} className="h-full" />
               </div>
               <h2 className="heading mt-8">
                 <span className="num mr-3 text-muted">{i + 1}</span>
@@ -149,6 +149,7 @@ export function Landing() {
             <Link href="/agent" className="btn btn-secondary mt-8">
               Try to rob it yourself
             </Link>
+            <Sketch of="lock" className="mt-10 w-56 max-lg:hidden" />
           </div>
           <div>
             <ol className="space-y-5">

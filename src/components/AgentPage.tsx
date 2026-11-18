@@ -9,7 +9,7 @@ import type { HijackStep } from "@/lib/covers/hijack";
 import { calendarDay, cents, clock, day, percent, usd } from "@/lib/format";
 import { REFUSAL, describeEvent } from "@/lib/words";
 import { AllowanceForm } from "./AllowanceForm";
-import { Drawing } from "./Drawing";
+import { Sketch } from "./Sketch";
 import { CashOut } from "./CashOut";
 import { hasAllowance, post, useAccount, type Account, type Decision } from "./account";
 import { External } from "./icons";
@@ -344,7 +344,7 @@ export function AgentPage() {
             )}
           </div>
           <div className="max-lg:hidden">
-            <Drawing subject="safe" className="mx-auto w-full max-w-sm" />
+            <Sketch of="lock" className="mx-auto w-full max-w-xs" />
           </div>
         </div>
         {ready && (
