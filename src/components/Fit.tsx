@@ -12,7 +12,8 @@ export function Fit({ plan }: { plan: CoverPlan }) {
   const { basis } = plan;
   return (
     <section className="grid gap-x-12 gap-y-12 md:grid-cols-2">
-      <div>
+      {/* The chart beside this only appears once there is a price history to draw. Until then the notes take the whole width. */}
+      <div className="only:col-span-full">
         <h2 className="title">{HEADINGS[basis.level]}</h2>
         <div
           role="meter"

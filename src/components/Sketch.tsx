@@ -3,6 +3,8 @@
 const AMBER = "var(--color-lit)";
 const INK = "currentColor";
 const PAPER = "var(--color-card)";
+// What is drawn on top of the amber stays dark on a dark page too, or it would be pale on pale.
+const ON_AMBER = "var(--color-ink)";
 // The marker. How heavy it is comes from the drawing as a whole, so a drawing shown small can be given a fatter one.
 const PEN = { fill: "none", stroke: INK, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 const CLOUD = "M64 118a26 26 0 0 1 4-52 40 40 0 0 1 76-8 28 28 0 0 1 26 60Z";
@@ -40,11 +42,11 @@ function Price() {
       <rect x={48} y={52} width={158} height={88} rx={10} fill={AMBER} />
       {/* A ticket's outline, with the half-moons punched out of its two ends. */}
       <path d="M40 54a10 10 0 0 1 10-10h140a10 10 0 0 1 10 10v22a12 12 0 0 0 0 24v22a10 10 0 0 1-10 10H50a10 10 0 0 1-10-10v-22a12 12 0 0 0 0-24Z" {...PEN} />
-      <path d="M158 52v72" {...PEN} strokeDasharray="3 9" />
-      <text x={52} y={103} fontSize={36} fontWeight={600} letterSpacing={-1.5} fill={INK}>
+      <path d="M158 52v72" {...PEN} stroke={ON_AMBER} strokeDasharray="3 9" />
+      <text x={52} y={103} fontSize={36} fontWeight={600} letterSpacing={-1.5} fill={ON_AMBER}>
         $300
       </text>
-      <path d="M168 82h18M168 96h11" {...PEN} />
+      <path d="M168 82h18M168 96h11" {...PEN} stroke={ON_AMBER} />
     </g>
   );
 }
@@ -61,7 +63,7 @@ function Paid() {
       ))}
       <circle cx={186} cy={52} r={24} fill={AMBER} transform="translate(5 4)" />
       <circle cx={182} cy={50} r={24} {...PEN} />
-      <path d="M182 38v24M176 44c8-6 16 2 6 6s-2 12 6 6" {...PEN} />
+      <path d="M182 38v24M176 44c8-6 16 2 6 6s-2 12 6 6" {...PEN} stroke={ON_AMBER} />
       <path d="M40 60l10 6M36 82h12M150 22l-4 12" {...PEN} />
     </>
   );
@@ -120,8 +122,8 @@ function Lock() {
       <rect x={76} y={84} width={100} height={76} rx={12} fill={AMBER} />
       <rect x={70} y={78} width={100} height={76} rx={12} {...PEN} />
       <path d="M90 78V58a30 30 0 0 1 60 0v20" {...PEN} />
-      <circle cx={120} cy={110} r={8} {...PEN} />
-      <path d="M120 118v16" {...PEN} />
+      <circle cx={120} cy={110} r={8} {...PEN} stroke={ON_AMBER} />
+      <path d="M120 118v16" {...PEN} stroke={ON_AMBER} />
       <path d="M186 62l12-8M192 84h14M52 62l-12-8" {...PEN} />
     </>
   );

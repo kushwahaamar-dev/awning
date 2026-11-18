@@ -1,25 +1,29 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Off-white paper, near-black ink, and greys for everything said quietly. A page is plain sentences and
-     soft cards laid across the width of the window; the one loud thing on it is a picture. */
-  --color-bg: #fafafa;
-  --color-card: #ffffff;
-  --color-raised: #f3f3f3;
-  --color-pressed: #e8e8e8;
-  /* The rule between rows, and the edge of something that takes typing. */
-  --color-line: #e6e6e6;
-  --color-edge: #8c8c8c;
-  --color-fg: #050505;
-  --color-soft: #1c1c1c;
-  --color-muted: #5a5a5a;
-  --color-faint: #6e6e6e;
-  /* The one colour of the interface: the stripes of the awning. A fill, never text. */
+  /* Paper, ink, and greys for everything said quietly. A page is plain sentences and soft cards laid across the
+     width of the window; the one loud thing on it is a picture. Every colour is given twice, for a light page and
+     a dark one, and the browser takes the one that goes with the page's colour scheme. */
+  --color-bg: light-dark(#fafafa, #0d0d0e);
+  --color-card: light-dark(#ffffff, #1c1c1e);
+  --color-raised: light-dark(#f3f3f3, #151516);
+  --color-pressed: light-dark(#e8e8e8, #2a2a2d);
+  /* The rule between rows, the edge of something that takes typing, and the faint rim round a card. */
+  --color-line: light-dark(#e6e6e6, #29292c);
+  --color-edge: light-dark(#8c8c8c, #74747b);
+  --color-rim: light-dark(rgb(0 0 0 / 0.07), rgb(255 255 255 / 0.08));
+  --color-fg: light-dark(#050505, #f5f5f6);
+  --color-soft: light-dark(#1c1c1c, #e4e4e7);
+  --color-muted: light-dark(#5a5a5a, #a3a3ab);
+  --color-faint: light-dark(#6e6e6e, #8d8d96);
+  /* The one colour of the interface: the stripes of the awning. A fill, never text. What is written on it is
+     in the same dark ink whichever way the page is lit. */
   --color-lit: #f2b54a;
-  --color-lit-deep: #e8a531;
-  --color-good: #17794a;
-  --color-bad: #c4281f;
-  --color-bad-wash: #fcecea;
+  --color-lit-deep: light-dark(#e8a531, #f7c66e);
+  --color-ink: #050505;
+  --color-good: light-dark(#17794a, #4cc38a);
+  --color-bad: light-dark(#c4281f, #f2766d);
+  --color-bad-wash: light-dark(#fcecea, #3a1715);
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 
@@ -37,8 +41,16 @@
   --gutter: clamp(1.25rem, 4vw, 3rem);
 }
 
-html {
+/* Light or dark. The script in the layout says which before anything is painted: the visitor's own choice if they
+   have made one, and their device's otherwise. With no script at all, the page follows the device. */
+:root {
+  color-scheme: light dark;
+}
+:root[data-theme="light"] {
   color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 body {
@@ -57,7 +69,7 @@ body {
 
 ::selection {
   background: var(--color-lit);
-  color: var(--color-fg);
+  color: var(--color-ink);
 }
 
 /* A box being typed in is marked by its own edge, so the words in it don't get a ring as well. */
@@ -156,12 +168,12 @@ body {
 
   /* Something set apart sits on a soft grey shape, and what matters most inside it on a white one. */
   .panel {
-    border: 1px solid rgb(0 0 0 / 0.04);
+    border: 1px solid var(--color-rim);
     border-radius: 1.25rem;
     background: var(--color-raised);
   }
   .inset {
-    border: 1px solid rgb(0 0 0 / 0.06);
+    border: 1px solid var(--color-rim);
     border-radius: 1rem;
     background: var(--color-card);
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.03);
@@ -169,7 +181,7 @@ body {
   /* The cover itself is the one thing lifted off the page: a ticket, with the awning's valance along its top. */
   .ticket {
     overflow: hidden;
-    border: 1px solid rgb(0 0 0 / 0.08);
+    border: 1px solid var(--color-rim);
     border-radius: 1.25rem;
     background: var(--color-card);
     box-shadow:
@@ -178,7 +190,7 @@ body {
   }
   .valance {
     height: 0.75rem;
-    border-bottom: 1px solid rgb(0 0 0 / 0.08);
+    border-bottom: 1px solid var(--color-rim);
     background: repeating-linear-gradient(90deg, var(--color-lit) 0 1.25rem, var(--color-card) 0 2.5rem);
   }
   /* Rows separated by hairlines. */
@@ -193,7 +205,7 @@ body {
     place-items: center;
     width: 3.25rem;
     height: 3.25rem;
-    border: 1px solid rgb(0 0 0 / 0.08);
+    border: 1px solid var(--color-rim);
     border-radius: 0.75rem;
     background: var(--color-card);
     box-shadow:
@@ -230,7 +242,7 @@ body {
   /* The one thing to press on a screen is the colour of the awning. */
   .btn-primary {
     background: var(--color-lit);
-    color: var(--color-fg);
+    color: var(--color-ink);
   }
   .btn-primary:hover:not(:disabled) {
     background: var(--color-lit-deep);
@@ -269,7 +281,7 @@ body {
   .btn-primary[aria-busy="true"]:disabled {
     cursor: progress;
     background: var(--color-lit);
-    color: var(--color-fg);
+    color: var(--color-ink);
     opacity: 0.7;
   }
   .btn-secondary[aria-busy="true"]:disabled,
@@ -365,7 +377,7 @@ body {
     border-radius: 1.25rem;
     background: var(--color-card);
     box-shadow:
-      inset 0 0 0 1px rgb(0 0 0 / 0.1),
+      inset 0 0 0 1px var(--color-line),
       0 1px 2px rgb(0 0 0 / 0.04);
     transition: box-shadow 150ms;
   }
@@ -412,7 +424,7 @@ body {
 
   /* The map's plotting surface. Its labels carry a rim of the paper, so they read over the grid and over a dot. */
   .pricemap {
-    background-image: radial-gradient(circle, rgb(0 0 0 / 0.2) 0.75px, transparent 1.1px);
+    background-image: radial-gradient(circle, light-dark(rgb(0 0 0 / 0.2), rgb(255 255 255 / 0.2)) 0.75px, transparent 1.1px);
     background-size: 1.5rem 1.5rem;
   }
   .pricemap text {
@@ -466,7 +478,7 @@ body {
     place-items: center;
     width: 2.5rem;
     height: 2.5rem;
-    border: 1px solid rgb(0 0 0 / 0.08);
+    border: 1px solid var(--color-rim);
     border-radius: 0.75rem;
     background: var(--color-card);
     box-shadow:
@@ -479,6 +491,17 @@ body {
   .ruler input:focus-visible + .ruler-marker {
     outline: 2px solid var(--color-fg);
     outline-offset: 2px;
+  }
+
+  /* The switch between light and dark shows what it would switch to: a moon by day, a sun by night. */
+  .by-night {
+    display: none;
+  }
+  :root[data-theme="dark"] .by-night {
+    display: block;
+  }
+  :root[data-theme="dark"] .by-day {
+    display: none;
   }
 
   /* A verdict landing on a row. */
