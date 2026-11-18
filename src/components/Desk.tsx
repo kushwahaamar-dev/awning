@@ -16,6 +16,7 @@ import { Receipt } from "./Receipt";
 import { pictureOf } from "./Risks";
 import { Stamp } from "./Sketch";
 import { answerTo, useVoice, wasSpoken } from "./voice";
+import { plain } from "@/lib/words";
 
 type Unlisted = { wanted: string | null };
 /** `asOf` is set when the price was made from what Gemini last listed, because it isn't answering now. */
@@ -152,7 +153,7 @@ function DeskFor() {
         voice.say("Gemini doesn’t list a market for that yet.");
       }
     } catch (e) {
-      setSayError(e instanceof Error ? e.message : String(e));
+      setSayError(plain(e));
       // Their words go back in the box, so trying again is one press and not a second typing.
       setTurns(by.fresh ? [] : turns);
       setDraft(text);
@@ -200,7 +201,7 @@ function DeskFor() {
         setOwnAsOf(fresh.asOf ?? null);
       }
     } catch (e) {
-      setSayError(e instanceof Error ? e.message : String(e));
+      setSayError(plain(e));
     } finally {
       if (request === latestRequest.current) setRepricing(false);
     }

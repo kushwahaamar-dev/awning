@@ -7,7 +7,7 @@ import { setPaused } from "@/lib/chain/device";
 import { ATTEMPTS } from "@/lib/covers/attempts";
 import type { HijackStep } from "@/lib/covers/hijack";
 import { calendarDay, cents, clock, day, percent, usd } from "@/lib/format";
-import { REFUSAL, describeEvent } from "@/lib/words";
+import { describeEvent, plain, REFUSAL } from "@/lib/words";
 import { AllowanceForm } from "./AllowanceForm";
 import { CashOut } from "./CashOut";
 import { Sketch, Stamp } from "./Sketch";
@@ -32,7 +32,7 @@ function Limits({ account }: { account: Account }) {
       await setPaused(!a.paused);
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(plain(e));
     } finally {
       setBusy(false);
     }
@@ -202,7 +202,7 @@ function HijackTest() {
       setResult(await post("/api/agent/hijack", { owner }));
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(plain(e));
     } finally {
       setBusy(false);
     }

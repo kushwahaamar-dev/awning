@@ -16,6 +16,7 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { awningMandateAbi, awningPoolAbi, usdcAbi } from "./abi";
 import {
+  PATIENT,
   BLOCK_REASONS,
   chain,
   fromUnits,
@@ -29,7 +30,7 @@ import {
 } from "./config";
 
 // Reads that happen together travel as one request, which keeps a page refresh well inside a public endpoint's limits.
-const transport = http(rpcUrl, { batch: true });
+const transport = http(rpcUrl, { batch: true, ...PATIENT });
 export const publicClient = createPublicClient({ chain, transport });
 
 function signer(envName: "AGENT_PRIVATE_KEY" | "VENUE_PRIVATE_KEY") {

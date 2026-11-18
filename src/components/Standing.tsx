@@ -5,6 +5,7 @@ import { useState } from "react";
 import { usd } from "@/lib/format";
 import type { CoverPlan } from "@/lib/hedge/plan";
 import { hasAllowance, post, useAccount } from "./account";
+import { plain } from "@/lib/words";
 
 /** Offers to leave a daily risk with the agent, with a cap and whatever the owner wants it to know. */
 export function Standing({ plan, coverRatio, price, alone = false }: { plan: CoverPlan; coverRatio: number; price: number; alone?: boolean }) {
@@ -29,7 +30,7 @@ export function Standing({ plan, coverRatio, price, alone = false }: { plan: Cov
       await refresh();
       router.push("/agent#standing");
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(plain(e));
       setBusy(false);
     }
   }

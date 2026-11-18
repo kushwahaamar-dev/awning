@@ -8,7 +8,7 @@ import type { CoverTerms } from "@/lib/covers/service";
 import { cents, usd } from "@/lib/format";
 import { offerPrice } from "@/lib/hedge/quote";
 import type { CoverPlan } from "@/lib/hedge/plan";
-import { REFUSAL } from "@/lib/words";
+import { plain, REFUSAL } from "@/lib/words";
 import { AllowanceForm, fundAndSetUp } from "./AllowanceForm";
 import type { Purchase } from "./Bought";
 import { Lock, Mic } from "./icons";
@@ -88,7 +88,7 @@ function Counter({ plan, coverRatio, onBought, voice, onReady, onNotice, owner, 
     try {
       await work();
     } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
+      const message = plain(e);
       setError(message);
       onNotice?.(message);
     } finally {

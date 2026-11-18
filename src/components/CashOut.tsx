@@ -7,6 +7,7 @@ import { DESTINATIONS, type Destination } from "@/lib/chain/cctp";
 import { cashOut } from "@/lib/chain/device";
 import { cents } from "@/lib/format";
 import { useAccount } from "./account";
+import { plain } from "@/lib/words";
 
 const fetchFee = async (url: string): Promise<number> => {
   const data = await (await fetch(url)).json();
@@ -42,7 +43,7 @@ export function CashOut({ onClose }: { onClose: () => void }) {
       setSent({ burn, to: destination, arrives: amount - fee });
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(plain(e));
     } finally {
       setStep(null);
     }

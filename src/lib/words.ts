@@ -1,5 +1,15 @@
+import { BaseError } from "viem";
 import type { BlockReason } from "./chain/config";
 import { cents, shortAddress, usd } from "./format";
+
+/** Said when a call to the chain fails for a reason that isn't the visitor's: the endpoint was busy, or didn't answer. */
+export const CHAIN_QUIET = "The chain didn’t answer that time. Try again in a moment.";
+
+/**
+ * An error in words a visitor can use. What the chain library throws is a page of addresses and arguments;
+ * that belongs in the log, and whoever is looking at the screen gets a sentence.
+ */
+export const plain = (error: unknown) => (error instanceof BaseError ? CHAIN_QUIET : error instanceof Error ? error.message : String(error));
 
 /** The risk shown in an empty box, wherever someone is asked to describe theirs. */
 export const EXAMPLE_RISK = "If it’s too cold to sit outside tomorrow, my patio is out $300…";

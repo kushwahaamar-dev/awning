@@ -5,7 +5,7 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { sessionMessage } from "../api/session-message";
 import { awningMandateAbi, usdcAbi } from "./abi";
 import { FORWARD_HOOK, STANDARD_FINALITY, TOKEN_MESSENGER, tokenMessengerAbi } from "./cctp";
-import { chain, hedgeApprovalDomain, hedgeApprovalTypes, mandateAddress, rpcUrl, toUnits, usdcAddress } from "./config";
+import { PATIENT, chain, hedgeApprovalDomain, hedgeApprovalTypes, mandateAddress, rpcUrl, toUnits, usdcAddress } from "./config";
 
 const STORAGE_KEY = "awning.deviceKey";
 
@@ -43,7 +43,7 @@ export async function sessionToken(): Promise<string> {
   return token;
 }
 
-const transport = http(rpcUrl);
+const transport = http(rpcUrl, PATIENT);
 const reader = createPublicClient({ chain, transport });
 const wallet = () => createWalletClient({ account: deviceAccount(), chain, transport });
 

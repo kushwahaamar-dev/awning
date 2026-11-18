@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import useSWR from "swr";
+import { plain } from "@/lib/words";
 
 const fetchEnabled = async (url: string): Promise<boolean> => (await (await fetch(url)).json()).enabled === true;
 
@@ -84,7 +85,7 @@ export function useVoice(onHeard: (text: string) => void) {
           if (data.text) latest.current(data.text);
           else if (!quiet) setError("I didn’t catch that. Try again a little closer to the microphone.");
         } catch (e) {
-          if (!quiet && mine === take.current) setError(e instanceof Error ? e.message : String(e));
+          if (!quiet && mine === take.current) setError(plain(e));
         } finally {
           if (mine === take.current) working.current = false;
           setState("idle");

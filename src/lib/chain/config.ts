@@ -7,6 +7,10 @@ export const chain = chainId === arcTestnet.id ? arcTestnet : anvil;
 export const isLocalChain = chain.id === anvil.id;
 export const chainLabel = isLocalChain ? "a local test chain" : chain.name;
 export const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL ?? chain.rpcUrls.default.http[0];
+// Arc's public endpoint now and then answers "internal error" for a second or two; it did to a new visitor's
+// first purchase on 18 November, and the library's own three quick tries all fell inside it. These five reach
+// about twelve seconds out, each wait twice the last. A call the contract really refuses is not asked again.
+export const PATIENT = { retryCount: 5, retryDelay: 400 } as const;
 export const mandateAddress = process.env.NEXT_PUBLIC_MANDATE_ADDRESS as Address;
 /** The pool that writes cover, and the only venue the app asks owners to allow. */
 export const poolAddress = process.env.NEXT_PUBLIC_POOL_ADDRESS as Address;

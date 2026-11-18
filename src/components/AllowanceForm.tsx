@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { setAllowance, walletBalance } from "@/lib/chain/device";
 import { usd } from "@/lib/format";
 import { post, useAccount, type Account } from "./account";
+import { plain } from "@/lib/words";
 
 const FIELDS = [
   { key: "deposit", label: "Put into your vault", hint: null },
@@ -114,7 +115,7 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
       await work();
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(plain(e));
     } finally {
       setStep(null);
     }

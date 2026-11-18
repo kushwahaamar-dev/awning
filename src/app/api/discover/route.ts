@@ -5,6 +5,7 @@ import { parseSales } from "@/lib/discover/sales";
 import { listMarkets } from "@/lib/gemini/client";
 import { lastGoodMarkets } from "@/lib/gemini/lastGood";
 import { getCatalog } from "@/lib/hedge/catalog";
+import { plain } from "@/lib/words";
 
 const bodySchema = z.object({
   city: z.string().min(1).max(60),
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
     if (body.csv !== undefined) sales = parseSales(body.csv);
   } catch (error) {
     // A file we can't read is the sender's to fix, and the message says how.
-    return Response.json({ error: error instanceof Error ? error.message : String(error) }, { status: 400 });
+    return Response.json({ error: plain(error) }, { status: 400 });
   }
 
   try {

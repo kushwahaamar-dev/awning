@@ -8,6 +8,7 @@ import { usd } from "@/lib/format";
 import { post } from "./account";
 import { Sketch } from "./Sketch";
 import { SalesChart } from "./SalesChart";
+import { plain } from "@/lib/words";
 
 const fetchCities = async (url: string): Promise<string[]> => (await (await fetch(url)).json()).cities ?? [];
 
@@ -92,7 +93,7 @@ export function Discover() {
       const found = await post<Discovery>("/api/discover", sample ? { city } : { city, csv: file!.text });
       setResult({ found, sample });
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(plain(e));
     } finally {
       setBusy(null);
     }

@@ -15,7 +15,7 @@ import { ExactEvmScheme as SellerScheme } from "@x402/evm/exact/server";
 import { createWalletClient, http, keccak256, nonceManager, publicActions, toHex, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { usdcAbi } from "../chain/abi";
-import { chain, rpcUrl, toUnits, usdcAddress, type BlockReason } from "../chain/config";
+import { PATIENT, chain, rpcUrl, toUnits, usdcAddress, type BlockReason } from "../chain/config";
 import { agentAccount, drawFloat, publicClient } from "../chain/server";
 
 const network = `eip155:${chain.id}` as const;
@@ -36,7 +36,7 @@ export const deskAddress = (): Address => deskAccount().address;
  */
 async function createSeller() {
   const account = deskAccount();
-  const wallet = createWalletClient({ account, chain, transport: http(rpcUrl) }).extend(publicActions);
+  const wallet = createWalletClient({ account, chain, transport: http(rpcUrl, PATIENT) }).extend(publicActions);
 
   // viem's generics are stricter than the SDK's structural signer type, hence the per-method adapters.
   const signer = toFacilitatorEvmSigner({

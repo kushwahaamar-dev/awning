@@ -30,5 +30,14 @@ export function ago(iso: string, now = Date.now()) {
   return hours < 48 ? some(hours, "hour") : some(Math.round(hours / 24), "day");
 }
 
-/** Apostrophes as type sets them, for text that arrives with a keyboard's straight ones: a model's sentence, a market's title. */
-export const typeset = (text: string) => text.replace(/(?<=[\p{L}\d])'(?=\p{L})/gu, "’").replace(/(?<=s)'(?=[\s.,;:!?]|$)/g, "’");
+/**
+ * Text as type sets it, for words that arrive from elsewhere: a model's sentence, a market's title. Straight
+ * apostrophes are curled. A model now and then writes a character that isn't one where a degree sign belongs
+ * ("74\u0000F"); the sign is put back, and any other such character is dropped.
+ */
+export const typeset = (text: string) =>
+  text
+    .replace(/(?<=\d)\s?[\u0000-\u0008\u000b-\u001f\ufffd]+(?=[FC]\b)/g, "°")
+    .replace(/[\u0000-\u0008\u000b-\u001f\ufffd]/g, "")
+    .replace(/(?<=[\p{L}\d])'(?=\p{L})/gu, "’")
+    .replace(/(?<=s)'(?=[\s.,;:!?]|$)/g, "’");
