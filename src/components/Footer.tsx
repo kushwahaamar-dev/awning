@@ -5,8 +5,7 @@ import { chain, isLocalChain } from "@/lib/chain/config";
 const ABOUT = [
   { href: "/#how", label: "How it works" },
   { href: "/#prices", label: "Prices" },
-  { href: "/#trust", label: "Why trust it" },
-  { href: "/#faq", label: "Questions" },
+  { href: "/#trust", label: "The thief test" },
   { href: "/#built", label: "How it’s made" },
 ];
 

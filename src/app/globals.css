@@ -426,33 +426,31 @@ body {
     padding-inline: var(--gutter);
     background: var(--color-shade);
   }
-  /* A question that opens onto its answer. */
-  .faq summary {
+  /* One line under the first screen for whoever wants to know how it is made, which opens onto the rest of it. */
+  .made summary {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: 0.5rem 2rem;
+    border-top: 1px solid var(--color-line);
     padding-block: 1.25rem;
-    font-size: 1.125rem;
-    font-weight: 500;
-    letter-spacing: -0.015em;
+    color: var(--color-muted);
     cursor: pointer;
     list-style: none;
   }
-  .faq summary::-webkit-details-marker {
+  .made summary::-webkit-details-marker {
     display: none;
   }
-  .faq summary::after {
-    content: "+";
-    flex: none;
-    color: var(--color-muted);
-    font-size: 1.5rem;
-    font-weight: 400;
-    line-height: 1;
-    transition: rotate 150ms;
-  }
-  .faq[open] summary::after {
-    rotate: 45deg;
+  /* The mark where the next letter of a sentence being written will land. */
+  .caret {
+    display: inline-block;
+    width: 1.5px;
+    height: 1em;
+    margin-left: 0.08em;
+    vertical-align: -0.12em;
+    background: var(--color-fg);
+    animation: blink 900ms steps(2) infinite;
   }
 
   /* The name at the foot of every page, set to run exactly from one margin to the other. The numbers are the
@@ -547,6 +545,7 @@ body {
   .land,
   .status-live::before,
   .btn-recording,
+  .caret,
   .drop {
     animation: none;
   }

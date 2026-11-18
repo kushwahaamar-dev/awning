@@ -1,21 +1,21 @@
-import Form from "next/form";
 import Link from "next/link";
 import { chainLabel, explorerAddress, mandateAddress, poolAddress } from "@/lib/chain/config";
 import { ATTEMPTS } from "@/lib/covers/attempts";
 import { usesStreams } from "@/lib/ledger/source";
 import { hedging } from "@/lib/venue";
-import { Drawing } from "./Drawing";
-import { HowItWorks } from "./HowItWorks";
+import { Drawing, type Subject } from "./Drawing";
+import { HeroAsk } from "./HeroAsk";
 import { PriceMap } from "./PriceMap";
 import { LastRefusal } from "./Proof";
 import { Risks } from "./Risks";
 import { Shopfront } from "./Shopfront";
 
-// Why someone can put money through this, said the way they would ask it.
-const PROMISES = [
-  { title: "Your payout is set aside before you pay.", body: "The full amount is locked where nobody can spend it, us included, until your day is decided." },
-  { title: "A public market decides, not a claims adjuster.", body: "Cover pays on the official reading for your city. If the day happened, you’re paid. There is nothing to argue." },
-  { title: "You set the limits.", body: "An AI agent does the buying for you, inside spending limits that only you can change." },
+// The whole product in three moves. Between them they answer what people ask first: what do I do here, is this
+// insurance, and who pays me.
+const STEPS: { subject: Subject; title: string; body: string }[] = [
+  { subject: "cold", title: "Say it", body: "Any bad day, in your own words, and what it would cost you." },
+  { subject: "ticket", title: "See the price", body: "A market sets it, not an insurer. No forms, no adjuster." },
+  { subject: "coins", title: "Get paid", body: "Your payout is locked before you pay. If the day happens, it arrives by itself." },
 ];
 
 // What a stolen agent key can do, in the order the test on the agent page tries it, and what the contracts say to each.
@@ -25,30 +25,6 @@ const ATTACK = [
   { tried: ATTEMPTS.onePremium, verdict: "Refused", tone: "status-bad", failed: true },
   { tried: ATTEMPTS.allData, verdict: "Refused", tone: "status-bad", failed: true },
   { tried: ATTEMPTS.dataLeft, verdict: "Went through", tone: "", failed: false },
-];
-
-// What people ask before they try it, answered in a breath each.
-const QUESTIONS = [
-  {
-    asked: "Is this insurance?",
-    answer:
-      "No. Awning buys contracts on a prediction market that pay when a stated thing happens, like Chicago’s high staying at 59°F or below. That can differ from what you really lose, so before you buy Awning tells you how closely the cover tracks your risk.",
-  },
-  {
-    asked: "What can I cover?",
-    answer:
-      "The daily high in 49 US cities. The price of oil, natural gas, gold, silver and copper. Bitcoin, Ether, Solana and XRP. And a team winning or losing in football, basketball, hockey or UFC.",
-  },
-  { asked: "What does it cost?", answer: "The market’s price for that day, with the exchange’s fee included. The rarer the bad day, the cheaper it is to cover. You always see the price before you pay." },
-  {
-    asked: "How do I get paid?",
-    answer: "When the market settles on the official reading, the payout moves to your Awning balance by itself. You don’t file anything, and you can send the money out whenever you like.",
-  },
-  {
-    asked: "What if it’s freezing at my shop but the official reading says otherwise?",
-    answer: "Cover pays on the official weather station for your city, not on your street. Awning shows you which station that is and how well it matches your risk before you buy.",
-  },
-  { asked: "Is this real money?", answer: "Not yet. Awning runs on a test network with test dollars, so you can try all of it, buying cover included, for free." },
 ];
 
 // What the pool does with cover it has written, said as it really is where this is running.
@@ -79,68 +55,75 @@ function Contract({ address, children }: { address: string | undefined; children
   );
 }
 
-// The example in the empty box, short enough to be read whole on a phone.
-const ASKED = "A cold day costs my patio $300…";
-
-/** The box a bad day is written in, wherever the landing page asks for one. Whatever is written goes to be priced. */
-function Ask({ id }: { id: string }) {
-  return (
-    <Form action="/app" className="composer flex items-center gap-2 p-2 pl-6 max-sm:flex-col max-sm:items-stretch max-sm:p-3">
-      <label htmlFor={id} className="sr-only">
-        What would a bad day cost you?
-      </label>
-      <input id={id} name="risk" autoComplete="off" placeholder={ASKED} className="min-w-0 grow bg-transparent py-3 text-lg placeholder:text-faint focus:outline-none max-sm:px-3" />
-      <button type="submit" className="btn btn-lg btn-primary shrink-0">
-        See my price
-      </button>
-    </Form>
-  );
-}
-
 export function Landing() {
   return (
     <>
-      {/* The first screen says what this is, to someone who has never heard of it, and gives them the one thing to do. */}
-      <section className="inner grid items-center gap-x-12 gap-y-6 pb-16 lg:min-h-[calc(100svh-5rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:pb-10">
+      {/* The first screen is for someone who has never heard of this: what it is in nine words, and the thing itself at work. */}
+      <section className="inner grid items-center gap-x-10 gap-y-6 pb-12 lg:min-h-[calc(100svh-9rem)] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <div className="max-lg:order-last">
-          <h1 className="display">Get paid when bad weather costs you a day.</h1>
-          <p className="lede mt-6">
-            Tell Awning what a bad day costs your business. It names a price to cover it. If that day comes, the money is yours automatically, with no
-            claim to file.
-          </p>
+          {/* Two sentences, a line each wherever there is room for one. */}
+          <h1 className="display xl:text-[3.75rem] [&>span]:block xl:[&>span]:whitespace-nowrap">
+            <span>Name your bad day.</span>
+            <span>Get paid if it happens.</span>
+          </h1>
           <div className="mt-9 max-w-2xl">
-            <Ask id="ask" />
-            <p className="mt-4 text-muted">
-              Free to try: it runs on test dollars.{" "}
-              <Link href="/find" className="link whitespace-nowrap">
-                Not sure what costs you? Find it in your sales
-              </Link>
-            </p>
+            <HeroAsk />
+            <p className="mt-4 text-muted">Weather, fuel and metal prices, crypto, game results. Free to try, on test dollars.</p>
           </div>
         </div>
         <Shopfront className="w-full max-lg:mx-auto max-lg:max-w-xl" />
       </section>
 
-      <section id="how" className="section band">
-        <div className="inner">
-          <h2 className="heading">How it works</h2>
-          <div className="mt-14">
-            <HowItWorks />
-          </div>
+      {/* And one line under it for whoever came to see how it is made. */}
+      <details id="built" className="inner made">
+        <summary>
+          <span>Priced by Gemini prediction markets. Paid in USDC on Arc. Bought by an AI agent whose spending limits are a contract.</span>
+          <span className="link shrink-0">How it&rsquo;s made</span>
+        </summary>
+        <div className="max-w-3xl pb-8">
+          <p className="text-muted">
+            Google&rsquo;s Gemini model reads your sentence, and a prediction market on the Gemini exchange prices it. Your agent pays $0.02 over x402 for
+            a forecast to check that price. The payout is locked in <Contract address={poolAddress}>AwningPool</Contract>, an ERC-4626 vault on{" "}
+            {chainLabel}, before the premium moves through <Contract address={mandateAddress}>AwningMandate</Contract>, the contract that holds your
+            limits.{HEDGE} {usesStreams ? "QuickNode Streams delivers every contract event to the app" : "The app reads every contract event from the chain"}
+            , and Circle CCTP carries a payout out to another chain. You can say your bad day out loud: ElevenLabs hears it. 126 contract tests pass.
+          </p>
+          <p className="mt-5">What you still have to trust</p>
+          <ul className="mt-2 space-y-2 text-muted">
+            {TRUSTED.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
         </div>
+      </details>
+
+      <section id="how" className="section band">
+        <ol className="inner grid gap-x-10 gap-y-14 md:grid-cols-3">
+          {STEPS.map(({ subject, title, body }, i) => (
+            <li key={title}>
+              <div className="flex h-44 items-end sm:h-52">
+                <Drawing subject={subject} className="h-full" />
+              </div>
+              <h2 className="heading mt-8">
+                <span className="num mr-3 text-muted">{i + 1}</span>
+                {title}
+              </h2>
+              <p className="lede mt-3 max-w-xs">{body}</p>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section id="now" className="section">
         <div className="inner">
-          <h2 className="heading">Bad days you can cover right now</h2>
-          <p className="lede mt-5">These are live prices. Pick one to see the cover, or describe your own.</p>
+          <h2 className="heading">Or pick one. These prices are live.</h2>
           <div className="mt-12">
             <Risks
               empty={
-                <p className="copy text-muted">
-                  There&rsquo;s no bad day worth showing this minute.{" "}
+                <p className="lede">
+                  Nothing worth showing this minute.{" "}
                   <Link href="/app" className="link">
-                    Describe your own
+                    Name your own
                   </Link>
                 </p>
               }
@@ -151,102 +134,35 @@ export function Landing() {
 
       <section id="prices" className="section">
         <div className="inner">
-          <h2 className="heading">Tomorrow, priced in 49 cities</h2>
-          <p className="lede mt-5">What it costs, this minute, to cover a bad day tomorrow wherever you trade.</p>
+          <h2 className="heading">A bad day tomorrow, priced in 49 cities</h2>
           <div className="mt-12">
             <PriceMap />
           </div>
         </div>
       </section>
 
+      {/* The agent that does the buying holds money, so the last thing shown is what happens when it is stolen: each failure crossed out. */}
       <section id="trust" className="section band">
-        <div className="inner">
-          <h2 className="heading">Why you can trust it</h2>
-          <div className="mt-12 grid items-center gap-x-16 gap-y-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)]">
-            <Drawing subject="safe" className="w-full max-w-md max-lg:mx-auto" />
-            <ul className="space-y-8">
-              {PROMISES.map(({ title, body }) => (
-                <li key={title}>
-                  <h3 className="title">{title}</h3>
-                  <p className="copy mt-2 max-w-lg text-muted">{body}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* The last promise is the one nobody takes on trust, so it is shown: what a thief tried, each failure crossed out. */}
-          <div className="mt-24 grid gap-x-16 gap-y-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)]">
-            <div>
-              <h3 className="heading">We handed the agent&rsquo;s keys to a thief.</h3>
-              <p className="lede mt-5">
-                They left with <span className="text-fg">$2</span>: one day&rsquo;s budget for weather data. Everything else was refused by a contract on{" "}
-                {chainLabel}.
-              </p>
-              <Link href="/agent" className="btn btn-secondary mt-8">
-                Try to rob it yourself
-              </Link>
-            </div>
-            <div>
-              <ol className="space-y-5">
-                {ATTACK.map(({ tried, verdict, tone, failed }) => (
-                  <li key={tried} className="flex items-baseline justify-between gap-6">
-                    <span className="attempt">
-                      <span className={failed ? "struck" : undefined}>{tried}</span>
-                    </span>
-                    <span className={`status shrink-0 ${tone}`}>{verdict}</span>
-                  </li>
-                ))}
-              </ol>
-              <LastRefusal />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="faq" className="section">
         <div className="inner grid gap-x-16 gap-y-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)]">
-          <h2 className="heading">Questions people ask first</h2>
-          <div className="rows border-y border-line">
-            {QUESTIONS.map(({ asked, answer }) => (
-              <details key={asked} className="faq">
-                <summary>{asked}</summary>
-                <p className="copy max-w-xl pb-6 text-muted">{answer}</p>
-              </details>
-            ))}
+          <div>
+            <h2 className="heading">We gave the agent&rsquo;s keys to a thief. They got $2.</h2>
+            <Link href="/agent" className="btn btn-secondary mt-8">
+              Try to rob it yourself
+            </Link>
           </div>
-        </div>
-      </section>
-
-      <section className="section band">
-        <div className="inner">
-          <h2 className="display max-w-4xl">What would a bad day cost you?</h2>
-          <div className="mt-10 max-w-2xl">
-            <Ask id="ask-again" />
-          </div>
-        </div>
-      </section>
-
-      {/* The small print of a made thing, for whoever wants to know what is underneath: what it runs on, and what it still asks you to trust. */}
-      <section id="built" className="section">
-        <div className="inner">
-          <h2 className="title">How it&rsquo;s made</h2>
-          <p className="copy mt-4 max-w-3xl text-muted">
-            Google&rsquo;s Gemini model reads your sentence, and a prediction market on the Gemini exchange prices it. Your agent pays $0.02 over x402 for
-            a forecast to check that price. The payout is locked in <Contract address={poolAddress}>AwningPool</Contract>, an ERC-4626 vault on{" "}
-            {chainLabel}, before the premium moves through <Contract address={mandateAddress}>AwningMandate</Contract>, the contract that holds your
-            limits.{HEDGE} {usesStreams ? "QuickNode Streams delivers every contract event to the app" : "The app reads every contract event from the chain"}
-            , and Circle CCTP carries a payout out to another chain. 126 contract tests pass.
-          </p>
-          <details className="mt-6 max-w-3xl border-t border-line pt-4">
-            <summary className="cursor-pointer text-muted transition-colors hover:text-fg">What you still have to trust</summary>
-            <ul className="mt-4 space-y-3 text-muted">
-              {TRUSTED.map((item) => (
-                <li key={item} className="copy max-w-none">
-                  {item}
+          <div>
+            <ol className="space-y-5">
+              {ATTACK.map(({ tried, verdict, tone, failed }) => (
+                <li key={tried} className="flex items-baseline justify-between gap-6">
+                  <span className="attempt">
+                    <span className={failed ? "struck" : undefined}>{tried}</span>
+                  </span>
+                  <span className={`status shrink-0 ${tone}`}>{verdict}</span>
                 </li>
               ))}
-            </ul>
-          </details>
+            </ol>
+            <LastRefusal />
+          </div>
         </div>
       </section>
     </>

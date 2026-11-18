@@ -11,7 +11,7 @@ before you pay a cent.
 cover; the first press gives you test dollars, sets up your agent and buys. The test pool is small,
 so the amounts are too.
 
-![The Awning landing page: a shop drawn in line in the rain, its name in lights and its striped awning out, above one line to write a risk on](docs/screenshots/landing.jpg)
+![The Awning landing page: “Name your bad day. Get paid if it happens.”, a box where an example writes itself and is priced, and a shop drawn in line with its striped awning out in the rain](docs/screenshots/landing.jpg)
 
 > "If Chicago's high stays under 46 tomorrow, my coffee cart is out about $300."
 >
