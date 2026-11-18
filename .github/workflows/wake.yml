@@ -1,11 +1,14 @@
 name: Wake the hosted agent
 
 # The public site runs on a host with no long-running process, so nothing happens there between visits.
-# This calls it every few minutes: cover that has resolved is settled, the agent looks at its standing orders,
+# This calls it every ten minutes: cover that has resolved is settled, the agent looks at its standing orders,
 # and a point is added to the price history, whether or not anyone is looking.
+#
+# It runs on the days the hackathon is judged and no others (18 to 22 November, by the world's clock): each run
+# is billed as a minute of a private repository's allowance. Change the days below to run it again.
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/10 * 18-22 11 *"
   workflow_dispatch:
 
 jobs:

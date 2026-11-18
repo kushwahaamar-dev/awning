@@ -434,7 +434,7 @@ export function PriceMap() {
 
       <div>
         <div className="max-lg:hidden" aria-live="polite">
-          {shown ? <Reading city={shown} /> : <p className="panel min-h-[12.5rem] p-5 text-muted xl:min-h-[21.75rem]">Reading Gemini&rsquo;s prices…</p>}
+          {shown ? <Reading city={shown} /> : <p className="panel min-h-[18.125rem] p-5 text-muted xl:min-h-[24rem]">Reading Gemini&rsquo;s prices…</p>}
         </div>
         {/* There from the start, unseen until there are numbers to put in it, so nothing under the map moves when they come. */}
         <p className={`copy lg:mt-4 ${cities.length ? "" : "invisible"}`}>

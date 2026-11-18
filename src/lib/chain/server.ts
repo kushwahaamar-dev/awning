@@ -206,10 +206,10 @@ export async function readAllowance(owner: Address): Promise<Allowance> {
 }
 
 const LOCAL_GRANT_USD = 5_000;
-// On a public testnet the grant comes out of the operator's own faucet money. It is as large as the setting
-// allows while there is plenty, and is paced as the money goes: never more than a twelfth of what is left,
-// so a busy afternoon makes the grants smaller and does not end them.
-const MOST_GRANT_USD = Number(process.env.FAUCET_USD ?? 2);
+// On a public testnet the grant comes out of the operator's own faucet money. It is enough to cover a loss a
+// shop would notice while there is plenty, and is paced as the money goes: never more than a twelfth of what
+// is left, so a busy afternoon makes the grants smaller and does not end them.
+const MOST_GRANT_USD = Number(process.env.FAUCET_USD ?? 25);
 const LEAST_GRANT_USD = 2;
 const GRANTS_IN_HAND = 12;
 const OPERATOR_RESERVE_USD = 1;
@@ -222,7 +222,9 @@ export async function visitorGrant(): Promise<number> {
   if (isLocalChain) return LOCAL_GRANT_USD;
   if (paced && Date.now() - paced.at < 60_000) return paced.grant;
   const operator = signers().venue.account.address;
-  const spare = await publicClient.readContract({ address: usdcAddress, abi: usdcAbi, functionName: "balanceOf", args: [operator] });
+  const spare = await publicClient.readContract({ address: usdcAddress, abi: usdcAbi, functionName: "balanceOf", args: [operator] }).catch(() => null);
+  // When the chain can't be asked, the last answer stands, and failing that the least a visitor is ever given.
+  if (spare === null) return paced?.grant ?? LEAST_GRANT_USD;
   const grant = Math.min(MOST_GRANT_USD, Math.max(LEAST_GRANT_USD, Math.floor(fromUnits(spare) / GRANTS_IN_HAND)));
   paced = { at: Date.now(), grant };
   return grant;
