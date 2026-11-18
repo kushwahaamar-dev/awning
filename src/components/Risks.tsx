@@ -10,8 +10,13 @@ import { Sketch } from "./Sketch";
 
 const fetchExamples = async (url: string): Promise<Example[]> => (await (await fetch(url)).json()).examples ?? [];
 
+// Gemini's prices now and then fail to come through. While there are none, they are asked for again every so often.
+const AGAIN_MS = 15_000;
+/** Asks again only while the last answer was empty. */
+export const whileEmpty = (latest: unknown[] | undefined) => (latest?.length ? 0 : AGAIN_MS);
+
 /** Bad days Gemini is pricing sensibly this minute. Undefined until they have been read. */
-export const useExamples = () => useSWR("/api/examples", fetchExamples, { revalidateOnFocus: false }).data;
+export const useExamples = () => useSWR("/api/examples", fetchExamples, { revalidateOnFocus: false, refreshInterval: whileEmpty }).data;
 
 /** Where a ready-made risk goes to be priced. */
 export const quoteLink = (example: Example) => `/app?exposure=${encodeURIComponent(JSON.stringify(example.exposure))}&from=example`;

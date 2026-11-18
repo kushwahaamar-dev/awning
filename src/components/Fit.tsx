@@ -11,7 +11,7 @@ const HEADINGS = {
 export function Fit({ plan }: { plan: CoverPlan }) {
   const { basis } = plan;
   return (
-    <section className="space-y-12">
+    <section className="grid gap-x-12 gap-y-12 md:grid-cols-2">
       <div>
         <h2 className="title">{HEADINGS[basis.level]}</h2>
         <div

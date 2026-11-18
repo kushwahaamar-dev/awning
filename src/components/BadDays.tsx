@@ -51,8 +51,8 @@ export function BadDays() {
 
   return (
     <figure>
-      {/* The picture is wider than the words above it. Every scene lies in the same place, and the one for the day chosen shows through. */}
-      <div className="scene relative aspect-video bg-[#0b0b0c] sm:-mx-10">
+      {/* Every scene lies in the same place, and the one for the day chosen shows through. */}
+      <div className="scene relative aspect-video bg-[#0b0b0c]">
         {DAYS.map(({ kind }, i) => (
           <Scene key={kind} of={kind} playing={i === at} className={`absolute inset-0 transition-opacity duration-700 ${i === at ? "" : "opacity-0"}`} />
         ))}

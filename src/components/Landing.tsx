@@ -54,7 +54,7 @@ const MADE: { does: string; by: ReactNode }[] = [
     ),
   },
   { does: "Holds the agent to its limits", by: <Contract address={mandateAddress}>AwningMandate</Contract> },
-  ...(hedging === "paper" ? [] : [{ does: "Hedges the pool", by: hedging === "live" ? "Gemini trading API" : "Gemini’s sandbox, where it lists the market" }]),
+  ...(hedging === "paper" ? [] : [{ does: "Hedges the pool", by: hedging === "live" ? "Gemini trading API" : "Gemini’s sandbox" }]),
   { does: "Reports what happened", by: usesStreams ? "QuickNode Streams" : "The chain’s own logs" },
   { does: "Moves money out", by: "Circle CCTP" },
   ...(voiceEnabled() ? [{ does: "Hears you say it", by: "ElevenLabs" }] : []),
@@ -85,44 +85,43 @@ function Head({ stamp, children }: { stamp: Picture; children: string }) {
 export function Landing() {
   return (
     <>
-      {/* For someone who has never heard of this: what it is, in two plain sentences, and the one thing to do. */}
-      <section className="pt-8 sm:pt-14">
-        <h1 className="sign">Awning pays you when a bad day hits your business.</h1>
-        <p className="lede mt-4">
-          Name the day in a sentence: a cold snap, a heat wave, fuel going up. Awning tells you what it costs to cover. If the day comes, the money
-          arrives by itself.
-        </p>
-        <Form action="/app" className="composer mt-7 flex items-center gap-2 p-1.5 pl-5 max-sm:flex-col max-sm:items-stretch max-sm:p-2.5">
-          <label htmlFor="ask" className="sr-only">
-            Name your bad day
-          </label>
-          <input id="ask" name="risk" autoComplete="off" placeholder="A cold day costs my patio $300…" className="min-w-0 grow bg-transparent py-2 placeholder:text-faint focus:outline-none max-sm:px-2.5" />
-          <button type="submit" className="btn btn-primary shrink-0">
-            See my price
-          </button>
-        </Form>
-        <p className="mt-3 text-sm text-faint">
-          Free to try: it runs on test dollars.{" "}
-          <Link href="/find" className="link whitespace-nowrap">
-            Not sure what costs you?
-          </Link>
-        </p>
-      </section>
-
-      <section className="mt-12">
+      {/* For someone who has never heard of this: what it is, in two plain sentences, and the one thing to do, beside the thing itself at work. */}
+      <section className="split items-center pt-6 lg:min-h-[calc(100svh-8rem)] lg:pb-10">
+        <div>
+          <h1 className="sign">Awning pays you when a bad day hits your business.</h1>
+          <p className="lede mt-4">
+            Name the day in a sentence: a cold snap, a heat wave, fuel going up. Awning tells you what it costs to cover. If the day comes, the money
+            arrives by itself.
+          </p>
+          <Form action="/app" className="composer mt-7 flex max-w-xl items-center gap-2 p-1.5 pl-5 max-sm:flex-col max-sm:items-stretch max-sm:p-2.5">
+            <label htmlFor="ask" className="sr-only">
+              Name your bad day
+            </label>
+            <input id="ask" name="risk" autoComplete="off" placeholder="A cold day costs my patio $300…" className="min-w-0 grow bg-transparent py-2 placeholder:text-faint focus:outline-none max-sm:px-2.5" />
+            <button type="submit" className="btn btn-primary shrink-0">
+              See my price
+            </button>
+          </Form>
+          <p className="mt-3 text-sm text-faint">
+            Free to try: it runs on test dollars.{" "}
+            <Link href="/find" className="link whitespace-nowrap">
+              Not sure what costs you?
+            </Link>
+          </p>
+        </div>
         <BadDays />
       </section>
 
       <section id="how" className="section">
-        <ol className="grid gap-x-8 gap-y-10 sm:grid-cols-3">
+        <ol className="grid gap-x-12 gap-y-10 sm:grid-cols-3">
           {STEPS.map(({ picture, title, body }, i) => (
             <li key={title}>
-              <Sketch of={picture} className="h-28" />
-              <h2 className="title mt-4">
+              <Sketch of={picture} className="h-36" />
+              <h2 className="heading mt-5">
                 <span className="num mr-2 text-faint">{i + 1}</span>
                 {title}
               </h2>
-              <p className="copy mt-1">{body}</p>
+              <p className="copy mt-1 max-w-xs">{body}</p>
             </li>
           ))}
         </ol>
@@ -137,45 +136,46 @@ export function Landing() {
       </section>
 
       {/* The agent that does the buying holds money, so what happens when it is stolen is shown, not promised. */}
-      <section id="agent" className="section">
-        <Head stamp="lock">An agent that can&rsquo;t be robbed</Head>
-        <div className="panel mt-6 grid gap-1.5 p-1.5 sm:grid-cols-2">
-          <div className="p-5">
-            <h3 className="title">We gave the agent&rsquo;s keys to a thief.</h3>
-            <p className="copy mt-2">
-              They got <span className="text-fg">$2</span>: one day&rsquo;s budget for weather data. A contract on {chainLabel} refused the rest.
-            </p>
-            <Link href="/agent" className="link mt-4 inline-block">
-              Try to rob it yourself
-            </Link>
-          </div>
-          <div className="inset p-5">
-            <p className="text-sm font-medium">What they tried</p>
-            <ol className="mt-3 space-y-2.5 text-[0.9375rem] leading-snug">
-              {ATTACK.map(({ tried, verdict, tone, failed }) => (
-                <li key={tried} className="flex items-baseline justify-between gap-4">
-                  <span className={failed ? "text-muted line-through decoration-edge" : undefined}>{tried}</span>
-                  <span className={`status shrink-0 ${tone}`}>{verdict}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
+      <section id="agent" className="section split">
+        <div>
+          <Head stamp="lock">An agent that can&rsquo;t be robbed</Head>
+          <h3 className="title mt-6">We gave the agent&rsquo;s keys to a thief.</h3>
+          <p className="copy mt-2">
+            They got <span className="text-fg">$2</span>: one day&rsquo;s budget for weather data. A contract on {chainLabel} refused the rest.
+          </p>
+          <Link href="/agent" className="link mt-4 inline-block">
+            Try to rob it yourself
+          </Link>
+          <LastRefusal />
         </div>
-        <LastRefusal />
+        <div className="panel p-1.5">
+          <p className="flex items-center gap-2 px-4 py-2.5 text-sm text-muted">
+            <span className="dot text-bad" />
+            A thief, signing with the agent&rsquo;s key
+          </p>
+          <ol className="inset rows">
+            {ATTACK.map(({ tried, verdict, tone, failed }) => (
+              <li key={tried} className="flex items-baseline justify-between gap-4 px-4 py-3">
+                <span className={failed ? "text-muted line-through decoration-edge" : undefined}>{tried}</span>
+                <span className={`status shrink-0 ${tone}`}>{verdict}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
 
       {/* For whoever came to see what is underneath: each part of a cover, and what does it. */}
       <section id="built" className="section">
         <Head stamp="awning">How it&rsquo;s made</Head>
-        <dl className="rows mt-6 border-y border-line">
+        <dl className="mt-6 gap-x-12 sm:columns-2 xl:columns-3">
           {MADE.map(({ does, by }) => (
-            <div key={does} className="flex items-baseline justify-between gap-6 py-2.5">
+            <div key={does} className="flex break-inside-avoid items-baseline justify-between gap-6 border-b border-line py-2.5">
               <dt className="text-muted">{does}</dt>
               <dd className="text-right">{by}</dd>
             </div>
           ))}
         </dl>
-        <details className="mt-4">
+        <details className="mt-5">
           <summary className="cursor-pointer text-sm text-muted transition-colors hover:text-fg">What you still have to trust</summary>
           <ul className="copy mt-3 space-y-2">
             {TRUSTED.map((item) => (

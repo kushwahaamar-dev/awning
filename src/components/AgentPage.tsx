@@ -10,7 +10,7 @@ import { calendarDay, cents, clock, day, percent, usd } from "@/lib/format";
 import { REFUSAL, describeEvent } from "@/lib/words";
 import { AllowanceForm } from "./AllowanceForm";
 import { CashOut } from "./CashOut";
-import { Stamp } from "./Sketch";
+import { Sketch, Stamp } from "./Sketch";
 import { hasAllowance, post, useAccount, type Account, type Decision } from "./account";
 import { External } from "./icons";
 
@@ -40,7 +40,7 @@ function Limits({ account }: { account: Account }) {
 
   if (editing) {
     return (
-      <div className="panel mt-7 p-5 sm:p-6">
+      <div className="panel p-5 sm:p-7">
         <AllowanceForm onDone={() => setEditing(false)} />
         <button type="button" onClick={() => setEditing(false)} className="link mt-5 text-sm">
           Keep the current limits
@@ -58,8 +58,10 @@ function Limits({ account }: { account: Account }) {
   ];
 
   return (
-    // One card: the limits on the grey, and on a white card inside it the one figure they come down to.
-    <div className="panel mt-7 grid gap-1.5 p-1.5 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+    // One card: the limits on the grey, and on a white card inside it the one figure they come down to. The white
+    // card sits beside the limits wherever the card is wide enough for both: across a tablet, and in half of a
+    // large screen. In half of a small laptop's it goes underneath.
+    <div className="panel grid gap-1.5 p-1.5 sm:max-lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
       <div className="p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
           <h2 className="title">Allowance</h2>
@@ -92,7 +94,7 @@ function Limits({ account }: { account: Account }) {
         )}
       </div>
 
-      <div className="inset p-5 sm:self-start">
+      <div className="inset p-5 sm:max-lg:self-start xl:self-start">
         <p className="text-sm text-muted">The most a hijacked agent could take right now</p>
         <p className="figure mt-3">{cents(a.dataLeftToday)}</p>
         <button type="button" onClick={togglePause} disabled={busy} aria-busy={busy} className={`btn mt-5 ${a.paused ? "btn-primary" : "btn-danger"}`}>
@@ -142,40 +144,42 @@ function StandingOrders({ account }: { account: Account }) {
         What you&rsquo;ve left with the agent
       </h2>
       <p className="copy mt-4">Each day it decides whether cover is worth buying, and says why.</p>
-      {account.standing.map((order) => (
-        <article key={order.id} className="panel mt-6">
-          <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3 p-4 sm:p-5">
-            <div className="max-w-md min-w-0">
-              <h3 className="title">{order.exposure.summary}</h3>
-              <p className="mt-1 text-sm text-muted">
-                Every day, up to {usd(order.dailyCap)} a day.{order.instruction && <> You told it: &ldquo;{order.instruction}&rdquo;</>}
-              </p>
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        {account.standing.map((order) => (
+          <article key={order.id} className="panel flex flex-col">
+            <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3 p-4 sm:p-5">
+              <div className="max-w-md min-w-0">
+                <h3 className="title">{order.exposure.summary}</h3>
+                <p className="mt-1 text-sm text-muted">
+                  Every day, up to {usd(order.dailyCap)} a day.{order.instruction && <> You told it: &ldquo;{order.instruction}&rdquo;</>}
+                </p>
+              </div>
+              <button type="button" onClick={() => stop(order.id)} disabled={stopping === order.id} className="btn btn-secondary">
+                {stopping === order.id ? "Stopping…" : "Stop"}
+              </button>
             </div>
-            <button type="button" onClick={() => stop(order.id)} disabled={stopping === order.id} className="btn btn-secondary">
-              {stopping === order.id ? "Stopping…" : "Stop"}
-            </button>
-          </div>
-          {/* What it decided each day, on a white card inside the order's own. */}
-          {order.decisions.length === 0 ? (
-            <p className="inset m-1.5 mt-0 px-4 py-3.5 text-muted">Nothing yet. It acts when the next day&rsquo;s market is listed.</p>
-          ) : (
-            <ol className="rows inset m-1.5 mt-0">
-              {order.decisions.map((decision) => (
-                <li key={decision.id} className="grid gap-x-6 gap-y-1.5 px-4 py-3.5 sm:grid-cols-[8.5rem_1fr]">
-                  <div className="flex items-center gap-3 sm:flex-col sm:items-start sm:gap-1">
-                    <p className="num text-sm text-muted">{calendarDay(decision.day)}</p>
-                    <span className={`status ${DECISIONS[decision.kind].tone}`}>{DECISIONS[decision.kind].label}</span>
-                  </div>
-                  <div>
-                    <p className="text-soft">{decision.reason}</p>
-                    <p className="num mt-1 text-sm text-muted">{sawThen(decision)}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          )}
-        </article>
-      ))}
+            {/* What it decided each day, on a white card inside the order's own. It takes whatever height the order beside this one gives the card. */}
+            {order.decisions.length === 0 ? (
+              <p className="inset m-1.5 mt-0 grow px-4 py-3.5 text-muted">Nothing yet. It acts when the next day&rsquo;s market is listed.</p>
+            ) : (
+              <ol className="rows inset m-1.5 mt-0 grow">
+                {order.decisions.map((decision) => (
+                  <li key={decision.id} className="grid gap-x-6 gap-y-1.5 px-4 py-3.5 sm:grid-cols-[8.5rem_1fr]">
+                    <div className="flex items-center gap-3 sm:flex-col sm:items-start sm:gap-1">
+                      <p className="num text-sm text-muted">{calendarDay(decision.day)}</p>
+                      <span className={`status ${DECISIONS[decision.kind].tone}`}>{DECISIONS[decision.kind].label}</span>
+                    </div>
+                    <div>
+                      <p className="text-soft">{decision.reason}</p>
+                      <p className="num mt-1 text-sm text-muted">{sawThen(decision)}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </article>
+        ))}
+      </div>
     </section>
   );
 }
@@ -211,7 +215,8 @@ function HijackTest() {
   const ROW = "flex min-h-[4.625rem] items-start justify-between gap-5 px-4 py-3 text-[0.9375rem]";
 
   return (
-    <section className="section">
+    // It stands beside the allowance on a wide screen and under it on a narrow one; the room between them is the page's to set.
+    <section>
       <h2 className="heading flex items-center gap-4">
         <Stamp of="lock" />
         Test the limits
@@ -345,15 +350,21 @@ export function AgentPage() {
         <h1 className="sign">{ready ? "What your agent is allowed to do" : "Give your agent an allowance"}</h1>
         <p className="lede mt-3">A contract on {account.setup.chainName} holds it to these limits, even if it is fooled or taken over.</p>
         {ready ? (
-          <Limits account={account} />
+          // What the agent may do, and beside it the way to see those limits hold.
+          <div className="split split-even mt-8">
+            <Limits account={account} />
+            <HijackTest />
+          </div>
         ) : (
-          <div className="panel mt-7 p-5 sm:p-6">
-            <AllowanceForm />
+          <div className="split split-even mt-8 items-center">
+            <div className="panel p-5 sm:p-7">
+              <AllowanceForm />
+            </div>
+            <Sketch of="lock" className="mx-auto w-full max-w-sm max-lg:hidden" />
           </div>
         )}
       </section>
       {ready && <StandingOrders account={account} />}
-      {ready && <HijackTest />}
       {(ready || account.activity.length > 0) && <ActivityFeed account={account} />}
     </>
   );

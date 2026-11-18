@@ -5,7 +5,7 @@ import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import useSWR from "swr";
 import type { MapCity } from "@/app/api/map/route";
 import { calendarDay, cents, percent, usd } from "@/lib/format";
-import { quoteLink } from "./Risks";
+import { quoteLink, whileEmpty } from "./Risks";
 
 const NONE: MapCity[] = [];
 const fetchCities = async (url: string): Promise<MapCity[]> => (await (await fetch(url)).json()).cities ?? NONE;
@@ -209,7 +209,7 @@ function Label({ city, spot, lit = false }: { city: MapCity; spot: Spot; lit?: b
 function Reading({ city }: { city: MapCity }) {
   const { example } = city;
   return (
-    <div className="panel grid gap-1.5 p-1.5 sm:grid-cols-2">
+    <div className="panel grid gap-1.5 p-1.5 sm:grid-cols-2 xl:grid-cols-1">
       <div className="p-4 sm:p-5">
         <p className="flex items-baseline justify-between gap-4 text-sm text-muted">
           <span>{city.city}</span>
@@ -253,7 +253,8 @@ const fromTelling = ({ example }: MapCity) => Math.abs(example!.cost / example!.
 
 /** Every city Gemini lists tomorrow's high for, as a map of what a bad day there costs to cover right now. */
 export function PriceMap() {
-  const { data: cities = NONE } = useSWR("/api/map", fetchCities, { revalidateOnFocus: false });
+  const { data } = useSWR("/api/map", fetchCities, { revalidateOnFocus: false, refreshInterval: whileEmpty });
+  const cities = data ?? NONE;
   const [picked, setPicked] = useState<string | null>(null);
   const links = useRef(new Map<string, HTMLAnchorElement>());
   // The labels at rest, and the priced cities from west to east.
@@ -281,15 +282,18 @@ export function PriceMap() {
     links.current.get(next.code)?.focus();
   }
 
+  // Gemini answered with nothing at all, which it does when it is having trouble. A map with no cities on it would only look broken.
+  if (data?.length === 0) return <p className="note">Gemini&rsquo;s prices aren&rsquo;t coming through right now. The map fills in by itself when they do.</p>;
+
   return (
-    <div>
-      {/* The map is wider than the column of words above it: it needs the room to put a name to each city. */}
-      <div className="relative left-1/2 w-[min(64rem,calc(100vw-3rem))] -translate-x-1/2 max-lg:hidden">
+    // Beside the map on a wide screen, the reading for the city pointed at; under it on a narrower one, where the map needs the whole width to name its cities.
+    <div className="grid items-start gap-x-12 gap-y-6 xl:grid-cols-[minmax(0,1fr)_21rem]">
+      <div>
         <svg
           viewBox={`0 0 ${W} ${H}`}
           role="group"
           aria-label="Cities where tomorrow’s high can be covered. The arrow keys move from city to city."
-          className="pricemap w-full"
+          className="pricemap w-full max-lg:hidden"
           onKeyDown={walk}
         >
           {cities.map((city) => {
@@ -336,10 +340,9 @@ export function PriceMap() {
             </g>
           )}
         </svg>
-      </div>
 
-      {/* A small screen has no room for a map and nothing to point with, so it gets the most telling of the same prices as a list. */}
-      <ul className="rows border-y border-line lg:hidden">
+        {/* A small screen has no room for a map and nothing to point with, so it gets the most telling of the same prices as a list. */}
+        <ul className="rows border-y border-line lg:hidden">
         {/* Until the prices arrive the rows hold their room, so the page below doesn’t jump when they do. */}
         {cities.length === 0 &&
           Array.from({ length: 8 }, (_, i) => (
@@ -361,16 +364,19 @@ export function PriceMap() {
             </li>
           );
         })}
-      </ul>
-
-      <div className="mt-6 max-lg:hidden" aria-live="polite">
-        {shown ? <Reading city={shown} /> : <p className="panel min-h-[9.75rem] p-5 text-muted">Reading Gemini&rsquo;s prices…</p>}
+        </ul>
       </div>
-      {/* There from the start, unseen until there are numbers to put in it, so nothing under the map moves when they come. */}
-      <p className={`copy mt-4 ${cities.length ? "" : "invisible"}`}>
-        <span className="max-lg:hidden">Point at a city to read its price. </span>
-        {priced.length} of the {cities.length} cities Gemini lists have cover priced right now. In the rest, tomorrow is near certain or nobody is selling.
-      </p>
+
+      <div>
+        <div className="max-lg:hidden" aria-live="polite">
+          {shown ? <Reading city={shown} /> : <p className="panel min-h-[9.75rem] p-5 text-muted xl:min-h-[17rem]">Reading Gemini&rsquo;s prices…</p>}
+        </div>
+        {/* There from the start, unseen until there are numbers to put in it, so nothing under the map moves when they come. */}
+        <p className={`copy lg:mt-4 ${cities.length ? "" : "invisible"}`}>
+          <span className="max-lg:hidden">Point at a city to read its price. </span>
+          {priced.length} of the {cities.length} cities Gemini lists have cover priced right now. In the rest, tomorrow is near certain or nobody is selling.
+        </p>
+      </div>
     </div>
   );
 }

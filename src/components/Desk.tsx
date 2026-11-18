@@ -181,21 +181,24 @@ function DeskFor() {
 
   if (plan) {
     return (
-      <div className="pt-8 sm:pt-14">
-        <button type="button" onClick={startOver} className="link text-sm">
-          Name a different day
-        </button>
-        <div className="mt-6 flex items-start gap-4">
-          <Stamp of={pictureOf(plan.exposure.trigger)} />
-          <div>
-            <p className="text-sm text-muted">{linked ? CAME_FROM[linked.from] : "You said"}</p>
-            <h1 className="sign mt-1">{plan.exposure.summary}</h1>
+      <div className="grid items-start gap-x-[clamp(2.5rem,5vw,5rem)] gap-y-10 pt-8 sm:pt-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:grid-rows-[auto_1fr]">
+        <div>
+          <button type="button" onClick={startOver} className="link text-sm">
+            Name a different day
+          </button>
+          <div className="mt-6 flex items-start gap-4">
+            <Stamp of={pictureOf(plan.exposure.trigger)} />
+            <div>
+              <p className="text-sm text-muted">{linked ? CAME_FROM[linked.from] : "You said"}</p>
+              <h1 className="sign mt-1">{plan.exposure.summary}</h1>
+            </div>
           </div>
         </div>
-        <div className="mt-8">
+        {/* In the source it sits between the day and its small print, which is the order a phone shows them in. */}
+        <div className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
           <Receipt plan={plan} coverRatio={coverRatio} repricing={repricing} onCoverChange={changeCover} onBought={finish} />
         </div>
-        <div className="mt-14">
+        <div className="lg:col-start-1 lg:mt-6">
           <Fit plan={plan} />
         </div>
       </div>

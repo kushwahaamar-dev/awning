@@ -29,7 +29,7 @@ function Result({ result, sample, onAgain }: { result: Found; sample: boolean; o
       <button type="button" onClick={onAgain} className="link text-sm">
         Look at different sales
       </button>
-      <h1 className="sign mt-5">
+      <h1 className="sign mt-5 max-w-4xl">
         A day at {finding.threshold}°F {side} in {city} costs you about {usd(finding.lossUsd)}.
       </h1>
       {sample && (
@@ -38,37 +38,39 @@ function Result({ result, sample, onAgain }: { result: Found; sample: boolean; o
         </p>
       )}
 
-      <dl className="panel mt-8 grid gap-1.5 p-1.5 sm:grid-cols-3">
-        {/* A term comes before its value in the markup; on the tile the number is read first, so the pair is stood on its head. */}
-        {figures.map(({ value, label, detail }) => (
-          <div key={label} className="inset flex flex-col-reverse justify-end p-4">
-            <dt className="mt-2 text-sm text-muted">
-              {label}
-              {detail && <span className="mt-0.5 block">{detail}</span>}
-            </dt>
-            <dd className="figure">{value}</dd>
-          </div>
-        ))}
-      </dl>
-
-      <div className="mt-10">
+      {/* On a wide screen the figures and what to do about them stand beside the days they were found in; on a narrow one they come first. */}
+      <div className="split mt-10">
+        <div>
+          <dl className="panel grid gap-1.5 p-1.5 sm:grid-cols-3 lg:grid-cols-1">
+            {/* A term comes before its value in the markup; on the tile the number is read first, so the pair is stood on its head. */}
+            {figures.map(({ value, label, detail }) => (
+              <div key={label} className="inset flex flex-col-reverse justify-end p-4">
+                <dt className="mt-2 text-sm text-muted">
+                  {label}
+                  {detail && <span className="mt-0.5 block">{detail}</span>}
+                </dt>
+                <dd className="figure">{value}</dd>
+              </div>
+            ))}
+          </dl>
+          <Link href={`/app?exposure=${encodeURIComponent(JSON.stringify(exposure))}`} className="btn btn-primary mt-8">
+            Price cover for a day like that
+          </Link>
+          <details className="mt-6">
+            <summary className="cursor-pointer text-sm text-muted transition-colors select-none hover:text-fg">How this was worked out</summary>
+            <p className="copy mt-3">
+              Each day is compared with other days in the same month and on the same weekday, so a busy Saturday or a slow January isn&rsquo;t mistaken
+              for weather.
+            </p>
+            <p className="copy mt-3">Weather with no real link to your sales would look this strong {rarity}.</p>
+            <p className="copy mt-3">
+              The highs are for {station}, the station Gemini settles {city}&rsquo;s market on. They come from a weather archive and can differ from the
+              official reading by a degree or two.
+            </p>
+          </details>
+        </div>
         <SalesChart days={result.days} finding={finding} />
       </div>
-      <Link href={`/app?exposure=${encodeURIComponent(JSON.stringify(exposure))}`} className="btn btn-primary mt-8">
-        Price cover for a day like that
-      </Link>
-      <details className="mt-6">
-        <summary className="cursor-pointer text-sm text-muted transition-colors select-none hover:text-fg">How this was worked out</summary>
-        <p className="copy mt-3">
-          Each day is compared with other days in the same month and on the same weekday, so a busy Saturday or a slow January isn&rsquo;t mistaken for
-          weather.
-        </p>
-        <p className="copy mt-3">Weather with no real link to your sales would look this strong {rarity}.</p>
-        <p className="copy mt-3">
-          The highs are for {station}, the station Gemini settles {city}&rsquo;s market on. They come from a weather archive and can differ from the
-          official reading by a degree or two.
-        </p>
-      </details>
     </div>
   );
 }
@@ -99,13 +101,16 @@ export function Discover() {
   if (result?.found.finding) return <Result result={result.found} sample={result.sample} onAgain={() => setResult(null)} />;
 
   return (
-    <div className="pt-8 sm:pt-14">
-      <Sketch of="week" className="h-28" />
-      <h1 className="sign mt-8">Find the weather that costs you money</h1>
-      <p className="lede mt-3">Hand over your daily sales and Awning works out what a bad day costs you.</p>
+    <div className="split split-even pt-8 sm:pt-14">
+      <div>
+        <Sketch of="week" className="h-32" />
+        <h1 className="sign mt-8">Find the weather that costs you money</h1>
+        <p className="lede mt-3">Hand over your daily sales and Awning works out what a bad day costs you.</p>
+        <p className="mt-6 text-sm text-faint">Your sales are read once and never stored.</p>
+      </div>
 
       <form
-        className="panel mt-7 p-5 sm:p-6"
+        className="panel p-5 sm:p-7"
         onSubmit={(e) => {
           e.preventDefault();
           if (file) run(false);
@@ -160,7 +165,6 @@ export function Discover() {
         {error && <p className="note note-bad mt-5">{error}</p>}
         {result && !result.found.finding && <p className="note mt-5">{result.found.reason}</p>}
       </form>
-      <p className="mt-3 text-sm text-faint">Your sales are read once and never stored.</p>
     </div>
   );
 }

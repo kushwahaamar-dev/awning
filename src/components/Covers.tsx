@@ -38,17 +38,17 @@ export function Covers() {
         <Stamp of="price" />
         Your cover
       </h2>
-      <ul className="mt-6 space-y-2.5">
+      <ul className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {account.covers.map((cover) => {
           const { label, tone } = state(cover);
           const receipt = cover.openTx && explorerTx(cover.openTx);
           // The pool's own order on the exchange, when this cover's hedge could really be placed there.
           const hedge = cover.venue === "paper" ? undefined : cover.orders.find((order) => order.id);
           return (
-            <li key={cover.id} className="panel overflow-hidden">
+            <li key={cover.id} className="panel flex flex-col overflow-hidden">
               {/* The awning is out over a cover that is in force, and in over one that has ended. */}
               {cover.status === "open" && <div aria-hidden className="valance" />}
-              <div className="grid gap-x-8 gap-y-2 px-5 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
+              <div className="flex grow flex-col gap-y-3 px-5 py-4">
                 <div>
                   <p className="title">
                     {usd(cover.maxPayout)} if {cover.plan.coverage.pays}
@@ -69,7 +69,7 @@ export function Covers() {
                     )}
                   </p>
                 </div>
-                <span className={`status justify-self-start whitespace-normal ${tone}`}>{label}</span>
+                <span className={`status mt-auto whitespace-normal ${tone}`}>{label}</span>
               </div>
             </li>
           );
