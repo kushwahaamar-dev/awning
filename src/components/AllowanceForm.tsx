@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { setAllowance, walletBalance } from "@/lib/chain/device";
 import { usd } from "@/lib/format";
-import { post, useAccount, type Account } from "./account";
+import { hasAllowance, post, useAccount, type Account } from "./account";
 import { plain } from "@/lib/words";
 
 const FIELDS = [
@@ -98,15 +98,25 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
 
   if (!owner || !account) return null;
   const { setup } = account;
-  // Until the owner types a figure, each one follows what the wallet can actually fund.
-  const values = { ...(wallet !== null && wallet > FEE_RESERVE ? fittedLimits(wallet) : USUAL), ...edited };
+  // An owner who has an allowance is changing it: the form starts from the limits in force, and adds nothing to
+  // the vault unless asked to. Their money is already in it, so asking for a deposit first would leave them no
+  // way to move a limit.
+  const inForce = hasAllowance(account) ? account.allowance : null;
+  // Until the owner types a figure, each one follows the limits they have, or what the wallet can actually fund.
+  const starting: Limits = inForce
+    ? { deposit: 0, perCoverCap: inForce.perCoverCap, monthlyCap: inForce.monthlyCap, approvalThreshold: inForce.approvalThreshold, dailyDataCap: inForce.dailyDataCap }
+    : wallet !== null && wallet > FEE_RESERVE
+      ? fittedLimits(wallet)
+      : USUAL;
+  const values = { ...starting, ...edited };
   const short = wallet !== null && wallet < values.deposit;
+  const inVault = (inForce?.balance ?? 0) + values.deposit;
   // Figures that contradict each other are said so here, before anything is signed.
   const contradictions = [
-    values.deposit <= 0 && "Put something into the vault: the agent can only spend what is in it.",
+    inVault <= 0 && "Put something into the vault: the agent can only spend what is in it.",
     values.perCoverCap <= 0 && "With nothing allowed for one cover, the agent can’t buy any.",
     values.perCoverCap > values.monthlyCap && "One cover is allowed more than the whole month is. Raise the month, or lower the cover.",
-    values.dailyDataCap > values.deposit && "The daily data budget is more than the vault would hold.",
+    values.dailyDataCap > inVault && "The daily data budget is more than the vault would hold.",
   ].filter((problem): problem is string => Boolean(problem));
 
   async function run(work: () => Promise<void>) {
@@ -145,7 +155,7 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
         {FIELDS.map(({ key, label, hint }) => (
           <label key={key} htmlFor={key} className="flex items-center justify-between gap-4">
             <span>
-              {label}
+              {key === "deposit" && inForce ? "Add to your vault" : label}
               {hint && <span className="block text-sm text-muted">{hint}</span>}
             </span>
             <Dollars id={key} value={values[key]} onChange={(value) => setEdited({ ...edited, [key]: value })} />
@@ -171,7 +181,7 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
       )}
 
       <button type="submit" disabled={step !== null || short || contradictions.length > 0} aria-busy={step !== null} className="btn btn-primary mt-6">
-        {step ?? "Set allowance"}
+        {step ?? (inForce ? "Save limits" : "Set allowance")}
       </button>
       {error && (
         <p role="alert" className="note note-bad mt-4 text-sm break-words">
