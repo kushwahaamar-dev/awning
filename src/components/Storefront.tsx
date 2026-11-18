@@ -14,17 +14,17 @@ const PAGES = [
 export function Storefront() {
   const path = usePathname();
   return (
-    <header className="wrap flex h-20 items-center justify-between gap-4">
+    <header className="wrap flex h-16 items-center justify-between gap-4">
       <Link href="/" aria-label="Awning, home">
         <Logo />
       </Link>
-      <nav aria-label="Main" className="flex items-center whitespace-nowrap max-sm:text-sm sm:gap-2">
+      <nav aria-label="Main" className="-mr-2.5 flex items-center text-[0.9375rem] whitespace-nowrap">
         {PAGES.map(({ href, label }) => (
           <Link
             key={href}
             href={href}
             aria-current={path === href ? "page" : undefined}
-            className={`rounded-full px-2 py-2 transition-colors sm:px-4 ${path === href ? "bg-raised text-fg" : "text-muted hover:text-fg"}`}
+            className={`rounded-full px-2.5 py-1.5 transition-colors ${path === href ? "bg-raised text-fg" : "text-muted hover:text-fg"}`}
           >
             {label}
           </Link>

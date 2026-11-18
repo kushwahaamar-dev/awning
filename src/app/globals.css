@@ -1,48 +1,40 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Paper and ink. A page is drawn in the one black. What can be pressed or typed into is a soft shape on the
-     paper, so it can be told at a glance from what is only read. */
-  --color-bg: #ffffff;
-  --color-raised: #f4f4f2;
-  --color-pressed: #e8e8e5;
-  /* A line not yet drawn, and the rule between rows. */
-  --color-line: #dedede;
-  /* The edge of something that takes typing. */
+  /* Off-white paper, near-black ink, and greys for everything said quietly. A page is one narrow column of
+     plain sentences; the one loud thing on it is a picture. */
+  --color-bg: #fafafa;
+  --color-card: #ffffff;
+  --color-raised: #f3f3f3;
+  --color-pressed: #e8e8e8;
+  /* The rule between rows, and the edge of something that takes typing. */
+  --color-line: #e6e6e6;
   --color-edge: #8c8c8c;
-  --color-fg: #000000;
+  --color-fg: #050505;
   --color-soft: #1c1c1c;
-  --color-muted: #6a6a6a;
-  --color-faint: #757575;
-  /* What matters on a screen is marked in ink and by its size, not by a colour. */
-  --color-accent: #000000;
-  /* The one colour: the stripes of the awning. A fill, never text. */
+  --color-muted: #5a5a5a;
+  --color-faint: #6e6e6e;
+  /* The one colour of the interface: the stripes of the awning. A fill, never text. */
   --color-lit: #f2b54a;
-  /* The same colour let down to a wash, for a part of a page set a little apart. */
-  --color-shade: #fdf5e4;
-  /* The scenes' ink. A plain value, because the scene player reads the colour itself. */
-  --color-ink: #000000;
+  --color-lit-deep: #e8a531;
   --color-good: #17794a;
   --color-bad: #c4281f;
   --color-bad-wash: #fcecea;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.8125rem;
-  --text-base: 0.9375rem;
-  --text-lg: 1.0625rem;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
   --text-xl: 1.25rem;
   --text-2xl: 1.5rem;
-  --text-3xl: 2rem;
-  --text-4xl: 2.5rem;
-  --text-5xl: 3rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
 }
 
 :root {
-  /* The page's margin: a phone's at the narrow end, the drawing's 24 at a desk. */
-  --gutter: clamp(1.25rem, 1.67vw, 1.5rem);
+  --gutter: clamp(1.25rem, 4vw, 1.5rem);
 }
 
 html {
@@ -50,12 +42,12 @@ html {
 }
 
 body {
-  overflow-x: clip;
   background: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   font-size: 1rem;
-  line-height: 1.55;
+  line-height: 1.625;
+  letter-spacing: -0.006em;
 }
 
 :focus-visible {
@@ -63,7 +55,6 @@ body {
   outline-offset: 2px;
 }
 
-/* Selecting text is the only other place the awning's colour turns up. */
 ::selection {
   background: var(--color-lit);
   color: var(--color-fg);
@@ -76,92 +67,111 @@ body {
   outline: none;
 }
 
-/* A city on the map reached by keyboard is marked by its ring, not by a box drawn round the dot.
-   Out here with the rule it overrides, because nothing inside a layer can. */
-.pricemap a:focus-visible {
-  outline: none;
-}
-.pricemap a:focus-visible .ring {
-  stroke: var(--color-fg);
-  stroke-width: 2px;
-}
-
 @layer components {
-  /* Type. One family. A page is found by its headings, so they carry the weight; what is read under them is plain. */
-  .display {
-    font-size: clamp(2.5rem, 5.2vw, 4.75rem);
-    font-weight: 600;
-    line-height: 1.02;
-    letter-spacing: -0.045em;
-    text-wrap: balance;
+  /* The page's measure: one column, narrow enough to read down without the eye travelling. */
+  .wrap {
+    width: 100%;
+    max-width: calc(42rem + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-inline: var(--gutter);
   }
-  /* The line a page opens with inside the app. */
+  /* A part of a page, set off from the one above by room alone. */
+  .section {
+    margin-top: 5.5rem;
+  }
+
+  /* Type. Nothing is large. A page is told apart by what is in ink and what is in grey, and by a little weight. */
   .sign {
-    font-size: clamp(2rem, 3.8vw, 3.5rem);
-    font-weight: 600;
-    line-height: 1.04;
-    letter-spacing: -0.04em;
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.022em;
     text-wrap: balance;
   }
   .heading {
-    font-size: clamp(1.75rem, 3vw, 2.75rem);
-    font-weight: 600;
-    line-height: 1.06;
-    letter-spacing: -0.035em;
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: -0.012em;
     text-wrap: balance;
   }
   .title {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 500;
-    line-height: 1.25;
-    letter-spacing: -0.02em;
-    text-wrap: balance;
-  }
-  /* The sentence or two under a heading that says what the part is. */
-  .lede {
-    max-width: 36rem;
-    color: var(--color-muted);
-    font-size: clamp(1.0625rem, 1.5vw, 1.3125rem);
-    line-height: 1.4;
-    letter-spacing: -0.01em;
+    line-height: 1.5;
     text-wrap: pretty;
   }
-  /* Running text: the reading size, held to a short measure. */
-  .copy {
-    max-width: 28rem;
-    font-size: 1rem;
-    line-height: 1.5;
+  /* The sentences a page opens with. */
+  .lede {
+    color: var(--color-muted);
+    text-wrap: pretty;
   }
-  /* A figure read live from the chain, set in the dots of the sign over the shop. */
-  .figure {
-    font-family: var(--font-geist-pixel-circle), var(--font-geist-mono), ui-monospace, monospace;
-    font-variant-numeric: tabular-nums;
+  /* What is said under a title. */
+  .copy {
+    color: var(--color-muted);
+    font-size: 0.9375rem;
+    line-height: 1.625;
+    text-wrap: pretty;
   }
   /* Money, odds, addresses, times: anything read as a value keeps its digits in columns. */
   .num {
     font-variant-numeric: tabular-nums;
   }
+  /* A figure a screen turns on: what cover pays, what it costs, what a thief got. */
+  .figure {
+    font-size: 2.25rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+  }
 
-  /* Something set apart sits on a soft shape of its own. */
+  /* Something set apart sits on a soft grey shape, and what matters most inside it on a white one. */
   .panel {
+    border: 1px solid rgb(0 0 0 / 0.04);
     border-radius: 1.25rem;
     background: var(--color-raised);
   }
-  /* The cover itself is the one thing drawn in line: a ticket, with the awning's valance along its top. */
+  .inset {
+    border: 1px solid rgb(0 0 0 / 0.06);
+    border-radius: 1rem;
+    background: var(--color-card);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.03);
+  }
+  /* The cover itself is the one thing lifted off the page: a ticket, with the awning's valance along its top. */
   .ticket {
     overflow: hidden;
-    border: 1px solid var(--color-fg);
+    border: 1px solid rgb(0 0 0 / 0.08);
     border-radius: 1.25rem;
-    background: var(--color-bg);
+    background: var(--color-card);
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.04),
+      0 14px 32px -18px rgb(0 0 0 / 0.16);
   }
   .valance {
-    height: 1.125rem;
-    border-bottom: 1px solid var(--color-fg);
-    background: repeating-linear-gradient(90deg, var(--color-lit) 0 1.75rem, var(--color-bg) 0 3.5rem);
+    height: 0.75rem;
+    border-bottom: 1px solid rgb(0 0 0 / 0.08);
+    background: repeating-linear-gradient(90deg, var(--color-lit) 0 1.25rem, var(--color-card) 0 2.5rem);
   }
   /* Rows separated by hairlines. */
   .rows > * + * {
     border-top: 1px solid var(--color-line);
+  }
+
+  /* The small picture beside a section's name: a sketch on a tile set down a little crooked, the way a stamp is. */
+  .stamp {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border: 1px solid rgb(0 0 0 / 0.08);
+    border-radius: 0.75rem;
+    background: var(--color-card);
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.05),
+      0 8px 16px -10px rgb(0 0 0 / 0.25);
+    rotate: -4deg;
   }
 
   .btn {
@@ -169,8 +179,8 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    height: 2.75rem;
-    padding: 0 1.25rem;
+    height: 2.5rem;
+    padding: 0 1rem;
     border-radius: 999px;
     font-size: 0.9375rem;
     font-weight: 500;
@@ -185,27 +195,25 @@ body {
     scale: 0.98;
   }
   .btn-lg {
-    height: 3.5rem;
-    padding: 0 1.75rem;
-    font-size: 1.0625rem;
+    height: 2.75rem;
+    padding: 0 1.25rem;
+    font-size: 1rem;
   }
-  /* The one thing to press on a screen is the colour of the awning, edged in ink like everything drawn here.
-     Pointed at, it turns to ink. */
+  /* The one thing to press on a screen is the colour of the awning. */
   .btn-primary {
     background: var(--color-lit);
-    box-shadow: inset 0 0 0 1px var(--color-fg);
     color: var(--color-fg);
   }
   .btn-primary:hover:not(:disabled) {
-    background: var(--color-fg);
-    color: var(--color-bg);
+    background: var(--color-lit-deep);
   }
   .btn-secondary {
-    background: var(--color-raised);
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line);
     color: var(--color-fg);
   }
   .btn-secondary:hover:not(:disabled) {
-    background: var(--color-pressed);
+    background: var(--color-raised);
   }
   .btn-danger,
   .btn-recording {
@@ -214,7 +222,10 @@ body {
   }
   .btn-danger:hover:not(:disabled) {
     background: var(--color-bad);
-    color: var(--color-bg);
+    color: var(--color-card);
+  }
+  .btn-recording {
+    animation: pulse 1400ms ease-in-out infinite;
   }
   /* A button that can't be pressed yet is a faint shape of itself. */
   .btn:disabled {
@@ -223,11 +234,13 @@ body {
     box-shadow: none;
     color: var(--color-faint);
   }
+  .panel .btn:disabled:not([aria-busy="true"]) {
+    background: var(--color-pressed);
+  }
   /* A button at work can't be pressed again, but it hasn't gone away: it keeps its colour and says what it is doing. */
   .btn-primary[aria-busy="true"]:disabled {
     cursor: progress;
     background: var(--color-lit);
-    box-shadow: inset 0 0 0 1px var(--color-fg);
     color: var(--color-fg);
     opacity: 0.7;
   }
@@ -236,23 +249,13 @@ body {
     cursor: progress;
     color: var(--color-soft);
   }
-  /* On a soft shape, a soft button would disappear into it, so there it is paper. */
-  :is(.panel, .note) .btn-secondary,
-  :is(.panel, .note) .btn:disabled:not([aria-busy="true"]) {
-    background: var(--color-bg);
-  }
-  :is(.panel, .note) .btn-secondary:hover:not(:disabled) {
-    background: var(--color-pressed);
-  }
-  .btn-recording {
-    animation: pulse 1400ms ease-in-out infinite;
-  }
+  /* A way to somewhere else, marked by a dotted line under it that firms up when pointed at. */
   .link {
     color: var(--color-fg);
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
+    text-decoration: underline dotted;
+    text-decoration-thickness: 1.5px;
     text-decoration-color: var(--color-edge);
-    text-underline-offset: 0.25em;
+    text-underline-offset: 0.3em;
     transition: text-decoration-color 120ms;
   }
   .link:hover {
@@ -264,17 +267,17 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--color-soft);
-    font-size: 0.8125rem;
+    color: var(--color-muted);
+    font-size: 0.875rem;
     white-space: nowrap;
   }
   .status::before {
     content: "";
     flex: none;
-    width: 0.375rem;
-    height: 0.375rem;
+    width: 0.4375rem;
+    height: 0.4375rem;
     border-radius: 50%;
-    background: var(--dot, var(--color-faint));
+    background: var(--dot, var(--color-edge));
   }
   .status-accent {
     --dot: var(--color-fg);
@@ -290,8 +293,8 @@ body {
   }
   .dot {
     flex: none;
-    width: 0.375rem;
-    height: 0.375rem;
+    width: 0.4375rem;
+    height: 0.4375rem;
     border-radius: 50%;
     background: currentColor;
   }
@@ -302,16 +305,21 @@ body {
     background: var(--color-raised);
     padding: 0.75rem 1rem;
     color: var(--color-soft);
+    font-size: 0.9375rem;
   }
   .note-bad {
     background: var(--color-bad-wash);
     color: var(--color-bad);
   }
+  .panel .note:not(.note-bad) {
+    background: var(--color-card);
+  }
 
-  /* A value to type or choose: a box of its own, edged in ink while it is being used. */
+  /* A value to type or choose: a white box of its own, edged in ink while it is being used. */
   .field {
     border-radius: 0.75rem;
-    background: var(--color-raised);
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line);
     padding: 0.5rem 0.75rem;
     transition: box-shadow 120ms;
   }
@@ -323,19 +331,18 @@ body {
     outline: none;
     box-shadow: inset 0 0 0 1.5px var(--color-fg);
   }
-  .panel :is(.field, .note:not(.note-bad)) {
-    background: var(--color-bg);
-  }
 
-  /* Where the risk gets typed or spoken: the largest thing on the screen and the first, drawn in line like the
-     ticket it leads to. Its line doubles in weight while it is being written in. */
+  /* Where the bad day gets typed or spoken: the first thing to do on a screen. */
   .composer {
-    border-radius: 1.75rem;
-    box-shadow: inset 0 0 0 1px var(--color-fg);
+    border-radius: 1.25rem;
+    background: var(--color-card);
+    box-shadow:
+      inset 0 0 0 1px rgb(0 0 0 / 0.1),
+      0 1px 2px rgb(0 0 0 / 0.04);
     transition: box-shadow 150ms;
   }
   .composer:focus-within {
-    box-shadow: inset 0 0 0 2px var(--color-fg);
+    box-shadow: inset 0 0 0 1.5px var(--color-fg);
   }
 
   /* How much of a loss to cover: a track to slide a knob along, inked as far as the knob has gone. */
@@ -364,7 +371,7 @@ body {
     margin-top: -0.5625rem;
     border: 1.5px solid var(--color-fg);
     border-radius: 50%;
-    background: var(--color-bg);
+    background: var(--color-card);
   }
   .range::-moz-range-thumb {
     box-sizing: border-box;
@@ -372,130 +379,67 @@ body {
     height: 1.5rem;
     border: 1.5px solid var(--color-fg);
     border-radius: 50%;
-    background: var(--color-bg);
+    background: var(--color-card);
   }
 
-  /* The page's measure: edge to edge, less the margin. */
-  .wrap {
+  /* The picture a page opens on. It has no frame: it thins out into the paper on every side. */
+  .scene {
+    mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 11%, #000 89%, transparent);
+    mask-composite: intersect;
+  }
+  /* Under it, a ruler to drag along from one bad day to the next. The real control lies unseen over the whole of
+     it, so it can be dragged, pressed or moved with the arrow keys; the marker only shows where it is. */
+  .ruler {
+    position: relative;
+    height: 2.75rem;
+  }
+  .ruler input {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    padding-inline: var(--gutter);
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: grab;
   }
-  /* Something wide and, beside it on a wide screen, an aside: the map and its reading, the allowance and what a
-     hijacker could take. */
-  @media (width >= 80rem) {
-    .wide-and-aside {
-      grid-template-columns: minmax(0, 1fr) 19rem;
-    }
+  .ruler input:active {
+    cursor: grabbing;
   }
-  /* The map's plotting surface. Its labels carry a rim of the paper, so they read over the grid and over a dot. */
-  .pricemap {
-    background-image: radial-gradient(circle, rgb(0 0 0 / 0.22) 0.75px, transparent 1.1px);
-    background-size: 1.5rem 1.5rem;
-  }
-  .pricemap text {
-    font-size: 15px;
-    paint-order: stroke;
-    stroke: var(--color-bg);
-    stroke-width: 5px;
-    stroke-linejoin: round;
-  }
-
-  /* The shop at the top of the page. Its faces are drawn flat and laid into the picture, which would stretch
-     their lines with them; every line is held at a hair's width instead. */
-  .shopfront :is(rect, line, path, circle, polygon) {
-    vector-effect: non-scaling-stroke;
-  }
-  /* One raindrop: it falls the height its streak has to fall, at the speed every other drop falls at. */
-  .drop {
-    animation: fall linear infinite;
-    animation-duration: calc(var(--fall) * 9ms);
-  }
-
-  /* A part of the landing page: room above and below, and its contents held to a width that can be read across. */
-  .section {
-    padding-block: clamp(4.5rem, 9vw, 8rem);
-  }
-  .inner {
-    max-width: 78rem;
-    margin-inline: auto;
-  }
-  /* A part set a little apart from its neighbours, on a wash of the awning's colour from one edge of the window to the other. */
-  .band {
-    margin-inline: calc(-1 * var(--gutter));
-    padding-inline: var(--gutter);
-    background: var(--color-shade);
-  }
-  /* One line under the first screen for whoever wants to know how it is made, which opens onto the rest of it. */
-  .made summary {
+  .ruler-ticks {
+    position: absolute;
+    inset: 0 1.25rem;
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
-    gap: 0.5rem 2rem;
-    border-top: 1px solid var(--color-line);
-    padding-block: 1.25rem;
-    color: var(--color-muted);
-    cursor: pointer;
-    list-style: none;
   }
-  .made summary::-webkit-details-marker {
-    display: none;
-  }
-  /* The mark where the next letter of a sentence being written will land. */
-  .caret {
-    display: inline-block;
+  .ruler-ticks i {
     width: 1.5px;
-    height: 1em;
-    margin-left: 0.08em;
-    vertical-align: -0.12em;
-    background: var(--color-fg);
-    animation: blink 900ms steps(2) infinite;
+    height: 0.875rem;
+    border-radius: 1px;
+  }
+  .ruler-marker {
+    position: absolute;
+    top: 50%;
+    left: calc(1.25rem + (100% - 2.5rem) * var(--at));
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid rgb(0 0 0 / 0.08);
+    border-radius: 0.75rem;
+    background: var(--color-card);
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.06),
+      0 8px 16px -10px rgb(0 0 0 / 0.3);
+    translate: -50% -50%;
+    transition: left 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+  }
+  .ruler input:focus-visible + .ruler-marker {
+    outline: 2px solid var(--color-fg);
+    outline-offset: 2px;
   }
 
-  /* The name at the foot of every page, set to run exactly from one margin to the other. The numbers are the
-     face's own: set this tight, the six letters are 2.986em of ink starting 0.044em in, the dot of the i
-     0.711em above the line and the g 0.162em below it. */
-  .wordmark-fit {
-    container-type: inline-size;
-  }
-  .wordmark {
-    font-size: calc(100cqw / 2.986);
-    line-height: 0.92;
-    margin-left: -0.044em;
-    padding-bottom: calc(0.06em + var(--gutter));
-    letter-spacing: -0.04em;
-    white-space: nowrap;
-    user-select: none;
-  }
-
-  /* Scenes are printed in dots on the paper, with no frame round them. What a piece doesn't colour is in the page's ink. */
-  .ascii {
-    color: var(--color-ink);
-  }
-  /* Something tried against the agent's limits, set large enough to be read as a line of its own. */
-  .attempt {
-    font-size: clamp(1.1875rem, 2.1vw, 1.875rem);
-    line-height: 1.15;
-    letter-spacing: -0.03em;
-    text-wrap: balance;
-  }
-  /* What failed is crossed out. Where the browser can tie drawing to scrolling, the line is drawn through it as it comes up the screen. */
-  .struck {
-    background: linear-gradient(currentColor, currentColor) no-repeat 0 58% / 100% 1.5px;
-  }
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      .struck {
-        animation: strike linear both;
-        animation-timeline: view();
-        animation-range: entry 0% cover 22%;
-      }
-    }
-  }
-  /* A bad day to pick is a way in from its picture to its price, and pointing anywhere on it inks the line under the price. */
-  .risk:hover .link {
-    text-decoration-color: var(--color-fg);
-  }
   /* A verdict landing on a row. */
   .land {
     animation: land 260ms cubic-bezier(0.2, 1.2, 0.4, 1) both;
@@ -503,27 +447,9 @@ body {
   }
 }
 
-@keyframes strike {
-  from {
-    background-size: 0% 1.5px;
-  }
-}
-
 @keyframes blink {
   50% {
     opacity: 0.25;
-  }
-}
-
-@keyframes fall {
-  from {
-    opacity: 0;
-  }
-  12% {
-    opacity: 1;
-  }
-  to {
-    transform: translateY(calc(var(--fall) * 1px));
   }
 }
 
@@ -543,15 +469,14 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .land,
   .status-live::before,
-  .btn-recording,
-  .caret,
-  .drop {
+  .btn-recording {
     animation: none;
   }
   .btn,
   .link,
   .field,
-  .composer {
+  .composer,
+  .ruler-marker {
     transition: none;
   }
 }

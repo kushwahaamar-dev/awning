@@ -6,6 +6,7 @@ import type { Turn } from "@/lib/hedge/interpret";
 import { EXAMPLE_RISK } from "@/lib/words";
 import { Mic } from "./icons";
 import { Risks } from "./Risks";
+import { Stamp } from "./Sketch";
 import type { useVoice } from "./voice";
 
 type Props = {
@@ -54,12 +55,12 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
   }
 
   return (
-    <div className="mx-auto max-w-6xl pt-12 sm:pt-20">
+    <div className="pt-8 sm:pt-14">
       <h1 className="sign">What would a bad day cost you?</h1>
-      {opening && <p className="lede mt-4">Say it in your own words. You see the price before you pay anything.</p>}
+      {opening && <p className="lede mt-3">Say it in your own words. You see the price before you pay anything.</p>}
 
       {earlier.length > 0 && (
-        <ol className="mt-8 space-y-2 text-lg text-muted">
+        <ol className="mt-6 space-y-1.5 text-muted">
           {earlier.map((text, i) => (
             <li key={i}>{text}</li>
           ))}
@@ -69,7 +70,7 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
 
       {/* The box stays where it is while its sentence is read and priced: the words stay in it and the wait is told under them. */}
       <form
-        className="composer mt-8"
+        className="composer mt-7"
         aria-busy={busy}
         onSubmit={(e) => {
           e.preventDefault();
@@ -77,7 +78,7 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
         }}
       >
         <label htmlFor="risk" className="sr-only">
-          {question ?? "Describe the risk"}
+          {question ?? "Name your bad day"}
         </label>
         <textarea
           id="risk"
@@ -98,11 +99,11 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
             }
           }}
           placeholder={question ? "Your answer…" : EXAMPLE_RISK}
-          className="block w-full resize-none bg-transparent px-6 pt-6 text-xl leading-snug placeholder:text-faint focus:outline-none sm:px-7 sm:text-2xl"
+          className="block w-full resize-none bg-transparent px-5 pt-4 text-lg leading-snug placeholder:text-faint focus:outline-none"
         />
-        <div className="flex min-h-[4.25rem] flex-wrap items-center justify-between gap-3 p-3 pl-6 sm:pl-7">
+        <div className="flex min-h-14 flex-wrap items-center justify-between gap-3 p-2 pl-5">
           {busy ? (
-            <p aria-live="polite" className="status status-accent status-live text-sm whitespace-normal text-fg">
+            <p aria-live="polite" className="status status-accent status-live whitespace-normal text-fg">
               <span>
                 {!pricing ? "Reading your sentence…" : checking ? "Pricing it on Gemini, and buying a forecast to check the price…" : "Pricing it on Gemini…"}
                 {said.length > 0 && <span className="text-muted"> This can take up to a minute.</span>}
@@ -127,7 +128,7 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
                   </button>
                 )}
                 <button type="submit" className="btn btn-primary">
-                  Price cover
+                  See my price
                 </button>
               </span>
             </>
@@ -152,12 +153,15 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
 
       {/* The examples keep their place through a first wait, out of reach, so nothing under the box moves. */}
       {opening && (
-        <section className={`mt-16 transition-opacity sm:mt-20 ${busy ? "opacity-40" : ""}`} inert={busy}>
-          <h2 className="title text-muted">Or start from a bad day Gemini is pricing now</h2>
-          <div className="mt-8">
+        <section className={`section transition-opacity ${busy ? "opacity-40" : ""}`} inert={busy}>
+          <h2 className="heading flex items-center gap-4">
+            <Stamp of="day" />
+            Or pick a bad day priced right now
+          </h2>
+          <div className="mt-6">
             <Risks />
           </div>
-          <p className="mt-12 text-muted">
+          <p className="copy mt-6">
             Not sure what&rsquo;s costing you?{" "}
             <Link href="/find" className="link">
               Find it in your sales

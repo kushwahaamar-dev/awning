@@ -9,11 +9,12 @@ import type { CoverPlan } from "@/lib/hedge/plan";
 import { cents, usd } from "@/lib/format";
 import { offerPrice } from "@/lib/hedge/quote";
 import { hasAllowance, post, useAccount } from "./account";
-import { Ascii, sceneFor } from "./Ascii";
 import { Ask } from "./Ask";
 import { Bought, type Purchase } from "./Bought";
 import { Fit } from "./Fit";
 import { Receipt } from "./Receipt";
+import { pictureOf } from "./Risks";
+import { Stamp } from "./Sketch";
 import { useVoice } from "./voice";
 
 type Unlisted = { wanted: string | null };
@@ -180,20 +181,21 @@ function DeskFor() {
 
   if (plan) {
     return (
-      <div className="mx-auto grid max-w-6xl items-start gap-x-14 gap-y-10 pt-8 sm:pt-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,27rem)] lg:grid-rows-[auto_1fr]">
-        <div>
-          <button type="button" onClick={startOver} className="link text-sm">
-            Describe a different risk
-          </button>
-          <Ascii scene={sceneFor(plan.exposure.trigger)} className="mt-6 w-full" />
-          <p className="mt-6 text-muted">{linked ? CAME_FROM[linked.from] : "You said"}</p>
-          <h1 className="mt-2 max-w-2xl text-[1.75rem] leading-[1.2] tracking-[-0.02em] text-balance">{plan.exposure.summary}</h1>
+      <div className="pt-8 sm:pt-14">
+        <button type="button" onClick={startOver} className="link text-sm">
+          Name a different day
+        </button>
+        <div className="mt-6 flex items-start gap-4">
+          <Stamp of={pictureOf(plan.exposure.trigger)} />
+          <div>
+            <p className="text-sm text-muted">{linked ? CAME_FROM[linked.from] : "You said"}</p>
+            <h1 className="sign mt-1">{plan.exposure.summary}</h1>
+          </div>
         </div>
-        {/* In the source it sits between the risk and its small print, which is the order a phone shows them in. */}
-        <div className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+        <div className="mt-8">
           <Receipt plan={plan} coverRatio={coverRatio} repricing={repricing} onCoverChange={changeCover} onBought={finish} />
         </div>
-        <div className="lg:col-start-1">
+        <div className="mt-14">
           <Fit plan={plan} />
         </div>
       </div>

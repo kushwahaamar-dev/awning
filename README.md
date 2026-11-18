@@ -11,7 +11,7 @@ before you pay a cent.
 cover; the first press gives you test dollars, sets up your agent and buys. The test pool is small,
 so the amounts are too.
 
-![The Awning landing page: “Name your bad day. Get paid if it happens.”, a box where an example writes itself and is priced, and a shop drawn in line with its striped awning out in the rain](docs/screenshots/landing.jpg)
+![The Awning landing page: “Awning pays you when a bad day hits your business”, a box to name the day in, and a scene of a cabin in the snow with a ruler under it to drag from one bad day to the next](docs/screenshots/landing.jpg)
 
 > "If Chicago's high stays under 46 tomorrow, my coffee cart is out about $300."
 >
@@ -73,7 +73,7 @@ itself is real either way, locked onchain and paid on Gemini's resolution.
 **A quote.** What the cover pays, the market's odds, what it costs, and where a payout could differ
 from your actual loss.
 
-![A quote on a ticket under the awning's stripes: pays $300 if Chicago's high is 59°F or below, costs $35.16, beside a cabin in the snow printed in dots](docs/screenshots/quote.jpg)
+![A quote: the bad day in a sentence, and under it a ticket with the awning's stripes along its top saying what the cover pays and what it costs](docs/screenshots/quote.jpg)
 
 **The hijack test.** One button hands the agent's real key to an attacker and sends real
 transactions. The contracts refuse everything except the day's data budget.
@@ -237,11 +237,10 @@ free assets. All three are fixed and have tests.
 - `src/lib/ledger` stores contract events, delivered by a QuickNode Stream when one is registered and
   read from the chain's logs otherwise.
 - `src/lib/chain/cctp.ts` and `/api/cashout` send vault money to other chains through Circle's CCTP.
-- `src/components/Ascii.tsx` prints the animated scenes on the landing page and inside the app, in black
-  dots and the awning's amber. The pieces come from [ascii-magic-art](https://www.ascii-magic.com/ascii)
-  (MIT), bundled from the npm package so nothing is loaded from a third party at run time.
-  `src/components/awning-out.ts`, the shop letting out its awning, is Awning's own piece, made with the
-  library's kit.
+- `src/components/Scene.tsx` plays the picture the landing page opens on: three animated scenes from
+  [ascii-magic-art](https://www.ascii-magic.com/ascii) (MIT), in their own colours, bundled from the npm
+  package so nothing is loaded from a third party at run time. `src/components/Sketch.tsx` is every other
+  picture on the site, drawn by hand in ink and the awning's amber.
 - `src/lib/venue` places the pool's hedge: through Gemini's trading API when the exchange the key trades on lists the contracts, on paper otherwise.
 
 ## The agent's decision loop
@@ -462,10 +461,8 @@ scripts/          local chain, Arc deploy, Stream replay
 drizzle/          database migrations
 ```
 
-The interface is set in the [Geist](https://vercel.com/font) family: Sans, at one weight, for every
-word, and Pixel for the few figures set in the dots of the shop's sign. The animated scenes come from
-[ascii-magic-art](https://www.ascii-magic.com/ascii), printed in two inks: black, and the amber of the
-awning.
+The interface is set in [Geist](https://vercel.com/font) Sans, in one narrow column. The scenes the landing
+page opens on come from [ascii-magic-art](https://www.ascii-magic.com/ascii).
 
 ## License
 

@@ -43,7 +43,7 @@ export function CostChart({ legs }: { legs: Leg[] }) {
   }
 
   return (
-    <figure className="mt-12 xl:mt-0">
+    <figure>
       <figcaption className="title">What $1 of this cover has cost to buy</figcaption>
       <p className="num mt-1 text-sm text-muted" aria-live="polite">
         {shown ? `${centsPerDollar(shown.cost)} at ${clock(shown.at)}, ${day(shown.at)}` : `Since ${clock(points[0].at)}, ${day(points[0].at)}`}
@@ -64,15 +64,15 @@ export function CostChart({ legs }: { legs: Leg[] }) {
             </text>
           </g>
         ))}
-        <path d={`${path} L${x(t1).toFixed(1)},${y(0)} L${x(t0).toFixed(1)},${y(0)} Z`} className="fill-accent/10" />
-        <path d={path} fill="none" className="stroke-accent" strokeWidth={1.75} strokeLinejoin="round" strokeLinecap="round" />
+        <path d={`${path} L${x(t1).toFixed(1)},${y(0)} L${x(t0).toFixed(1)},${y(0)} Z`} className="fill-fg/5" />
+        <path d={path} fill="none" className="stroke-fg" strokeWidth={1.75} strokeLinejoin="round" strokeLinecap="round" />
         {shown ? (
           <>
             <line x1={x(times[hover!])} x2={x(times[hover!])} y1={PAD.top} y2={H - PAD.bottom} className="stroke-edge" strokeWidth={1} />
-            <circle cx={x(times[hover!])} cy={y(shown.cost)} r={3.5} className="fill-accent stroke-bg" strokeWidth={2} />
+            <circle cx={x(times[hover!])} cy={y(shown.cost)} r={3.5} className="fill-fg stroke-bg" strokeWidth={2} />
           </>
         ) : (
-          <circle cx={x(t1)} cy={y(last.cost)} r={3.5} className="fill-accent stroke-bg" strokeWidth={2} />
+          <circle cx={x(t1)} cy={y(last.cost)} r={3.5} className="fill-fg stroke-bg" strokeWidth={2} />
         )}
         <text x={PAD.left} y={H - 4} className="num fill-faint text-[12px]">
           {clock(points[0].at)}

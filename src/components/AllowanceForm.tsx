@@ -59,7 +59,7 @@ function Dollars({ id, value, onChange }: { id: string; value: number; onChange:
   const [typing, setTyping] = useState<string | null>(null);
   const shown = typing ?? value.toLocaleString("en-US", { maximumFractionDigits: 2 });
   return (
-    <span className="field flex min-w-[7.5rem] items-baseline justify-end gap-1 text-lg">
+    <span className="field flex min-w-[7.5rem] items-baseline justify-end gap-1">
       <span className="num text-muted">$</span>
       <input
         id={id}
@@ -169,7 +169,7 @@ export function AllowanceForm({ onDone }: { onDone?: () => void }) {
         </p>
       )}
 
-      <button type="submit" disabled={step !== null || short || contradictions.length > 0} aria-busy={step !== null} className="btn btn-lg btn-primary mt-6">
+      <button type="submit" disabled={step !== null || short || contradictions.length > 0} aria-busy={step !== null} className="btn btn-primary mt-6">
         {step ?? "Set allowance"}
       </button>
       {error && (

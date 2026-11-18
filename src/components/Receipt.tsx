@@ -22,8 +22,6 @@ type Props = {
 
 const MIN_COVER = 10;
 const STEP = 5;
-// The two figures a quote comes down to, what it pays and what it costs, are set at one size.
-const FIGURE = "num text-[2.75rem] leading-none tracking-[-0.045em]";
 
 /** The quote, as a ticket under the awning: what the cover pays, what it costs, how much of the loss to cover, and the way to buy it. */
 export function Receipt({ plan: priced, coverRatio, repricing, onCoverChange, onBought }: Props) {
@@ -47,46 +45,47 @@ export function Receipt({ plan: priced, coverRatio, repricing, onCoverChange, on
   return (
     <section aria-label="Cover" className="ticket">
       <div aria-hidden className="valance" />
-      <div className="p-6 sm:p-7">
-        <p className="flex items-center justify-between gap-4 text-muted">
+      <div className="p-5 sm:p-7">
+        <p className="flex items-center justify-between gap-4 text-sm text-muted">
           <span className="num">{day(market.startsAt ?? market.expiresAt)}</span>
           {/* Up here it can come and go as the feed does without moving a line of the quote. */}
           {live && <span className="status status-good status-live">Live price</span>}
         </p>
-        <h2 className="mt-5">
-          <span className="block text-muted">Pays</span>
-          <span className={`mt-1 block ${FIGURE}`}>{usd(quote.payout)}</span>
-          <span className="title mt-3 block text-pretty">if {coverage.pays}</span>
-        </h2>
-
-        {price ? (
-          <div aria-busy={repricing} className={`mt-6 flex items-end justify-between gap-6 border-t border-line pt-5 transition-opacity ${repricing ? "opacity-40" : ""}`}>
-            <p>
-              <span className="block text-muted">Costs</span>
-              <span className={`mt-1 block ${FIGURE}`}>{cents(price.total)}</span>
-            </p>
-            <dl className="pb-1 text-right text-sm text-muted">
-              {quote.marketOdds !== null && (
-                <div>
-                  <dt className="inline">The market&rsquo;s odds </dt>
-                  <dd className="num inline text-fg">{percent(quote.marketOdds)}</dd>
-                </div>
-              )}
-              {forecast && (
-                <div>
-                  <dt className="inline">A weather model&rsquo;s </dt>
-                  <dd className="num inline text-fg">{percent(forecast.odds)}</dd>
-                </div>
-              )}
-            </dl>
-          </div>
-        ) : (
-          <p className="note note-bad mt-6">Nobody is selling this on Gemini right now, so there is no price. Try a day closer to today.</p>
-        )}
+        {/* The two figures a quote comes down to, side by side where there is room for both. */}
+        <div className="mt-5 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+          <h2>
+            <span className="block text-sm text-muted">Pays</span>
+            <span className="figure mt-1 block">{usd(quote.payout)}</span>
+            <span className="mt-2 block text-pretty">if {coverage.pays}</span>
+          </h2>
+          {price && (
+            <div aria-busy={repricing} className={`transition-opacity ${repricing ? "opacity-40" : ""}`}>
+              <p>
+                <span className="block text-sm text-muted">Costs</span>
+                <span className="figure mt-1 block">{cents(price.total)}</span>
+              </p>
+              <dl className="mt-2 text-sm text-muted">
+                {quote.marketOdds !== null && (
+                  <div>
+                    <dt className="inline">The market&rsquo;s odds </dt>
+                    <dd className="num inline text-fg">{percent(quote.marketOdds)}</dd>
+                  </div>
+                )}
+                {forecast && (
+                  <div>
+                    <dt className="inline">A weather model&rsquo;s </dt>
+                    <dd className="num inline text-fg">{percent(forecast.odds)}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          )}
+        </div>
+        {!price && <p className="note note-bad mt-6">Nobody is selling this on Gemini right now, so there is no price. Try a day closer to today.</p>}
 
         {price && (
           <div className="mt-6">
-            <label htmlFor="cover" className="flex items-baseline justify-between gap-4">
+            <label htmlFor="cover" className="flex items-baseline justify-between gap-4 text-[0.9375rem]">
               <span className="text-muted">Cover</span>
               <span>
                 <span className="num">{percent(coverRatio)}</span> of your {usd(exposure.lossUsd)} loss

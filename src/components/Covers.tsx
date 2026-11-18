@@ -6,6 +6,7 @@ import { REFUSAL } from "@/lib/words";
 import type { BlockReason } from "@/lib/chain/config";
 import { useAccount, type Cover } from "./account";
 import { External } from "./icons";
+import { Stamp } from "./Sketch";
 
 function state(cover: Cover): { label: string; tone: "" | "status-accent" | "status-good" | "status-bad" } {
   switch (cover.status) {
@@ -32,9 +33,12 @@ export function Covers() {
   if (!account || account.covers.length === 0) return null;
 
   return (
-    <section className="mx-auto mt-24 max-w-6xl">
-      <h2 className="heading">Your cover</h2>
-      <ul className="mt-8 space-y-3">
+    <section className="section">
+      <h2 className="heading flex items-center gap-4">
+        <Stamp of="price" />
+        Your cover
+      </h2>
+      <ul className="mt-6 space-y-2.5">
         {account.covers.map((cover) => {
           const { label, tone } = state(cover);
           const receipt = cover.openTx && explorerTx(cover.openTx);
@@ -43,8 +47,8 @@ export function Covers() {
           return (
             <li key={cover.id} className="panel overflow-hidden">
               {/* The awning is out over a cover that is in force, and in over one that has ended. */}
-              {cover.status === "open" && <div aria-hidden className="valance h-2" />}
-              <div className="grid gap-x-8 gap-y-3 px-6 py-5 sm:grid-cols-[1fr_auto] sm:items-center">
+              {cover.status === "open" && <div aria-hidden className="valance" />}
+              <div className="grid gap-x-8 gap-y-2 px-5 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
                 <div>
                   <p className="title">
                     {usd(cover.maxPayout)} if {cover.plan.coverage.pays}

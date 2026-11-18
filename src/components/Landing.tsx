@@ -1,19 +1,20 @@
+import Form from "next/form";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { chainLabel, explorerAddress, mandateAddress, poolAddress } from "@/lib/chain/config";
 import { ATTEMPTS } from "@/lib/covers/attempts";
 import { usesStreams } from "@/lib/ledger/source";
 import { hedging } from "@/lib/venue";
-import { HeroAsk } from "./HeroAsk";
-import { PriceMap } from "./PriceMap";
+import { voiceEnabled } from "@/lib/voice";
+import { BadDays } from "./BadDays";
+import { Prices } from "./Prices";
 import { LastRefusal } from "./Proof";
-import { Risks } from "./Risks";
-import { Shopfront } from "./Shopfront";
-import { Sketch, type Picture } from "./Sketch";
+import { Sketch, Stamp, type Picture } from "./Sketch";
 
 // The whole product in three moves. Between them they answer what people ask first: what do I do here, is this
 // insurance, and who pays me.
 const STEPS: { picture: Picture; title: string; body: string }[] = [
-  { picture: "day", title: "Say it", body: "Any bad day, in your own words, and what it would cost you." },
+  { picture: "say", title: "Say it", body: "Any bad day, in your own words, and what it would cost you." },
   { picture: "price", title: "See the price", body: "A market sets it, not an insurer. No forms, no adjuster." },
   { picture: "paid", title: "Get paid", body: "Your payout is locked before you pay. If the day happens, it arrives by itself." },
 ];
@@ -27,23 +28,6 @@ const ATTACK = [
   { tried: ATTEMPTS.dataLeft, verdict: "Went through", tone: "", failed: false },
 ];
 
-// What the pool does with cover it has written, said as it really is where this is running.
-const HEDGE = {
-  live: " The pool takes the same position on Gemini.",
-  sandbox: " Where Gemini’s sandbox lists the market, the pool places the same position there.",
-  paper: "",
-}[hedging];
-
-const TRUSTED = [
-  "One key reports Gemini’s result. If it goes silent, you’re paid in full after three days.",
-  ...{
-    live: [],
-    sandbox: ["The pool’s hedge runs on Gemini’s sandbox with test money, and on paper for weather, which the sandbox doesn’t list."],
-    paper: ["The pool’s hedge on Gemini is filled on paper until trading keys are set."],
-  }[hedging],
-  "The agent’s key and the pool’s keys share a server.",
-];
-
 /** A contract by its name, linked to where it can be read when the chain has an explorer. */
 function Contract({ address, children }: { address: string | undefined; children: string }) {
   const page = address && explorerAddress(address);
@@ -55,116 +39,150 @@ function Contract({ address, children }: { address: string | undefined; children
   );
 }
 
+// What each part of a cover is done by. Three of the rows depend on keys this deployment may not have: the page
+// says what is really running, not what could be.
+const MADE: { does: string; by: ReactNode }[] = [
+  { does: "Reads your sentence", by: "Google Gemini" },
+  { does: "Sets the price", by: "Gemini prediction markets" },
+  { does: "Checks the price", by: "A $0.02 forecast, paid over x402" },
+  {
+    does: "Locks your payout",
+    by: (
+      <>
+        <Contract address={poolAddress}>AwningPool</Contract>, an ERC-4626 vault
+      </>
+    ),
+  },
+  { does: "Holds the agent to its limits", by: <Contract address={mandateAddress}>AwningMandate</Contract> },
+  ...(hedging === "paper" ? [] : [{ does: "Hedges the pool", by: hedging === "live" ? "Gemini trading API" : "Gemini’s sandbox, where it lists the market" }]),
+  { does: "Reports what happened", by: usesStreams ? "QuickNode Streams" : "The chain’s own logs" },
+  { does: "Moves money out", by: "Circle CCTP" },
+  ...(voiceEnabled() ? [{ does: "Hears you say it", by: "ElevenLabs" }] : []),
+  { does: "Runs on", by: chainLabel[0].toUpperCase() + chainLabel.slice(1) },
+  { does: "Tested by", by: "126 contract tests" },
+];
+
+const TRUSTED = [
+  "One key reports Gemini’s result. If it goes silent, you’re paid in full after three days.",
+  ...{
+    live: [],
+    sandbox: ["The pool’s hedge runs on Gemini’s sandbox with test money, and on paper for weather, which the sandbox doesn’t list."],
+    paper: ["The pool’s hedge on Gemini is filled on paper until trading keys are set."],
+  }[hedging],
+  "The agent’s key and the pool’s keys share a server.",
+];
+
+/** The name of a part of the page, with its small picture beside it. */
+function Head({ stamp, children }: { stamp: Picture; children: string }) {
+  return (
+    <h2 className="heading flex items-center gap-4">
+      <Stamp of={stamp} />
+      {children}
+    </h2>
+  );
+}
+
 export function Landing() {
   return (
     <>
-      {/* The first screen is for someone who has never heard of this: what it is in nine words, and the thing itself at work. */}
-      <section className="inner grid items-center gap-x-10 gap-y-6 pb-12 lg:min-h-[calc(100svh-9rem)] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-        <div className="max-lg:order-last">
-          {/* Two sentences, a line each wherever there is room for one. */}
-          <h1 className="display xl:text-[3.75rem] [&>span]:block xl:[&>span]:whitespace-nowrap">
-            <span>Name your bad day.</span>
-            <span>Get paid if it happens.</span>
-          </h1>
-          <div className="mt-9 max-w-2xl">
-            <HeroAsk />
-            <p className="mt-4 text-muted">Weather, fuel and metal prices, crypto, game results. Free to try, on test dollars.</p>
-          </div>
-        </div>
-        <Shopfront className="w-full max-lg:mx-auto max-lg:max-w-xl" />
+      {/* For someone who has never heard of this: what it is, in two plain sentences, and the one thing to do. */}
+      <section className="pt-8 sm:pt-14">
+        <h1 className="sign">Awning pays you when a bad day hits your business.</h1>
+        <p className="lede mt-4">
+          Name the day in a sentence: a cold snap, a heat wave, fuel going up. Awning tells you what it costs to cover. If the day comes, the money
+          arrives by itself.
+        </p>
+        <Form action="/app" className="composer mt-7 flex items-center gap-2 p-1.5 pl-5 max-sm:flex-col max-sm:items-stretch max-sm:p-2.5">
+          <label htmlFor="ask" className="sr-only">
+            Name your bad day
+          </label>
+          <input id="ask" name="risk" autoComplete="off" placeholder="A cold day costs my patio $300…" className="min-w-0 grow bg-transparent py-2 placeholder:text-faint focus:outline-none max-sm:px-2.5" />
+          <button type="submit" className="btn btn-primary shrink-0">
+            See my price
+          </button>
+        </Form>
+        <p className="mt-3 text-sm text-faint">
+          Free to try: it runs on test dollars.{" "}
+          <Link href="/find" className="link whitespace-nowrap">
+            Not sure what costs you?
+          </Link>
+        </p>
       </section>
 
-      {/* And one line under it for whoever came to see how it is made. */}
-      <details id="built" className="inner made">
-        <summary>
-          <span>Priced by Gemini prediction markets. Paid in USDC on Arc. Bought by an AI agent whose spending limits are a contract.</span>
-          <span className="link shrink-0">How it&rsquo;s made</span>
-        </summary>
-        <div className="max-w-3xl pb-8">
-          <p className="text-muted">
-            Google&rsquo;s Gemini model reads your sentence, and a prediction market on the Gemini exchange prices it. Your agent pays $0.02 over x402 for
-            a forecast to check that price. The payout is locked in <Contract address={poolAddress}>AwningPool</Contract>, an ERC-4626 vault on{" "}
-            {chainLabel}, before the premium moves through <Contract address={mandateAddress}>AwningMandate</Contract>, the contract that holds your
-            limits.{HEDGE} {usesStreams ? "QuickNode Streams delivers every contract event to the app" : "The app reads every contract event from the chain"}
-            , and Circle CCTP carries a payout out to another chain. You can say your bad day out loud: ElevenLabs hears it. 126 contract tests pass.
-          </p>
-          <p className="mt-5">What you still have to trust</p>
-          <ul className="mt-2 space-y-2 text-muted">
-            {TRUSTED.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      </details>
+      <section className="mt-12">
+        <BadDays />
+      </section>
 
-      <section id="how" className="section band">
-        <ol className="inner grid gap-x-10 gap-y-14 md:grid-cols-3">
+      <section id="how" className="section">
+        <ol className="grid gap-x-8 gap-y-10 sm:grid-cols-3">
           {STEPS.map(({ picture, title, body }, i) => (
             <li key={title}>
-              <div className="flex h-44 items-end sm:h-52">
-                <Sketch of={picture} className="h-full" />
-              </div>
-              <h2 className="heading mt-8">
-                <span className="num mr-3 text-muted">{i + 1}</span>
+              <Sketch of={picture} className="h-28" />
+              <h2 className="title mt-4">
+                <span className="num mr-2 text-faint">{i + 1}</span>
                 {title}
               </h2>
-              <p className="lede mt-3 max-w-xs">{body}</p>
+              <p className="copy mt-1">{body}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      <section id="now" className="section">
-        <div className="inner">
-          <h2 className="heading">Or pick one. These prices are live.</h2>
-          <div className="mt-12">
-            <Risks
-              empty={
-                <p className="lede">
-                  Nothing worth showing this minute.{" "}
-                  <Link href="/app" className="link">
-                    Name your own
-                  </Link>
-                </p>
-              }
-            />
-          </div>
-        </div>
-      </section>
-
       <section id="prices" className="section">
-        <div className="inner">
-          <h2 className="heading">A bad day tomorrow, priced in 49 cities</h2>
-          <div className="mt-12">
-            <PriceMap />
-          </div>
+        <Head stamp="day">Tomorrow, city by city</Head>
+        <p className="copy mt-4">What it costs this minute to cover a bad day tomorrow, where you trade.</p>
+        <div className="mt-4">
+          <Prices />
         </div>
       </section>
 
-      {/* The agent that does the buying holds money, so the last thing shown is what happens when it is stolen: each failure crossed out. */}
-      <section id="trust" className="section band">
-        <div className="inner grid gap-x-16 gap-y-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)]">
-          <div>
-            <h2 className="heading">We gave the agent&rsquo;s keys to a thief. They got $2.</h2>
-            <Link href="/agent" className="btn btn-secondary mt-8">
+      {/* The agent that does the buying holds money, so what happens when it is stolen is shown, not promised. */}
+      <section id="agent" className="section">
+        <Head stamp="lock">An agent that can&rsquo;t be robbed</Head>
+        <div className="panel mt-6 grid gap-1.5 p-1.5 sm:grid-cols-2">
+          <div className="p-5">
+            <h3 className="title">We gave the agent&rsquo;s keys to a thief.</h3>
+            <p className="copy mt-2">
+              They got <span className="text-fg">$2</span>: one day&rsquo;s budget for weather data. A contract on {chainLabel} refused the rest.
+            </p>
+            <Link href="/agent" className="link mt-4 inline-block">
               Try to rob it yourself
             </Link>
-            <Sketch of="lock" className="mt-10 w-56 max-lg:hidden" />
           </div>
-          <div>
-            <ol className="space-y-5">
+          <div className="inset p-5">
+            <p className="text-sm font-medium">What they tried</p>
+            <ol className="mt-3 space-y-2.5 text-[0.9375rem] leading-snug">
               {ATTACK.map(({ tried, verdict, tone, failed }) => (
-                <li key={tried} className="flex items-baseline justify-between gap-6">
-                  <span className="attempt">
-                    <span className={failed ? "struck" : undefined}>{tried}</span>
-                  </span>
+                <li key={tried} className="flex items-baseline justify-between gap-4">
+                  <span className={failed ? "text-muted line-through decoration-edge" : undefined}>{tried}</span>
                   <span className={`status shrink-0 ${tone}`}>{verdict}</span>
                 </li>
               ))}
             </ol>
-            <LastRefusal />
           </div>
         </div>
+        <LastRefusal />
+      </section>
+
+      {/* For whoever came to see what is underneath: each part of a cover, and what does it. */}
+      <section id="built" className="section">
+        <Head stamp="awning">How it&rsquo;s made</Head>
+        <dl className="rows mt-6 border-y border-line">
+          {MADE.map(({ does, by }) => (
+            <div key={does} className="flex items-baseline justify-between gap-6 py-2.5">
+              <dt className="text-muted">{does}</dt>
+              <dd className="text-right">{by}</dd>
+            </div>
+          ))}
+        </dl>
+        <details className="mt-4">
+          <summary className="cursor-pointer text-sm text-muted transition-colors hover:text-fg">What you still have to trust</summary>
+          <ul className="copy mt-3 space-y-2">
+            {TRUSTED.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </details>
       </section>
     </>
   );

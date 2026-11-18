@@ -27,7 +27,7 @@ function ticks(lo: number, hi: number, about: number) {
 
 /**
  * Every day in the data: how hot it got, and how far its takings were from a normal day for that
- * weekday and month. The days the finding is about are picked out in the accent colour.
+ * weekday and month. The days the finding is about are picked out in ink; the rest are grey.
  */
 export function SalesChart({ days, finding }: { days: Deviation[]; finding: Finding }) {
   const [hover, setHover] = useState<number | null>(null);
@@ -60,7 +60,7 @@ export function SalesChart({ days, finding }: { days: Deviation[]; finding: Find
     <figure>
       <figcaption className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
         <span className="title">Every day in your sales, by how hot it got</span>
-        <span className="flex gap-5 text-sm text-muted">
+        <span className="flex gap-5">
           <span className="status status-accent">
             {finding.threshold}°F or {finding.direction === "below" ? "below" : "above"}
           </span>
@@ -83,24 +83,24 @@ export function SalesChart({ days, finding }: { days: Deviation[]; finding: Find
         {ticks(-reach, reach, 5).map((tick) => (
           <g key={tick}>
             <line x1={PAD.left} x2={W - PAD.right} y1={y(tick)} y2={y(tick)} className={tick === 0 ? "stroke-edge" : "stroke-line"} strokeWidth={1} />
-            <text x={PAD.left - 8} y={y(tick) + 3.5} textAnchor="end" className="num fill-faint text-[11px]">
+            <text x={PAD.left - 8} y={y(tick) + 3.5} textAnchor="end" className="num fill-faint text-[12px]">
               {tick === 0 ? "normal" : signed(tick)}
             </text>
           </g>
         ))}
         {ticks(x0, x1, marks).map((tick) => (
-          <text key={tick} x={x(tick)} y={H - 8} textAnchor="middle" className="num fill-faint text-[11px]">
+          <text key={tick} x={x(tick)} y={H - 8} textAnchor="middle" className="num fill-faint text-[12px]">
             {tick}°F
           </text>
         ))}
-        <line x1={edge} x2={edge} y1={PAD.top} y2={H - PAD.bottom} className="stroke-accent" strokeWidth={1} strokeDasharray="3 4" />
+        <line x1={edge} x2={edge} y1={PAD.top} y2={H - PAD.bottom} className="stroke-fg" strokeWidth={1} strokeDasharray="3 4" />
         {days.map((d, i) => (
           <circle
             key={d.day}
             cx={x(d.high)}
             cy={y(d.deviation)}
             r={hover === i ? dot + 2 : dot}
-            className={d.bad ? "fill-accent" : "fill-muted"}
+            className={d.bad ? "fill-fg" : "fill-muted"}
             fillOpacity={d.bad ? 0.9 : 0.45}
           />
         ))}

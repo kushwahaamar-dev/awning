@@ -11,7 +11,7 @@ const HEADINGS = {
 export function Fit({ plan }: { plan: CoverPlan }) {
   const { basis } = plan;
   return (
-    <section className="grid gap-x-14 gap-y-10 xl:grid-cols-2">
+    <section className="space-y-12">
       <div>
         <h2 className="title">{HEADINGS[basis.level]}</h2>
         <div
@@ -22,15 +22,15 @@ export function Fit({ plan }: { plan: CoverPlan }) {
           aria-valuenow={basis.fit}
           className="mt-4 h-1.5 overflow-hidden rounded-full bg-pressed"
         >
-          <div className={`h-full rounded-full ${basis.level === "loose" ? "bg-bad" : "bg-accent"}`} style={{ width: `${basis.fit}%` }} />
+          <div className={`h-full rounded-full ${basis.level === "loose" ? "bg-bad" : "bg-fg"}`} style={{ width: `${basis.fit}%` }} />
         </div>
         <div aria-hidden className="mt-2 flex justify-between text-sm text-muted">
           <span>Loosely</span>
           <span>Closely</span>
         </div>
-        <ul className="rows mt-6 border-y border-line text-soft">
+        <ul className="rows copy mt-5 border-y border-line">
           {basis.notes.map((note) => (
-            <li key={note} className="py-3">
+            <li key={note} className="py-2.5">
               {note}
             </li>
           ))}

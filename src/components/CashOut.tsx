@@ -80,13 +80,13 @@ export function CashOut({ onClose }: { onClose: () => void }) {
         send();
       }}
     >
-      <p>Send money out to another chain</p>
+      <p className="title">Send money out to another chain</p>
       <p className="mt-1 text-sm text-muted">Circle delivers it.</p>
 
       <label htmlFor="cashAmount" className="mt-5 flex items-center justify-between gap-4">
         <span>How much</span>
         {/* The sign sits in the box with the figure, as it does on the allowance. */}
-        <span className="field flex items-baseline gap-1 text-lg">
+        <span className="field flex items-baseline gap-1">
           <span className="num text-muted">$</span>
           <input
             id="cashAmount"
