@@ -24,6 +24,8 @@ type Planned = { plan: CoverPlan | null; asOf?: string | null };
 type Linked = { exposure: Exposure; from: "sales" | "example" };
 
 const CAME_FROM = { sales: "Found in your sales", example: "An example, priced by Gemini right now" } as const;
+// Where an example came from, when Gemini has gone quiet and its price is from a while ago.
+const CAME_EARLIER = "An example, on Gemini’s last prices";
 // How long the microphone stays open by itself for an answer, after a quote has been read out.
 const LISTEN_MS = 6_000;
 
@@ -251,7 +253,7 @@ function DeskFor() {
           <div className="mt-6 flex items-start gap-4">
             <Stamp of={pictureOf(plan.exposure.trigger)} />
             <div>
-              <p className="text-sm text-muted">{linked ? CAME_FROM[linked.from] : "You said"}</p>
+              <p className="text-sm text-muted">{!linked ? "You said" : asOf && linked.from === "example" ? CAME_EARLIER : CAME_FROM[linked.from]}</p>
               <h1 className="sign mt-1">{plan.exposure.summary}</h1>
             </div>
           </div>
