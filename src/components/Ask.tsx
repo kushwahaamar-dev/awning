@@ -55,7 +55,8 @@ export function Ask({ turns, busy, pricing, understood, checking, error, unliste
 
   return (
     <div className="mx-auto max-w-6xl pt-12 sm:pt-20">
-      <h1 className="sign">What could go wrong?</h1>
+      <h1 className="sign">What would a bad day cost you?</h1>
+      {opening && <p className="lede mt-4">Say it in your own words. You see the price before you pay anything.</p>}
 
       {earlier.length > 0 && (
         <ol className="mt-8 space-y-2 text-lg text-muted">

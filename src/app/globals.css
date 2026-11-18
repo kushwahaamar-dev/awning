@@ -18,6 +18,8 @@
   --color-accent: #000000;
   /* The one colour: the stripes of the awning. A fill, never text. */
   --color-lit: #f2b54a;
+  /* The same colour let down to a wash, for a part of a page set a little apart. */
+  --color-shade: #fdf5e4;
   /* The scenes' ink. A plain value, because the scene player reads the colour itself. */
   --color-ink: #000000;
   --color-good: #17794a;
@@ -38,13 +40,6 @@
   --text-5xl: 3rem;
 }
 
-/* How far down its path a stretch of the page's line has been drawn. Registered as numbers so a turn can sweep across. */
-@property --turned {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 1;
-}
-
 :root {
   /* The page's margin: a phone's at the narrow end, the drawing's 24 at a desk. */
   --gutter: clamp(1.25rem, 1.67vw, 1.5rem);
@@ -59,8 +54,8 @@ body {
   background: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  font-size: 0.9375rem;
-  line-height: 1.6;
+  font-size: 1rem;
+  line-height: 1.55;
 }
 
 :focus-visible {
@@ -74,12 +69,10 @@ body {
   color: var(--color-fg);
 }
 
-/* A box being typed in is marked by its own edge, so the words in it don't get a ring as well.
-   The line a risk is written on at the top of the landing page doubles in weight instead. */
+/* A box being typed in is marked by its own edge, so the words in it don't get a ring as well. */
 .field input:focus-visible,
 .composer textarea:focus-visible,
-.composer input:focus-visible,
-.ask input:focus-visible {
+.composer input:focus-visible {
   outline: none;
 }
 
@@ -94,40 +87,46 @@ body {
 }
 
 @layer components {
-  /* Type. One family at one weight: a line is told from the next by its size and the room around it, never by going bold.
-     The lines a page opens and closes with are set small-lettered, very large and tight. */
+  /* Type. One family. A page is found by its headings, so they carry the weight; what is read under them is plain. */
   .display {
-    font-size: clamp(2.5rem, 6.9vw, 9.5rem);
-    font-weight: 400;
-    line-height: 1;
-    letter-spacing: -0.05em;
-    text-transform: lowercase;
+    font-size: clamp(2.5rem, 5.2vw, 4.75rem);
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
   }
   /* The line a page opens with inside the app. */
   .sign {
-    font-size: clamp(2rem, 4.4vw, 4.5rem);
-    font-weight: 400;
-    line-height: 1;
-    letter-spacing: -0.045em;
-    text-transform: lowercase;
+    font-size: clamp(2rem, 3.8vw, 3.5rem);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
     text-wrap: balance;
   }
   .heading {
-    font-size: clamp(1.75rem, 3.34vw, 3.25rem);
-    font-weight: 400;
-    line-height: 1.02;
-    letter-spacing: -0.04em;
-    text-transform: lowercase;
+    font-size: clamp(1.75rem, 3vw, 2.75rem);
+    font-weight: 600;
+    line-height: 1.06;
+    letter-spacing: -0.035em;
     text-wrap: balance;
   }
   .title {
     font-size: 1.25rem;
-    font-weight: 400;
+    font-weight: 500;
     line-height: 1.25;
     letter-spacing: -0.02em;
     text-wrap: balance;
   }
-  /* Running text on the landing page: the reading size, held to a short measure. */
+  /* The sentence or two under a heading that says what the part is. */
+  .lede {
+    max-width: 36rem;
+    color: var(--color-muted);
+    font-size: clamp(1.0625rem, 1.5vw, 1.3125rem);
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+  }
+  /* Running text: the reading size, held to a short measure. */
   .copy {
     max-width: 28rem;
     font-size: 1rem;
@@ -174,6 +173,7 @@ body {
     padding: 0 1.25rem;
     border-radius: 999px;
     font-size: 0.9375rem;
+    font-weight: 500;
     white-space: nowrap;
     transition:
       background-color 120ms,
@@ -402,7 +402,8 @@ body {
 
   /* The shop at the top of the page. Its faces are drawn flat and laid into the picture, which would stretch
      their lines with them; every line is held at a hair's width instead. */
-  .shopfront :is(rect, line, path, circle, polygon) {
+  .shopfront :is(rect, line, path, circle, polygon),
+  .drawing :is(rect, line, path, circle, polygon) {
     vector-effect: non-scaling-stroke;
   }
   /* One raindrop: it falls the height its streak has to fall, at the speed every other drop falls at. */
@@ -411,86 +412,47 @@ body {
     animation-duration: calc(var(--fall) * 9ms);
   }
 
-  /* The line a risk is written on at the top of the page: the sentence at the size of a heading, and what happens to it at the far end. */
-  .ask {
+  /* A part of the landing page: room above and below, and its contents held to a width that can be read across. */
+  .section {
+    padding-block: clamp(4.5rem, 9vw, 8rem);
+  }
+  .inner {
+    max-width: 78rem;
+    margin-inline: auto;
+  }
+  /* A part set a little apart from its neighbours, on a wash of the awning's colour from one edge of the window to the other. */
+  .band {
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+    background: var(--color-shade);
+  }
+  /* A question that opens onto its answer. */
+  .faq summary {
     display: flex;
     align-items: baseline;
+    justify-content: space-between;
     gap: 1.5rem;
-    border-bottom: 1px solid var(--color-fg);
-    padding-bottom: 0.75rem;
-    font-size: clamp(1.25rem, 2.6vw, 2.75rem);
-    line-height: 1.15;
-    letter-spacing: -0.035em;
-    transition: box-shadow 150ms;
+    padding-block: 1.25rem;
+    font-size: 1.125rem;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    cursor: pointer;
+    list-style: none;
   }
-  .ask:focus-within {
-    box-shadow: 0 1px 0 var(--color-fg);
+  .faq summary::-webkit-details-marker {
+    display: none;
   }
-
-  /* The page's line. It leaves the shop and runs to the foot of the page, turning where a new part begins, and
-     each part hangs off the stretch that passes it. A stretch knows which of the page's twelve columns it comes
-     from and which it runs down; on a phone it runs straight down the margin. It is drawn as far as the reader
-     has got: ink above, and the faint line of what is still to come below. */
-  .leg {
-    --x: var(--gutter);
-    --drawn: 1;
-    position: relative;
-    margin-inline: calc(-1 * var(--gutter));
-    padding: 4.5rem var(--gutter) 4.5rem calc(var(--x) + 1rem);
+  .faq summary::after {
+    content: "+";
+    flex: none;
+    color: var(--color-muted);
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1;
+    transition: rotate 150ms;
   }
-  .leg::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: var(--x);
-    width: 1px;
-    background: linear-gradient(var(--color-fg) 0 calc(var(--drawn) * 100%), var(--color-line) 0);
-  }
-  /* What marks the start of a part: a small figure on the line, with the paper kept clear around it. */
-  .leg-mark {
-    position: absolute;
-    top: 0;
-    left: var(--x);
-    translate: -50% -50%;
-    background: var(--color-bg);
-  }
-  /* What stands beside a part, on the other side of the line. On a phone it follows the part instead. */
-  .leg-aside {
-    margin-top: 3rem;
-  }
-  @media (width >= 64rem) {
-    .leg {
-      --x: calc(100% * var(--to) / 12);
-      --x0: calc(100% * var(--from) / 12);
-      /* Padding is measured against the page's column, a margin narrower each side than the line's own box. */
-      padding: 7rem var(--gutter) 7rem calc((100% + 2 * var(--gutter)) * var(--to) / 12 + var(--gutter));
-      /* A turn is swept across, not switched on. The number is the part's own, so the change is eased here and the line reads it. */
-      transition: --turned 260ms ease-out;
-    }
-    .leg::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: min(var(--x), var(--x0));
-      width: max(var(--x) - var(--x0), var(--x0) - var(--x));
-      height: 1px;
-      background: linear-gradient(var(--sweep, to left), var(--color-fg) 0 calc(var(--turned) * 100%), var(--color-line) 0);
-    }
-    .leg-mark {
-      left: var(--x0);
-    }
-    /* The stretch the opening words stand on: the line runs down between them instead of beside them. */
-    .leg-through {
-      padding-left: var(--gutter);
-    }
-    .leg-aside {
-      position: absolute;
-      top: 7rem;
-      left: var(--gutter);
-      width: calc(var(--x) - 2 * var(--gutter));
-      margin-top: 0;
-    }
+  .faq[open] summary::after {
+    rotate: 45deg;
   }
 
   /* The name at the foot of every page, set to run exactly from one margin to the other. The numbers are the
@@ -520,9 +482,18 @@ body {
     letter-spacing: -0.03em;
     text-wrap: balance;
   }
-  /* What failed is crossed out, by a line drawn through it as far as the reader has got past it. */
+  /* What failed is crossed out. Where the browser can tie drawing to scrolling, the line is drawn through it as it comes up the screen. */
   .struck {
-    background: linear-gradient(currentColor, currentColor) no-repeat 0 58% / calc(var(--passed, 1) * 100%) 1.5px;
+    background: linear-gradient(currentColor, currentColor) no-repeat 0 58% / 100% 1.5px;
+  }
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .struck {
+        animation: strike linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 22%;
+      }
+    }
   }
   /* A bad day to pick is a way in from its picture to its price, and pointing anywhere on it inks the line under the price. */
   .risk:hover .link {
@@ -532,6 +503,12 @@ body {
   .land {
     animation: land 260ms cubic-bezier(0.2, 1.2, 0.4, 1) both;
     animation-delay: calc(var(--i, 0) * 180ms);
+  }
+}
+
+@keyframes strike {
+  from {
+    background-size: 0% 1.5px;
   }
 }
 
@@ -576,9 +553,7 @@ body {
   .btn,
   .link,
   .field,
-  .composer,
-  .ask,
-  .leg {
+  .composer {
     transition: none;
   }
 }

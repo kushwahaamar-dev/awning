@@ -6,7 +6,7 @@ import useSWR from "swr";
 import type { Discovery } from "@/lib/discover/discover";
 import { usd } from "@/lib/format";
 import { post } from "./account";
-import { Ascii } from "./Ascii";
+import { Drawing } from "./Drawing";
 import { SalesChart } from "./SalesChart";
 
 const fetchCities = async (url: string): Promise<string[]> => (await (await fetch(url)).json()).cities ?? [];
@@ -29,7 +29,7 @@ function Result({ result, sample, onAgain }: { result: Found; sample: boolean; o
       <button type="button" onClick={onAgain} className="link text-sm">
         Look at different sales
       </button>
-      <h1 className="sign mt-6 max-w-5xl normal-case">
+      <h1 className="sign mt-6 max-w-5xl">
         A day at {finding.threshold}°F {side} in {city} costs you about {usd(finding.lossUsd)}.
       </h1>
       {sample && (
@@ -164,7 +164,7 @@ export function Discover() {
         </form>
         <p className="mt-4 text-sm text-muted">Your sales are read once and never stored.</p>
       </section>
-      <Ascii scene="storm" className="w-full max-lg:hidden" />
+      <Drawing subject="week" className="w-full max-lg:hidden" />
     </div>
   );
 }

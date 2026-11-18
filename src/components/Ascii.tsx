@@ -25,10 +25,8 @@ type Source = {
   rows: number;
   tone: Tone;
   label: string;
-  /** Where the part shown starts, for a piece shown in part: the padlock without the dialog drawn round it, the candles without their made-up prices. */
+  /** Where the part shown starts, for a piece shown in part: the candles without their made-up prices. */
   from?: { left: number; top: number };
-  /** Dots across one cell. A piece of few, large cells is given two, so its dots match its neighbours'. */
-  fine?: 2;
   /** Drawn on square cells, one dot to a cell, and not on the tall cells of text. */
   square?: true;
   /** A piece made of lines and not of shading: every stroke is inked, however thin the character that draws it. */
@@ -55,9 +53,7 @@ const SCENES = {
     tone: "lights",
     label: "A cabin with lit windows in snowy woods, smoke rising from its chimney",
   },
-  snow: { load: () => import("ascii-magic-art/pieces/snowfall.js"), cols: 96, rows: 34, tone: "lights", label: "Snow falling over a pine valley" },
   dunes: { load: () => import("ascii-magic-art/pieces/desert-dunes.js"), cols: 96, rows: 36, tone: "shadows", label: "Sand dunes baking under a blazing sun" },
-  sunrise: { load: () => import("ascii-magic-art/pieces/sunrise-horizon.js"), cols: 96, rows: 34, tone: "lights", label: "The sun climbing over the sea", at: 14 },
   price: {
     load: () => import("ascii-magic-art/pieces/candlestick-chart.js"),
     cols: 70,
@@ -74,16 +70,6 @@ const SCENES = {
     tone: "lights",
     label: "A tornado crossing open plains, throwing up dust",
   },
-  lock: {
-    load: () => import("ascii-magic-art/pieces/empty-access-denied.js"),
-    cols: 19,
-    rows: 14,
-    from: { left: 19, top: 1 },
-    tone: "lights",
-    fine: 2,
-    label: "A padlock snapping shut",
-    at: 2,
-  },
 } satisfies Record<string, Source>;
 
 export type Scene = keyof typeof SCENES;
@@ -93,20 +79,6 @@ export function sceneFor(trigger: Trigger): Scene {
   if (trigger.family === "price") return "price";
   if (trigger.family === "temperature") return trigger.direction === "below" ? "cabin" : "dunes";
   return "storm";
-}
-
-// A second cold day, or a second warm one, shown beside the first.
-const OTHER: Partial<Record<Scene, Scene>> = { cabin: "snow", dunes: "sunrise" };
-
-/** A picture for each of several risks shown together, so two of a kind don't get the same one. */
-export function scenesFor(triggers: Trigger[]): Scene[] {
-  const used = new Set<Scene>();
-  return triggers.map((trigger) => {
-    const first = sceneFor(trigger);
-    const scene = used.has(first) ? (OTHER[first] ?? first) : first;
-    used.add(scene);
-    return scene;
-  });
 }
 
 type Ink = { light: number; amber: boolean };
@@ -141,7 +113,6 @@ export function Ascii({ scene, className = "" }: { scene: Scene; className?: str
     const source: Source = SCENES[scene];
     const { cols, rows, tone } = source;
     const { left, top } = source.from ?? { left: 0, top: 0 };
-    const across = source.fine ?? 1;
     const style = getComputedStyle(frame);
     const black = style.color;
     const amber = style.getPropertyValue("--color-lit").trim() || AMBER;
@@ -192,10 +163,10 @@ export function Ascii({ scene, className = "" }: { scene: Scene; className?: str
         ctx.setTransform(scale, 0, 0, scale, 0, 0);
         ctx.clearRect(0, 0, width, height);
 
-        // A cell is taller than it is wide, so it holds more dots down than across and the dots stay on a square grid.
-        const down = Math.round((cellTall / cellWide) * across);
-        const [stepX, stepY] = [cellWide / across, cellTall / down];
-        const largest = 0.46 * Math.min(stepX, stepY);
+        // A cell of text is taller than it is wide, so it holds two dots, one above the other, and the dots stay on a square grid.
+        const down = Math.round(cellTall / cellWide);
+        const stepY = cellTall / down;
+        const largest = 0.46 * Math.min(cellWide, stepY);
         const dots = [new Path2D(), new Path2D()];
         read(draw(t));
         for (let r = 0; r < rows; r++) {
@@ -210,12 +181,10 @@ export function Ascii({ scene, className = "" }: { scene: Scene; className?: str
             if (size <= 1 / SIZES && !warm[r * cols + c]) continue;
             const radius = largest * size;
             const path = dots[warm[r * cols + c]];
-            for (let i = 0; i < across; i++) {
-              for (let j = 0; j < down; j++) {
-                const [x, y] = [c * cellWide + (i + 0.5) * stepX, r * cellTall + (j + 0.5) * stepY];
-                path.moveTo(x + radius, y);
-                path.arc(x, y, radius, 0, Math.PI * 2);
-              }
+            for (let j = 0; j < down; j++) {
+              const [x, y] = [(c + 0.5) * cellWide, r * cellTall + (j + 0.5) * stepY];
+              path.moveTo(x + radius, y);
+              path.arc(x, y, radius, 0, Math.PI * 2);
             }
           }
         }

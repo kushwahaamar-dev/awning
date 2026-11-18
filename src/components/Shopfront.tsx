@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useEffect, useState, type CSSProperties } from "react";
+import { camera, radians, type Point, type View } from "./iso";
 
 // A shop under its awning in the rain, as a model on a slab. Measured in the model's own units:
 // x runs along the shopfront, y out towards the street, z up.
@@ -35,30 +36,10 @@ const LETTER = 7;
 const SIGN_COLUMNS = SIGN.length * LETTER - 2;
 const PITCH = (BOARD.wide - 6) / SIGN_COLUMNS;
 
-type Point = [x: number, y: number, z: number];
-// Where the eye is: how far round the corner, how far above, how far back, and how far the picture is moved up to stay in its frame.
-type View = { turn: number; tilt: number; zoom: number; lift: number };
-
-const radians = (degrees: number) => (degrees * Math.PI) / 180;
 // Where the page opens, the shopfront is seen nearly square on, its sign easy to read. Scrolling walks the eye
 // round the corner, up and back, until it is the awning and the dry ground under it that fill the picture.
 const OPENING: View = { turn: radians(28), tilt: radians(21), zoom: 1, lift: 0 };
 const LEAVING: View = { turn: radians(52), tilt: radians(38), zoom: 0.8, lift: -36 };
-
-/** The picture a point in the model lands on, for one position of the eye. */
-function camera({ turn, tilt, zoom, lift }: View) {
-  const across = [Math.cos(turn) * zoom, -Math.sin(turn) * zoom];
-  const down = [Math.sin(turn) * Math.sin(tilt) * zoom, Math.cos(turn) * Math.sin(tilt) * zoom, -Math.cos(tilt) * zoom];
-  /** How a length in the model lies in the picture. */
-  const along = ([x, y, z]: Point) => [x * across[0] + y * across[1], x * down[0] + y * down[1] + z * down[2]];
-  const at = (point: Point) => {
-    const [left, top] = along(point);
-    return [left, top + lift];
-  };
-  /** Lays a flat drawing into the picture: its corner at `corner`, its width running along `right` and its height along `up`. */
-  const plane = (corner: Point, right: Point, up: Point) => `matrix(${[...along(right), ...along(up), ...at(corner)].map((n) => n.toFixed(3)).join(" ")})`;
-  return { at, plane, rise: -down[2] };
-}
 
 // Where each streak of rain comes down. The same every time, so the server and the browser draw the same rain.
 const STREAKS = (() => {
