@@ -2,7 +2,7 @@ import { z } from "zod";
 import { address, fail, readBody } from "@/lib/api/respond";
 import { requireOwner } from "@/lib/api/session";
 import { secondOpinion } from "@/lib/desk/second-opinion";
-import { listMarkets } from "@/lib/gemini/client";
+import { lastGoodMarkets } from "@/lib/gemini/lastGood";
 import { exposureSchema } from "@/lib/hedge/exposure";
 import { planCover } from "@/lib/hedge/plan";
 import { recordContracts } from "@/lib/odds";
@@ -22,7 +22,10 @@ export async function POST(request: Request) {
     const { owner } = body;
     if (owner) await requireOwner(request, owner);
     const origin = new URL(request.url).origin;
-    const planned = await planCover(body.exposure, listMarkets, {
+    // A quote can still be shown from Gemini's last answer when it has gone quiet. `asOf` says so, and the page
+    // then holds back the way to buy: cover is only ever sold at a price Gemini is giving now.
+    const markets = lastGoodMarkets();
+    const planned = await planCover(body.exposure, markets.list, {
       coverRatio: body.coverRatio,
       fairValue: owner && (async (market) => {
         const opinion = await secondOpinion(owner, market, origin).catch((error) => {
@@ -34,8 +37,8 @@ export async function POST(request: Request) {
       }),
     });
     // Every quote adds a point to the price history of the market it looked at.
-    if (planned) await recordContracts(planned.market.contracts);
-    return Response.json({ plan: planned?.plan ?? null });
+    if (planned && !markets.since()) await recordContracts(planned.market.contracts);
+    return Response.json({ plan: planned?.plan ?? null, asOf: markets.since() });
   } catch (error) {
     return fail(error);
   }

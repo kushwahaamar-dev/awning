@@ -206,13 +206,27 @@ export async function readAllowance(owner: Address): Promise<Allowance> {
 }
 
 const LOCAL_GRANT_USD = 5_000;
-// On a public testnet the grant comes out of the operator's own faucet money, so it is small.
-const TESTNET_GRANT_USD = Number(process.env.FAUCET_USD ?? 2);
+// On a public testnet the grant comes out of the operator's own faucet money. It is as large as the setting
+// allows while there is plenty, and is paced as the money goes: never more than a twelfth of what is left,
+// so a busy afternoon makes the grants smaller and does not end them.
+const MOST_GRANT_USD = Number(process.env.FAUCET_USD ?? 2);
+const LEAST_GRANT_USD = 2;
+const GRANTS_IN_HAND = 12;
 const OPERATOR_RESERVE_USD = 1;
-/** What a new visitor is given to try the app with. */
-export const VISITOR_GRANT_USD = isLocalChain ? LOCAL_GRANT_USD : TESTNET_GRANT_USD;
 const GRANTS_PER_HOUR = 30;
 const granted: number[] = [];
+let paced: { at: number; grant: number } | null = null;
+
+/** What a new visitor is given to try the app with, as things stand. Examples are sized to it. */
+export async function visitorGrant(): Promise<number> {
+  if (isLocalChain) return LOCAL_GRANT_USD;
+  if (paced && Date.now() - paced.at < 60_000) return paced.grant;
+  const operator = signers().venue.account.address;
+  const spare = await publicClient.readContract({ address: usdcAddress, abi: usdcAbi, functionName: "balanceOf", args: [operator] });
+  const grant = Math.min(MOST_GRANT_USD, Math.max(LEAST_GRANT_USD, Math.floor(fromUnits(spare) / GRANTS_IN_HAND)));
+  paced = { at: Date.now(), grant };
+  return grant;
+}
 
 /**
  * Gives a new device key something to try the app with, and says how much. A local chain mints
@@ -234,14 +248,17 @@ export async function fundVisitor(owner: Address): Promise<number> {
     publicClient.readContract({ ...mandate, functionName: "balanceOf", args: [owner] }),
     publicClient.readContract({ ...usdc, args: [operator] }),
   ]);
-  if (fromUnits(held + vault) >= TESTNET_GRANT_USD / 2) throw new Error("This device already has its test dollars.");
+  const grant = await visitorGrant();
+  if (fromUnits(held + vault) >= grant / 2) throw new Error("This device already has its test dollars.");
 
   const hourAgo = Date.now() - 3_600_000;
   while (granted.length && granted[0] < hourAgo) granted.shift();
-  if (fromUnits(spare) < TESTNET_GRANT_USD + OPERATOR_RESERVE_USD || granted.length >= GRANTS_PER_HOUR) {
+  if (fromUnits(spare) < grant + OPERATOR_RESERVE_USD || granted.length >= GRANTS_PER_HOUR) {
     throw new Error(`The demo’s test dollars have run out for now. Send ${chain.name} USDC to ${owner} from faucet.circle.com, then come back.`);
   }
   granted.push(Date.now());
-  await mined(await signers().venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "transfer", args: [owner, toUnits(TESTNET_GRANT_USD)] }));
-  return TESTNET_GRANT_USD;
+  await mined(await signers().venue.writeContract({ address: usdcAddress, abi: usdcAbi, functionName: "transfer", args: [owner, toUnits(grant)] }));
+  // The next visitor's grant is worked out from what is left now.
+  paced = null;
+  return grant;
 }

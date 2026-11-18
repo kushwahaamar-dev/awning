@@ -1,17 +1,15 @@
 import { count, eq, inArray, max, sum } from "drizzle-orm";
-import { after } from "next/server";
 import { fail } from "@/lib/api/respond";
 import { readPool } from "@/lib/chain/server";
 import { covers, getDb, ledger } from "@/lib/db";
 import { usesStreams } from "@/lib/ledger/source";
-import { tickIfDue } from "@/lib/tick";
+import { wake } from "@/lib/tick";
 
 export const maxDuration = 300;
 
 /** Public figures for the landing page: the pool as the chain reports it, and what has happened so far. */
 export async function GET(request: Request) {
-  // On a serverless host nothing runs between requests, so the background pass rides on this one.
-  if (process.env.VERCEL) after(() => tickIfDue(new URL(request.url).origin));
+  wake(request);
   try {
     const db = await getDb();
     const [pool, [written], [paid], [refused], [streamed]] = await Promise.all([

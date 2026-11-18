@@ -16,6 +16,8 @@ export type Example = {
   payout: number;
   cost: number;
   odds: number | null;
+  /** The contracts the cover is made of, by which its price history is kept. */
+  legs: { symbol: string; side: "yes" | "no" }[];
 };
 
 // Cover is worth showing when the bad day is unlikely but real, so it costs a small share of what it pays.
@@ -84,6 +86,7 @@ function candidate(market: Market, trigger: Trigger, wording: Wording, subject: 
     payout: quote.payout,
     cost: quote.now.total,
     odds: quote.marketOdds,
+    legs: coverage.legs.map(({ symbol, side }) => ({ symbol, side })),
     share,
     subject,
   };
@@ -143,8 +146,8 @@ export async function cityPrices(list: MarketSource, now = new Date(), budget = 
   return cities.map(({ city, code }) => {
     const best = ranked.find((c) => c.subject === city);
     if (!best) return { city, code, example: null };
-    const { kind, text, exposure, pays, day, payout, cost, odds } = best;
-    return { city, code, example: { kind, text, exposure, pays, day, payout, cost, odds } };
+    const { kind, text, exposure, pays, day, payout, cost, odds, legs } = best;
+    return { city, code, example: { kind, text, exposure, pays, day, payout, cost, odds, legs } };
   });
 }
 
@@ -161,7 +164,7 @@ export async function liveExamples(list: MarketSource, now = new Date(), budget 
     const best = kind.find((c) => !picked.some((p) => p.subject === c.subject));
     if (best && picked.length < 3) picked.push(best);
   }
-  return picked.map(({ kind, text, exposure, pays, day, payout, cost, odds }) => ({ kind, text, exposure, pays, day, payout, cost, odds }));
+  return picked.map(({ kind, text, exposure, pays, day, payout, cost, odds, legs }) => ({ kind, text, exposure, pays, day, payout, cost, odds, legs }));
 }
 
 /** Cities whose next market prices a cold day as unlikely but real, most typical first, with the level cold starts at. */

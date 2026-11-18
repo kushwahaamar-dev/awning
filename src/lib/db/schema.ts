@@ -1,4 +1,5 @@
 import { bigint, boolean, doublePrecision, index, integer, jsonb, pgTable, primaryKey, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import type { Market } from "../gemini/market";
 import type { Exposure } from "../hedge/exposure";
 import type { CoverPlan } from "../hedge/plan";
 
@@ -72,6 +73,13 @@ export const odds = pgTable(
   },
   (t) => [primaryKey({ columns: [t.symbol, t.at] })],
 );
+
+/** Gemini's listings as it last gave them, one row to a query, for the hour it goes quiet. */
+export const listings = pgTable("listings", {
+  query: text().primaryKey(),
+  markets: jsonb().$type<Market[]>().notNull(),
+  at: timestamp({ withTimezone: true }).notNull(),
+});
 
 /** Risks people asked about that no listed market tracks. */
 export const gaps = pgTable("gaps", {

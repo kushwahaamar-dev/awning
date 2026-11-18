@@ -1,0 +1,16 @@
+name: Wake the hosted agent
+
+# The public site runs on a host with no long-running process, so nothing happens there between visits.
+# This calls it every few minutes: cover that has resolved is settled, the agent looks at its standing orders,
+# and a point is added to the price history, whether or not anyone is looking.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  wake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - run: curl --fail --silent --show-error --max-time 300 https://awning-eight.vercel.app/api/wake

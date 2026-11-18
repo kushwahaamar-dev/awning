@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { fail, readBody } from "@/lib/api/respond";
 import { getDb, gaps } from "@/lib/db";
-import { listMarkets } from "@/lib/gemini/client";
+import { lastGoodMarkets } from "@/lib/gemini/lastGood";
 import { getCatalog } from "@/lib/hedge/catalog";
 import { interpret } from "@/lib/hedge/interpret";
 import { easternDate } from "@/lib/hedge/match";
@@ -15,7 +15,8 @@ export async function POST(request: Request) {
   if (body instanceof Response) return body;
 
   try {
-    const catalog = await getCatalog(listMarkets);
+    // What can be covered changes slowly, so a sentence can still be read when Gemini has gone quiet.
+    const catalog = await getCatalog(lastGoodMarkets().list);
     // Today on the US east coast, where Gemini dates its markets. By the world's clock it is already tomorrow
     // there every evening, and "tomorrow" would be read a day late.
     const result = await interpret(body.turns, catalog, easternDate(new Date()));

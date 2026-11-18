@@ -3,6 +3,7 @@ import { fail, readBody } from "@/lib/api/respond";
 import { discover } from "@/lib/discover/discover";
 import { parseSales } from "@/lib/discover/sales";
 import { listMarkets } from "@/lib/gemini/client";
+import { lastGoodMarkets } from "@/lib/gemini/lastGood";
 import { getCatalog } from "@/lib/hedge/catalog";
 
 const bodySchema = z.object({
@@ -14,7 +15,7 @@ const bodySchema = z.object({
 /** The cities whose weather can be covered, which are the ones worth looking for a weather effect in. */
 export async function GET() {
   try {
-    const { cities } = await getCatalog(listMarkets);
+    const { cities } = await getCatalog(lastGoodMarkets().list);
     return Response.json({ cities });
   } catch (error) {
     return fail(error);
