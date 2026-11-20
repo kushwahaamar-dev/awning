@@ -45,7 +45,7 @@ async function traces(cities: CityPrice[]): Promise<Map<string, MapCity["trace"]
  */
 export async function GET(request: Request) {
   wake(request);
-  if (!cached || Date.now() - cached.at > (cached.asOf ? OLD_MS : FRESH_MS)) {
+  if (!cached || Date.now() - cached.at > (cached.asOf || cached.cities.length === 0 ? OLD_MS : FRESH_MS)) {
     try {
       // Sized like the examples: to what the pool can lock and a new visitor's test dollars can pay for.
       const affordable = ((await visitorGrant()) - 0.25) / 0.3;

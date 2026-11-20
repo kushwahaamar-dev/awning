@@ -214,6 +214,12 @@ describe("liveExamples", () => {
     expect(new Set(examples.map((e) => e.text)).size).toBe(examples.length);
   });
 
+  it("falls back to today’s active market after midnight Eastern before tomorrow’s is listed", async () => {
+    const examples = await liveExamples(list, new Date("2026-11-13T07:00:00Z"));
+    expect(examples.length).toBeGreaterThan(0);
+    expect(examples.some((e) => e.day === "2026-11-13" && e.text.includes("today"))).toBe(true);
+  });
+
   it("offers nothing rather than something that can’t be priced", async () => {
     expect(await liveExamples(async () => [])).toEqual([]);
   });

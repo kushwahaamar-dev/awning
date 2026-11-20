@@ -17,7 +17,7 @@ let cached: { at: number; examples: Example[]; asOf: string | null } | null = nu
  */
 export async function GET(request: Request) {
   wake(request);
-  if (!cached || Date.now() - cached.at > (cached.asOf ? OLD_MS : FRESH_MS)) {
+  if (!cached || Date.now() - cached.at > (cached.asOf || cached.examples.length === 0 ? OLD_MS : FRESH_MS)) {
     try {
       // Sized to what the pool can lock and to what a new visitor's test dollars can pay for, so on a
       // thinly funded test network the first example clicked can still be bought. A cover costs at

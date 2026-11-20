@@ -10,7 +10,7 @@ let cached: { at: number; catalog: Catalog } | null = null;
 
 /** What Gemini currently lists that a risk can be matched to. Games are found by search, so they aren't enumerated. */
 export async function getCatalog(list: MarketSource): Promise<Catalog> {
-  if (cached && Date.now() - cached.at < TTL_MS) return cached.catalog;
+  if (cached && cached.catalog.cities.length > 0 && Date.now() - cached.at < TTL_MS) return cached.catalog;
 
   const [weather, commodities, crypto] = await Promise.all([
     list({ status: "active", category: "Weather" }),

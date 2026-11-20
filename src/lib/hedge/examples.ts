@@ -100,12 +100,13 @@ async function scan(list: MarketSource, now: Date, budget: number, range = WORTH
   const [weather, commodities] = await Promise.all([list({ status: "active", category: "Weather" }), list({ status: "active", category: "Commodities" })]);
   const today = easternDate(now);
   const tomorrow = easternDate(new Date(now.getTime() + 86_400_000));
-  const when = (day: string) => (day === tomorrow ? "tomorrow" : `on ${weekday(day)}`);
+  const when = (day: string) => (day === today ? "today" : day === tomorrow ? "tomorrow" : `on ${weekday(day)}`);
+  const futureFirst = (a: Market, b: Market) => Number(marketDay(a) === today) - Number(marketDay(b) === today) || soonest(a, b);
 
-  // Each city's next full day.
+  // Each city's next full day, or today's active market before tomorrow's is listed.
   const next = new Map<string, Market>();
-  for (const market of [...weather].sort(soonest)) {
-    if (market.subject.family === "temperature" && marketDay(market) > today && !next.has(market.subject.city)) next.set(market.subject.city, market);
+  for (const market of [...weather].filter((m) => m.subject.family === "temperature" && marketDay(m) >= today).sort(futureFirst)) {
+    if (market.subject.family === "temperature" && !next.has(market.subject.city)) next.set(market.subject.city, market);
   }
 
   const cold: Scored[] = [];
@@ -126,11 +127,14 @@ async function scan(list: MarketSource, now: Date, budget: number, range = WORTH
   }
 
   const fuel: Scored[] = [];
-  const oil = [...commodities].sort(soonest).find((m) => m.subject.family === "price" && m.subject.asset === "WTI" && marketDay(m) > today);
-  for (const { outcome } of oil?.contracts ?? []) {
-    if (outcome.kind !== "range" || outcome.lo === null) continue;
-    const found = candidate(oil!, { family: "price", asset: "WTI", direction: "above", threshold: outcome.lo }, FUEL, "oil", when(marketDay(oil!)), budget);
-    if (found) fuel.push(found);
+  const oils = [...commodities].filter((m) => m.subject.family === "price" && m.subject.asset === "WTI" && marketDay(m) >= today).sort(futureFirst);
+  for (const oil of oils) {
+    for (const { outcome } of oil.contracts) {
+      if (outcome.kind !== "range" || outcome.lo === null) continue;
+      const found = candidate(oil, { family: "price", asset: "WTI", direction: "above", threshold: outcome.lo }, FUEL, "oil", when(marketDay(oil)), budget);
+      if (found) fuel.push(found);
+    }
+    if (fuel.length > 0) break;
   }
   const cities = [...next].map(([city, market]) => ({ city, code: market.subject.family === "temperature" ? market.subject.cityCode : city }));
   return { cold: cold.sort(closest), warm: warm.sort(closest), fuel: fuel.sort(closest), cities };

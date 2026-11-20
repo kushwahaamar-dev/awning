@@ -91,7 +91,7 @@ function toContract(raw: RawContract, event: RawEvent): Contract {
 }
 
 function parseSubject(event: RawEvent, contracts: Contract[]): Subject {
-  if (event.series === "WXHIGH") {
+  if (event.series === "WXHIGH" && contracts.length > 0 && contracts.every((c) => c.outcome.kind === "range")) {
     const city = event.title.match(/temperature in (.+?) on /i)?.[1] ?? event.ticker.split("-")[1];
     const station = contracts[0]?.rules.match(/recorded at (.+?) on /i)?.[1] ?? null;
     const date = event.title.match(/ on ([A-Z][a-z]+ \d{1,2}, \d{4})/)?.[1];
