@@ -1,5 +1,7 @@
 # Awning
 
+![Awning: Say what could go wrong. Get paid when it does. Cover priced by Gemini prediction markets, bought by an agent with onchain limits on Arc.](docs/devpost/banner-00-hero.png)
+
 **Awning pays you when a bad day hits your business.**
 
 Say the day in a sentence: a cold snap, a heat wave, fuel going up. Awning finds the Gemini
@@ -14,8 +16,6 @@ your agent and buys. Cover is sized to the test pool, about $50 a time.
 
 **Checking a sponsor's technology?** https://awning-eight.vercel.app/proof lists each one beside the
 latest real transaction, order or event behind it, read from the chain as the page opens.
-
-![The Awning landing page: "Awning pays you when a bad day hits your business", a box to name the day in, and a scene of a cabin in the snow with a ruler under it to drag from one bad day to the next](docs/screenshots/landing.jpg)
 
 > "If Chicago's high stays under 46 tomorrow, my coffee cart is out about $300."
 >
@@ -79,6 +79,11 @@ on paper against Gemini's live prices. The cover itself is real either way, lock
 on Gemini's resolution.
 
 ## What it looks like
+
+**The landing page.** An interactive risk slider across real bad days, a single box to name your own
+day in plain English or by voice, and live-priced examples from Gemini right underneath.
+
+![The Awning landing page: "Awning pays you when a bad day hits your business", a box to name the day in, and a scene of a cabin in the snow with a ruler under it to drag from one bad day to the next](docs/screenshots/landing.jpg)
 
 **The map.** Every US city Gemini lists a temperature high for, with what a bad day there costs to
 cover this minute and how the market's odds of it have moved through the day.
