@@ -20,13 +20,28 @@ export function CostChart({ legs }: { legs: Leg[] }) {
   const { data: points = [] } = useSWR(key, fetchPoints, { refreshInterval: 60_000 });
   const [hover, setHover] = useState<number | null>(null);
 
-  // A line that hasn't moved, or has barely started, tells the owner nothing; the chart waits until there is something to see.
-  const costs = points.map((p) => p.cost);
-  if (points.length < 5 || Math.max(...costs) === Math.min(...costs)) return null;
+  if (points.length < 2) {
+    const current = legs.every((l) => l.ask !== null) ? legs.reduce((sum, l) => sum + (l.ask ?? 0), 0) : null;
+    return (
+      <figure>
+        <figcaption className="title">What $1 of this cover has cost to buy</figcaption>
+        <p className="num mt-1 text-sm text-muted">
+          {current !== null ? `${centsPerDollar(current)} on Gemini right now` : "Waiting for a seller on Gemini"}
+        </p>
+        <svg aria-hidden viewBox={`0 0 ${W} ${H}`} className="mt-4 w-full">
+          <line x1={PAD.left} x2={W - PAD.right} y1={H / 2} y2={H / 2} className="stroke-line" strokeWidth={1.5} strokeDasharray="2 6" strokeLinecap="round" />
+        </svg>
+        <p className="mt-1 text-sm text-muted">Awning has just begun recording this contract&rsquo;s price history from Gemini.</p>
+      </figure>
+    );
+  }
 
+  const costs = points.map((p) => p.cost);
+  const low = Math.min(...costs);
+  const high = Math.max(...costs);
   const times = points.map((p) => new Date(p.at).getTime());
   const [t0, t1] = [times[0], times.at(-1)!];
-  const top = Math.min(1, Math.max(...points.map((p) => p.cost)) * 1.25 || 0.1);
+  const top = Math.min(1, Math.max(high * 1.25, low + 0.08, 0.1));
   const x = (t: number) => PAD.left + ((t - t0) / (t1 - t0 || 1)) * (W - PAD.left - PAD.right);
   const y = (cost: number) => PAD.top + (1 - cost / top) * (H - PAD.top - PAD.bottom);
   const path = points.map((p, i) => `${i === 0 ? "M" : "L"}${x(times[i]).toFixed(1)},${y(p.cost).toFixed(1)}`).join(" ");
@@ -46,7 +61,9 @@ export function CostChart({ legs }: { legs: Leg[] }) {
     <figure>
       <figcaption className="title">What $1 of this cover has cost to buy</figcaption>
       <p className="num mt-1 text-sm text-muted" aria-live="polite">
-        {shown ? `${centsPerDollar(shown.cost)} at ${clock(shown.at)}, ${day(shown.at)}` : `Since ${clock(points[0].at)}, ${day(points[0].at)}`}
+        {shown
+          ? `${centsPerDollar(shown.cost)} at ${clock(shown.at)}, ${day(shown.at)}`
+          : `Now ${centsPerDollar(last.cost)} · Low ${centsPerDollar(low)} · High ${centsPerDollar(high)} (${points.length} Gemini snapshots)`}
       </p>
       <svg
         viewBox={`0 0 ${W} ${H}`}

@@ -156,18 +156,36 @@ export function Receipt({ plan: priced, coverRatio, repricing, asOf, onCoverChan
         <details className="mt-6 border-t border-line pt-4 text-sm text-muted">
           <summary className="cursor-pointer select-none transition-colors hover:text-fg">The small print</summary>
           <p className="mt-3">
-            Priced on Gemini&rsquo;s &ldquo;{market.title.replace(/\?$/, "")}&rdquo;
+            Priced on Gemini&rsquo;s &ldquo;{market.title.replace(/\?$/, "")}&rdquo; (<span className="num">{market.ticker}</span>)
             {price && `, including about ${cents(price.fees)} in exchange fees`}.
-            {forecast && ` Your agent paid ${cents(forecast.paid)} for the ${forecast.members}-run forecast.`}
+            {forecast &&
+              (forecast.paid > 0
+                ? ` Your agent paid ${cents(forecast.paid)} for the ${forecast.members}-run forecast.`
+                : ` Checked against a ${forecast.members}-run weather forecast (${forecast.model}).`)}
           </p>
           <p className="mt-3">The pool hedges it on Gemini with {quote.contracts.toLocaleString("en-US")} contracts of each:</p>
-          <ul className="num mt-1.5 space-y-0.5">
+          <ul className="num mt-1.5 space-y-1">
             {coverage.legs.map((leg) => (
-              <li key={leg.symbol}>
-                {leg.side === "yes" ? "Yes" : "No"} on &ldquo;{leg.label}&rdquo;
+              <li key={leg.symbol} className="flex flex-wrap items-baseline justify-between gap-x-3">
+                <span>
+                  {leg.side === "yes" ? "Yes" : "No"} on &ldquo;{leg.label}&rdquo; (<span className="text-xs text-faint">{leg.symbol}</span>)
+                </span>
+                <span className="text-xs">
+                  bid {leg.bid === null ? "—" : cents(leg.bid)} · ask {leg.ask === null ? "—" : cents(leg.ask)}
+                </span>
               </li>
             ))}
           </ul>
+          <p className="mt-3">
+            <a
+              href={`https://api.gemini.com/v1/prediction-markets/events/${encodeURIComponent(market.ticker)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="link"
+            >
+              Verify this market on Gemini&rsquo;s live API
+            </a>
+          </p>
         </details>
       </div>
     </section>

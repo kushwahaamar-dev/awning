@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { address, fail, readBody } from "@/lib/api/respond";
 import { requireOwner } from "@/lib/api/session";
+import { forecastBuckets } from "@/lib/desk/forecast";
 import { secondOpinion } from "@/lib/desk/second-opinion";
 import { lastGoodMarkets } from "@/lib/gemini/lastGood";
 import { exposureSchema } from "@/lib/hedge/exposure";
@@ -27,14 +28,20 @@ export async function POST(request: Request) {
     const markets = lastGoodMarkets();
     const planned = await planCover(body.exposure, markets.list, {
       coverRatio: body.coverRatio,
-      fairValue: owner && (async (market) => {
-        const opinion = await secondOpinion(owner, market, origin).catch((error) => {
-          // A quote is still worth giving when the forecast can't be bought.
-          console.error("forecast purchase failed", error);
-          return null;
-        });
-        return opinion && { ...opinion.forecast, paid: opinion.paid };
-      }),
+      fairValue: async (market) => {
+        if (owner) {
+          const opinion = await secondOpinion(owner, market, origin).catch((error) => {
+            console.error("forecast purchase failed", error);
+            return null;
+          });
+          if (opinion) return { ...opinion.forecast, paid: opinion.paid };
+        }
+        if (market.subject.family === "temperature") {
+          const preview = await forecastBuckets(market).catch(() => null);
+          if (preview) return { ...preview, paid: 0 };
+        }
+        return null;
+      },
     });
     // Every quote adds a point to the price history of the market it looked at.
     if (planned && !markets.since()) await recordContracts(planned.market.contracts);
