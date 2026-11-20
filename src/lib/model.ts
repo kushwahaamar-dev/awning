@@ -9,7 +9,7 @@ export type Turn = { role: "user" | "assistant"; text: string };
 // key any one model can refuse for being busy, or sit silent for a minute, while another answers in
 // a second. So there are two more to turn to, none is waited on for long, and a list that was busy
 // all the way down is gone through once more, because busy rarely lasts.
-const MODELS = process.env.AWNING_MODEL ? [process.env.AWNING_MODEL] : ["gemini-4-hydrogen", "gemini-3.6-flash", "gemini-3.5-flash-lite"];
+const MODELS = process.env.AWNING_MODEL ? [process.env.AWNING_MODEL] : ["gemini-3.5-flash-lite", "gemini-4-hydrogen", "gemini-3.6-flash"];
 // A model that is going to answer does so in a few seconds; one that hasn't by now is stuck, and the next is asked.
 const PATIENCE_MS = 9_000;
 const ROUNDS = 2;

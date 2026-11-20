@@ -44,12 +44,17 @@ export async function findMarket(exposure: Exposure, list: MarketSource, now = n
   }
 
   const wanted = trigger.team.toLowerCase();
+  const rank = (m: Market) => {
+    if (m.contracts.some((c) => same(c.label, wanted))) return 0;
+    if (m.subject.family === "game" && m.subject.teams.some((t) => same(t.name, wanted) || same(t.abbreviation, wanted) || t.name.toLowerCase().startsWith(`${wanted} `))) return 1;
+    return 2;
+  };
   const games = (await list({ status: "active", search: trigger.team, limit: 50 }))
     .filter(
       (m) =>
         m.subject.family === "game" &&
         m.subject.teams.some((t) => t.name.toLowerCase().includes(wanted) || same(t.abbreviation, wanted)),
     )
-    .sort((a, b) => (a.startsAt ?? a.expiresAt).localeCompare(b.startsAt ?? b.expiresAt));
+    .sort((a, b) => rank(a) - rank(b) || (a.startsAt ?? a.expiresAt).localeCompare(b.startsAt ?? b.expiresAt));
   return games.find((m) => !on || marketDay(m) >= on) ?? games[0] ?? null;
 }
